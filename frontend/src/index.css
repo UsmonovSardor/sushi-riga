@@ -1,0 +1,12 @@
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --red:#e31e24;--red2:#c41a1f;--dark:#1a1a1a;
+  --gray:#f4f4f4;--border:#e8e8e8;--text:#222;--muted:#888;--white:#fff;
+  --r:14px;--shl:0 8px 40px rgba(0,0,0,.18);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter','Segoe UI',Arial,sans-serif;background:var(--gray);color:var(--text)}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:inherit;border:none;background:none}
+img{display:block;max-width:100%}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
