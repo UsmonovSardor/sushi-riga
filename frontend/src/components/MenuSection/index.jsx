@@ -4,25 +4,37 @@ import { menuApi }     from '../../services/api';
 import ProductCard     from '../ProductCard';
 import T from '../../i18n/translations';
 
-const KEY_MAP = { hit:'c_hit', sets:'c_sets', rolls:'c_rolls', sushi:'c_sushi', hot:'c_hot', drinks:'c_drinks' };
-
-export default function MenuSection({ category, emoji }) {
+export default function MenuSection({ sectionId, emoji, titleKey, cats }) {
   const [items, setItems] = useState([]);
   const { lang } = useLanguage();
   const t = T[lang];
 
   useEffect(() => {
-    (category === 'hit' ? menuApi.getHits() : menuApi.getByCategory(category))
-      .then(setItems).catch(console.error);
-  }, [category]);
+    const fetchAll = async () => {
+      try {
+        let all = [];
+        if (sectionId === 'hit') {
+          all = await menuApi.getHits();
+        } else {
+          const results = await Promise.all(cats.map(c => menuApi.getByCategory(c)));
+          results.forEach(r => { if (Array.isArray(r)) all = [...all, ...r]; });
+        }
+        setItems(all);
+      } catch (e) { console.error(e); }
+    };
+    fetchAll();
+  }, [sectionId, lang]);
+
+  if (!items.length) return null;
 
   return (
-    <div id={'sec-' + category} style={{ marginTop: 36 }}>
-      <div style={{ marginBottom:18 }}>
-        <span style={{ fontSize:'1.5rem', fontWeight:900, color:'var(--dark)' }}>{emoji} {t[KEY_MAP[category]]}</span>
+    <div id={'sec-' + sectionId} style={{ marginTop: 40 }}>
+      <div style={{ marginBottom:18, display:'flex', alignItems:'center', gap:10 }}>
+        <span style={{ fontSize:'1.6rem', fontWeight:900, color:'var(--dark)' }}>{emoji} {t[titleKey]}</span>
+        <span style={{ fontSize:'.8rem', color:'var(--muted)', background:'var(--gray)', padding:'3px 10px', borderRadius:20, fontWeight:600 }}>{items.length}</span>
       </div>
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:16 }}>
-        {items.map((item, i) => <ProductCard key={item.id} item={item} delay={i * 50} />)}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))', gap:16 }}>
+        {items.map((item, idx) => <ProductCard key={item.id} item={item} delay={Math.min(idx, 8) * 40} />)}
       </div>
     </div>
   );

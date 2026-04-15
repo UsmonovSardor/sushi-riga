@@ -1,9 +1,10 @@
 const BASE = '/api';
+const json = res => res.ok ? res.json() : Promise.reject(res.statusText);
 
 export const menuApi = {
-  getAll:       () => fetch(`${BASE}/menu`).then(r => r.json()),
-  getByCategory:(cat) => fetch(`${BASE}/menu/category/${cat}`).then(r => r.json()),
-  getHits:      () => fetch(`${BASE}/menu/hits`).then(r => r.json()),
+  getAll:        ()    => fetch(`${BASE}/menu`).then(json),
+  getByCategory: (cat) => fetch(`${BASE}/menu/category/${cat}`).then(json),
+  getHits:       ()    => fetch(`${BASE}/menu/hits`).then(json),
 };
 
 export const orderApi = {
@@ -11,5 +12,5 @@ export const orderApi = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
-  }).then(r => r.json()),
+  }).then(json),
 };
