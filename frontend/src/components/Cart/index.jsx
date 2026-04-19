@@ -3,7 +3,7 @@ import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import T from '../../i18n/translations';
 export default function Cart({ onCheckout }) {
-  const { cart, change, subtotal, delivery, total, isOpen, setIsOpen } = useCart();
+  const { cart, change, total, isOpen, setIsOpen } = useCart();
   const { lang } = useLanguage();
   const t = T[lang];
   return (
@@ -34,8 +34,6 @@ export default function Cart({ onCheckout }) {
         </div>
         {cart.length>0&&(
           <div className="cart-ft">
-            <div className="cart-line"><span>{t.subtotal}</span><b>€{subtotal.toFixed(2)}</b></div>
-            <div className="cart-line"><span>{t.delivery}</span><b>{delivery===0?'✅ '+t.free:'€'+delivery.toFixed(2)}</b></div>
             <div className="cart-total"><span>{t.total}</span><span>€{total.toFixed(2)}</span></div>
             <button className="cart-submit" onClick={onCheckout}>{t.checkout}</button>
           </div>

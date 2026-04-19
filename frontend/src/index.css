@@ -405,3 +405,42 @@ img { display: block; max-width: 100%; }
 .footer-map-name { color:#fff;font-weight:700;font-size:.85rem;margin-bottom:2px; }
 .footer-map-addr { color:rgba(255,255,255,.7);font-size:.75rem;margin-bottom:4px;line-height:1.4; }
 .footer-map-open { color:var(--red);font-size:.72rem;font-weight:700; }
+
+/* ══ DASHBOARD ══ */
+.dash-kpi { display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px; }
+@media(min-width:640px){ .dash-kpi { grid-template-columns:repeat(4,1fr); } }
+.dash-card { background:#fff;border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh); }
+.dash-card--red   { border-left:4px solid var(--red); }
+.dash-card--green { border-left:4px solid #16a34a; }
+.dash-card-val { font-size:1.5rem;font-weight:900;color:var(--text);line-height:1.1; }
+.dash-card-lbl { font-size:.72rem;color:var(--muted);margin-top:4px; }
+
+.dash-row   { display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:12px; }
+@media(min-width:700px){ .dash-row { grid-template-columns:1fr 1fr; } }
+.dash-block { background:#fff;border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh); }
+.dash-block-title { font-size:.82rem;font-weight:800;color:var(--text);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px; }
+.dash-stat-row { display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border); }
+.dash-stat-row:last-child { border:none; }
+.dash-bar-bg   { flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden; }
+.dash-bar-fill { height:100%;border-radius:3px;transition:width .4s; }
+.dash-divider  { border:none;border-top:1px solid var(--border);margin:10px 0; }
+
+.dash-order-row { display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;flex-wrap:wrap; }
+.dash-order-row:last-child { border:none; }
+.dash-order-id   { font-size:.78rem;font-weight:800;color:var(--red);min-width:45px; }
+.dash-order-name { flex:1;font-size:.82rem;font-weight:600;min-width:80px; }
+.dash-order-time { font-size:.72rem;color:var(--muted);white-space:nowrap; }
+.dash-order-total{ font-size:.85rem;font-weight:800;margin-left:auto; }
+
+.adm-order-customer { display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;font-size:.83rem; }
+.adm-order-customer a { color:var(--red);text-decoration:none; }
+.adm-order-pay   { font-size:.72rem;color:var(--muted); }
+.adm-status-sel  { height:30px;border:1.5px solid var(--border2);border-radius:7px;padding:0 8px;font-size:.75rem;font-family:inherit;outline:none;cursor:pointer;margin-left:auto; }
+.adm-status-s    { font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap; }
+.adm-auto        { font-size:.75rem;color:rgba(255,255,255,.75);cursor:pointer;display:flex;align-items:center; }
+
+/* Fix cart - remove delivery references */
+.stripe-wrap  { padding:4px 0; }
+.stripe-elem-wrap { margin:14px 0; }
+.pay-hint { font-size:.78rem;color:var(--muted);text-align:center;margin-bottom:14px; }
+.order-total-sum { font-size:1.05rem; }

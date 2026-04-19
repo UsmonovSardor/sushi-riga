@@ -4,7 +4,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import T from '../../i18n/translations';
 
 export default function CartBar({ onCheckout }) {
-  const { cart, total, setIsOpen, isOpen } = useCart();
+  const { cart, total, setIsOpen } = useCart();
   const { lang } = useLanguage();
   const t = T[lang];
 
