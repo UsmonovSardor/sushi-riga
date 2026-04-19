@@ -3,6 +3,7 @@ import { CartProvider }    from './context/CartContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider }    from './context/AuthContext';
 import Header        from './components/Header';
+import PromoBar      from './components/PromoBar';
 import CategoryNav   from './components/CategoryNav';
 import HeroSlider    from './components/HeroSlider';
 import MenuSection   from './components/MenuSection';
@@ -29,7 +30,6 @@ const SECTIONS = [
   { id:'drinks',  emoji:'🥤', key:'c_drinks',  cats:['drinks'] },
 ];
 
-// Admin route check — works both with /admin path and #admin hash
 const isAdmin = () =>
   window.location.pathname.startsWith('/admin') ||
   window.location.hash === '#admin';
@@ -49,6 +49,7 @@ function MainApp() {
         onMenu={()   => setSideOpen(true)}
         onAuth={() =>  setAuthOpen(true)}
       />
+      <PromoBar />
       <CategoryNav />
       <SideMenu isOpen={sideOpen} onClose={() => setSideOpen(false)} />
       <HeroSlider />
@@ -58,10 +59,10 @@ function MainApp() {
         ))}
       </main>
       <Footer />
-      <CartBar onCheckout={() => setOrderOpen(true)} />
-      <Cart    onCheckout={() => setOrderOpen(true)} />
-      <OrderModal    isOpen={orderOpen}   onClose={() => setOrderOpen(false)} />
-      <SearchOverlay isOpen={searchOpen}  onClose={() => setSearchOpen(false)} />
+      <CartBar   onCheckout={() => setOrderOpen(true)} />
+      <Cart      onCheckout={() => setOrderOpen(true)} />
+      <OrderModal    isOpen={orderOpen}  onClose={() => setOrderOpen(false)} />
+      <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
       {authOpen && <AuthModal onClose={() => setAuthOpen(false)} />}
     </>
   );
