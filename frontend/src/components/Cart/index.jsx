@@ -8,43 +8,36 @@ export default function Cart({ onCheckout }) {
   const t = T[lang];
   return (
     <>
-      {isOpen && <div className="cart-bg" onClick={() => setIsOpen(false)} />}
-      <div className={'cart-drawer ' + (isOpen ? 'open' : 'closed')}>
-        <div className="cart-top">
-          <span className="cart-heading">🛒 {t.cart_title}</span>
-          <button className="cart-close" onClick={() => setIsOpen(false)}>✕</button>
+      {isOpen && <div className="cart-bg" onClick={() => setIsOpen(false)}/>}
+      <div className={'cart-sheet '+(isOpen?'open':'closed')}>
+        <div className="cart-hd">
+          <span className="cart-hd-title">🛒 {t.cart_title}</span>
+          <button className="cart-x" onClick={() => setIsOpen(false)}>✕</button>
         </div>
-        <div className="cart-list">
+        <div className="cart-body">
           {!cart.length ? (
-            <div className="cart-empty">
-              <div className="cart-empty-ico">🛒</div>
-              <div className="cart-empty-t">{t.empty_t}</div>
-              <div className="cart-empty-p">{t.empty_p}</div>
-            </div>
+            <div className="cart-empty"><div className="cart-ei">🛒</div><div className="cart-et">{t.empty_t}</div><div className="cart-ep">{t.empty_p}</div></div>
           ) : cart.map(item => (
-            <div key={item.id} className="cart-item">
-              <div className="cart-item-img">
-                <img src={item.img} alt="" onError={e => e.target.style.display='none'} />
+            <div key={item.id} className="cart-row-item">
+              <div className="cart-thumb"><img src={item.img} alt="" onError={e=>e.target.style.display='none'}/></div>
+              <div className="cart-info">
+                <div className="cart-iname">{item.name[lang]}</div>
+                <div className="cart-iprice">€{(item.price*item.qty).toFixed(2)}</div>
               </div>
-              <div className="cart-item-info">
-                <div className="cart-item-name">{item.name[lang]}</div>
-                <div className="cart-item-price">€{(item.price * item.qty).toFixed(2)}</div>
-              </div>
-              <div className="qty">
-                <button className="qty-btn" onClick={() => change(item.id,-1)}>−</button>
-                <span className="qty-num">{item.qty}</span>
-                <button className="qty-btn" onClick={() => change(item.id,+1)}>+</button>
+              <div className="qty-row">
+                <button className="qty-b" onClick={()=>change(item.id,-1)}>−</button>
+                <span className="qty-n">{item.qty}</span>
+                <button className="qty-b" onClick={()=>change(item.id,+1)}>+</button>
               </div>
             </div>
           ))}
         </div>
-        {cart.length > 0 && (
-          <div className="cart-bottom">
-            <div className="cart-row"><span>{t.subtotal}</span><span>€{subtotal.toFixed(2)}</span></div>
-            <div className="cart-row"><span>{t.delivery}</span><span>{delivery===0?'✅ '+t.free:'€'+delivery.toFixed(2)}</span></div>
-            <hr className="cart-divider" />
-            <div className="cart-total-row"><span>{t.total}</span><span>€{total.toFixed(2)}</span></div>
-            <button className="order-btn" onClick={onCheckout}>{t.checkout}</button>
+        {cart.length>0&&(
+          <div className="cart-ft">
+            <div className="cart-line"><span>{t.subtotal}</span><b>€{subtotal.toFixed(2)}</b></div>
+            <div className="cart-line"><span>{t.delivery}</span><b>{delivery===0?'✅ '+t.free:'€'+delivery.toFixed(2)}</b></div>
+            <div className="cart-total"><span>{t.total}</span><span>€{total.toFixed(2)}</span></div>
+            <button className="cart-submit" onClick={onCheckout}>{t.checkout}</button>
           </div>
         )}
       </div>
