@@ -8,27 +8,40 @@ const FLAGS = { ru:'🇷🇺', lv:'🇱🇻', en:'🇬🇧' };
 
 export default function Header({ onSearch, onMenu, onAuth }) {
   const { count, setIsOpen } = useCart();
-  const { lang, setLang } = useLanguage();
-  const { user, logout } = useAuth();
+  const { lang, setLang }    = useLanguage();
+  const { user, logout }     = useAuth();
   const [langOpen, setLangOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const t = T[lang];
 
+  const closeDd = () => { setLangOpen(false); setUserOpen(false); };
+
   return (
-    <header className="header">
+    <header className="header" onClick={() => closeDd()}>
       <div className="header-in">
-        {/* LEFT: Logo */}
-        <div className="logo">
-          <span className="logo-icon">🍣</span>
-          <span className="logo-txt">SUSHI <em>RĪGA</em></span>
+
+        {/* ── LEFT: Logo + Cart ── */}
+        <div className="h-left">
+          <div className="logo">
+            <span className="logo-icon">🍣</span>
+            <span className="logo-txt">SUSHI <em>RĪGA</em></span>
+          </div>
+
+          {/* Cart — 3rd element from left (after logo icon, logo text) */}
+          <button className="h-cart" onClick={e => { e.stopPropagation(); setIsOpen(true); }}>
+            <span className="h-cart-icon">🛒</span>
+            <span className="h-cart-lbl">{t.cart}</span>
+            {count > 0 && <span className="h-cart-badge">{count}</span>}
+          </button>
         </div>
 
-        {/* CENTER-LEFT: Cart (3rd from left = after logo + lang) */}
-        <div className="h-actions">
-          {/* 1: Lang */}
-          <div className="lang-wrap">
-            <button className="lang-btn" onClick={() => { setLangOpen(o => !o); setUserOpen(false); }}>
-              {FLAGS[lang]} {lang.toUpperCase()} ▾
+        {/* ── RIGHT: Lang + Search + User + Menu ── */}
+        <div className="h-right">
+
+          {/* Language */}
+          <div className="lang-wrap" onClick={e => e.stopPropagation()}>
+            <button className="hbtn lang-btn" onClick={() => { setLangOpen(o => !o); setUserOpen(false); }}>
+              {FLAGS[lang]} <span className="lang-code">{lang.toUpperCase()}</span>
             </button>
             {langOpen && (
               <div className="lang-dd">
@@ -42,20 +55,14 @@ export default function Header({ onSearch, onMenu, onAuth }) {
             )}
           </div>
 
-          {/* 2: Search */}
+          {/* Search */}
           <button className="hbtn" onClick={onSearch} aria-label="Search">🔍</button>
 
-          {/* 3: Cart (3rd from left) */}
-          <button className="cartbtn" onClick={() => setIsOpen(true)}>
-            🛒 <span className="lbl">{t.cart}</span>
-            {count > 0 && <span className="cbadge">{count}</span>}
-          </button>
-
-          {/* 4: User account */}
-          <div className="lang-wrap">
+          {/* User */}
+          <div className="lang-wrap" onClick={e => e.stopPropagation()}>
             {user ? (
               <>
-                <button className="hbtn user-btn" onClick={() => { setUserOpen(o => !o); setLangOpen(false); }} aria-label="Account">
+                <button className="hbtn u-btn" onClick={() => { setUserOpen(o => !o); setLangOpen(false); }}>
                   {user.name.charAt(0).toUpperCase()}
                 </button>
                 {userOpen && (
@@ -71,13 +78,11 @@ export default function Header({ onSearch, onMenu, onAuth }) {
                 )}
               </>
             ) : (
-              <button className="hbtn" onClick={() => { onAuth(); setUserOpen(false); }} aria-label="Login" title="Войти">
-                👤
-              </button>
+              <button className="hbtn" onClick={() => { onAuth(); closeDd(); }} aria-label="Login">👤</button>
             )}
           </div>
 
-          {/* 5: Menu burger */}
+          {/* Burger */}
           <button className="hbtn" onClick={onMenu} aria-label="Menu">☰</button>
         </div>
       </div>
