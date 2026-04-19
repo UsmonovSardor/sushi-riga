@@ -10,20 +10,20 @@ export default function ProductCard({ item, delay = 0 }) {
   return (
     <div className="card" style={{ animationDelay: delay + 'ms' }} onClick={() => add(item)}>
       <div className="card-img">
-        {item.hit && <span className="badge-hit">{t.b_hit}</span>}
-        {sale > 0 && <span className="badge-sale">-{sale}%</span>}
+        {item.hit && <span className="badge badge-hit">{t.b_hit}</span>}
+        {sale > 0 && <span className="badge badge-sale">-{sale}%</span>}
         <span className="card-emoji">{item.e}</span>
         <img src={item.img} alt={item.name[lang]} onError={e => e.target.style.display='none'} />
       </div>
       <div className="card-body">
         <div className="card-name">{item.name[lang]}</div>
         <div className="card-desc">{item.desc[lang]}</div>
-        <div className="card-foot">
-          <div className="card-prices">
-            <span className="price-now">€{item.price.toFixed(2)}</span>
-            {item.old && <span className="price-old">€{item.old.toFixed(2)}</span>}
+        <div className="card-footer">
+          <div>
+            <span className="card-price">€{item.price.toFixed(2)}</span>
+            {item.old && <span className="card-old">€{item.old.toFixed(2)}</span>}
           </div>
-          <button className="add-btn" onClick={e => { e.stopPropagation(); add(item); }}>+</button>
+          <button className="card-add" onClick={e => { e.stopPropagation(); add(item); }} aria-label="Add">+</button>
         </div>
       </div>
     </div>
