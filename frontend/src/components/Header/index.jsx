@@ -6,38 +6,37 @@ const FLAGS = { ru:'🇷🇺', lv:'🇱🇻', en:'🇬🇧' };
 export default function Header({ onSearch, onMenu }) {
   const { count, setIsOpen } = useCart();
   const { lang, setLang } = useLanguage();
-  const [langOpen, setLangOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const t = T[lang];
   return (
     <header className="header">
       <div className="header-inner">
-        <div className="header-logo">
-          <span className="logo-icon">🍣</span>
-          <span className="logo-text">SUSHI <em>RĪGA</em></span>
+        <div className="logo">
+          <span className="logo-emoji">🍣</span>
+          <span className="logo-name">SUSHI <em>RĪGA</em></span>
         </div>
-        <div className="header-actions">
+        <div className="header-right">
           <div className="lang-wrap">
-            <button className="lang-btn" onClick={() => setLangOpen(o => !o)}>
+            <button className="lang-btn" onClick={() => setOpen(o => !o)}>
               {FLAGS[lang]} {lang.toUpperCase()} ▾
             </button>
-            {langOpen && (
+            {open && (
               <div className="lang-drop">
                 {Object.entries(FLAGS).map(([l, f]) => (
-                  <div key={l} className={'lang-opt' + (l === lang ? ' cur' : '')}
-                    onClick={() => { setLang(l); setLangOpen(false); }}>
+                  <div key={l} className={'lang-item' + (l === lang ? ' active' : '')}
+                    onClick={() => { setLang(l); setOpen(false); }}>
                     {f} {l.toUpperCase()}
-                    {l === lang && <span style={{marginLeft:'auto'}}>✓</span>}
                   </div>
                 ))}
               </div>
             )}
           </div>
-          <button className="h-btn" onClick={onSearch}>🔍</button>
+          <button className="icon-btn" onClick={onSearch} aria-label="Search">🔍</button>
           <button className="cart-btn" onClick={() => setIsOpen(true)}>
-            🛒 <span className="cart-label">{t.cart}</span>
-            {count > 0 && <span className="cart-badge">{count}</span>}
+            🛒 <span className="cart-lbl">{t.cart}</span>
+            {count > 0 && <span className="cart-cnt">{count}</span>}
           </button>
-          <button className="h-btn" onClick={onMenu}>☰</button>
+          <button className="icon-btn" onClick={onMenu} aria-label="Menu">☰</button>
         </div>
       </div>
     </header>
