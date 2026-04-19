@@ -1,30 +1,31 @@
 import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import T from '../../i18n/translations';
-
+const ITEMS = ['hit','sets','cold','hot','tempura','special','food','salad','snacks','drinks'];
 export default function SideMenu({ isOpen, onClose }) {
   const { lang } = useLanguage();
   const t = T[lang];
-  const go = (id) => { const el = document.getElementById('sec-' + id); if (el) { el.scrollIntoView({ behavior:'smooth' }); onClose(); }};
-
+  const go = id => {
+    const el = document.getElementById('sec-'+id);
+    if(el){ window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-120,behavior:'smooth'}); onClose(); }
+  };
   return (
     <>
-      {isOpen && <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.45)', zIndex:1100 }} />}
-      <nav style={{ position:'fixed', top:0, right:0, bottom:0, width:360, background:'#fff', zIndex:1200, transform: isOpen ? 'translateX(0)' : 'translateX(100%)', transition:'transform .35s cubic-bezier(.4,0,.2,1)', display:'flex', flexDirection:'column', overflowY:'auto' }}>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'20px 24px 16px', borderBottom:'1px solid var(--border)' }}>
-          <span style={{ fontSize:'1.1rem', fontWeight:800 }}>{t.menu}</span>
-          <button onClick={onClose} style={{ width:36, height:36, borderRadius:'50%', background:'var(--gray)', fontSize:'1.1rem' }}>✕</button>
+      {isOpen && <div className="side-bg" onClick={onClose}/>}
+      <nav className={'side-panel '+(isOpen?'open':'closed')}>
+        <div className="side-hd">
+          <span className="side-hd-title">{t.menu||'Меню'}</span>
+          <button className="side-x" onClick={onClose}>✕</button>
         </div>
-        <div style={{ padding:'12px 24px', fontSize:'.82rem', fontWeight:700, color:'var(--red)', borderBottom:'1px solid var(--border)' }}>📍 Rīga</div>
-        <ul style={{ listStyle:'none', padding:'8px 0', flex:1 }}>
-          {['hit','sets','rolls','sushi','hot','drinks'].map(id => (
-            <li key={id}>
-              <button onClick={() => go(id)} style={{ display:'block', width:'100%', padding:'14px 24px', textAlign:'left', fontSize:'.95rem', fontWeight:500, background:'none', border:'none', cursor:'pointer' }}>
-                {t['c_'+id] || id}
-              </button>
-            </li>
+        <div className="side-city">📍 Rīga, Latvija</div>
+        <div className="side-nav">
+          {ITEMS.map(id=>(
+            <button key={id} className="side-navbtn" onClick={()=>go(id)}>
+              {t['c_'+id]||id}
+            </button>
           ))}
-        </ul>
+        </div>
+        <div className="side-footer">📞 +371 XX XXX XXX · info@sushiriga.lv</div>
       </nav>
     </>
   );
