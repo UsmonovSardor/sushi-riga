@@ -9,3 +9,6 @@ router.put('/menu/:id',        ctrl.updateItem);
 router.delete('/menu/:id',     ctrl.deleteItem);
 router.patch('/menu/:id/hit',  ctrl.toggleHit);
 module.exports = router;
+
+router.get('/orders',        ctrl.getOrders);
+router.patch('/orders/:id',  ctrl.updateOrder);

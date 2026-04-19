@@ -3,13 +3,14 @@ const express = require('express');
 const router  = express.Router();
 const { body } = require('express-validator');
 const ctrl    = require('../controllers/orderController');
+
 const v = [
-  body('name').trim().notEmpty(),
-  body('phone').trim().notEmpty(),
-  body('address').trim().notEmpty(),
-  body('items').isArray({ min: 1 }),
-  body('items.*.id').isInt(),
-  body('items.*.qty').isInt({ min: 1 }),
+  body('name').trim().notEmpty().withMessage('Name required'),
+  body('phone').trim().notEmpty().withMessage('Phone required'),
+  body('address').trim().notEmpty().withMessage('Address required'),
+  body('items').isArray({ min: 1 }).withMessage('Cart is empty'),
 ];
-router.post('/', v, ctrl.createOrder);
+
+router.post('/',   v, ctrl.createOrder);
+router.get('/',    ctrl.getOrders);
 module.exports = router;

@@ -69,3 +69,16 @@ exports.getStats    = [authAdmin, (req, res) => {
   const users = loadUsers();
   res.json({ totalItems: menu.length, totalUsers: users.length, categories: [...new Set(menu.map(i => i.cat))].length });
 }];
+
+const ORDERS_FILE = path.join(__dirname, '../data/orders.json');
+function loadOrders() { try { return JSON.parse(require('fs').readFileSync(ORDERS_FILE,'utf8')); } catch { return []; } }
+
+exports.getOrders   = [authAdmin, (req, res) => res.json(loadOrders())];
+exports.updateOrder = [authAdmin, (req, res) => {
+  const orders = loadOrders();
+  const idx = orders.findIndex(o => o.id == req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  orders[idx] = { ...orders[idx], ...req.body };
+  require('fs').writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
+  res.json(orders[idx]);
+}];

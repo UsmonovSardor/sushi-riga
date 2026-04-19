@@ -12,6 +12,25 @@ export default function AdminPanel() {
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState({ cat:'cold', name_ru:'', name_en:'', name_lv:'', desc_ru:'', desc_en:'', desc_lv:'', price:'', old:'', img:'', e:'🍣', hit: false });
   const [msg, setMsg] = useState('');
+
+  const [orders, setOrders] = useState([]);
+
+  const statusLabel = s => ({new:'🆕 Новый',cooking:'👨‍🍳 Готовится',ready:'✅ Готов',delivered:'🚀 Доставлен',cancelled:'❌ Отменён'})[s] || s;
+
+  async function loadOrders() {
+    try {
+      const r = await fetch(`${API}/api/admin/orders`, { headers: hdrs });
+      const d = await r.json();
+      if (Array.isArray(d)) setOrders(d);
+      await loadOrders();
+    } catch {}
+  }
+
+  async function updateOrderStatus(id, status) {
+    await fetch(`${API}/api/admin/orders/${id}`, { method:'PATCH', headers: hdrs, body: JSON.stringify({status}) });
+    await loadOrders();
+  }
+
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState('all');
@@ -147,7 +166,8 @@ export default function AdminPanel() {
       {/* TABS */}
       <div className="adm-tabs">
         <button className={'adm-tab'+(tab==='menu'?' on':'')} onClick={() => { setTab('menu'); setEditItem(null); }}>📋 Меню ({menu.length})</button>
-        <button className={'adm-tab'+(tab==='add'?' on':'')} onClick={() => { setTab('add'); setEditItem(null); setForm({ cat:'cold', name_ru:'', name_en:'', name_lv:'', desc_ru:'', desc_en:'', desc_lv:'', price:'', old:'', img:'', e:'🍣', hit:false }); }}>
+        <button className={'adm-tab'+(tab==='orders'?' on':'')} onClick={() => setTab('orders')}>📦 Заказы</button>
+        <button className={'adm-tab'+(tab==='add'?' on':''} onClick={() => { setTab('add'); setEditItem(null); setForm({ cat:'cold', name_ru:'', name_en:'', name_lv:'', desc_ru:'', desc_en:'', desc_lv:'', price:'', old:'', img:'', e:'🍣', hit:false }); }}>
           {editItem ? '✏️ Редактировать' : '➕ Добавить'}
         </button>
       </div>
@@ -180,6 +200,46 @@ export default function AdminPanel() {
                   </button>
                   <button className="adm-btn adm-btn-edit" onClick={() => startEdit(item)}>✏️</button>
                   <button className="adm-btn adm-btn-del" onClick={() => deleteItem(item.id)}>🗑</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+
+      {/* ORDERS */}
+      {tab === 'orders' && (
+        <div className="adm-body">
+          <div className="adm-orders">
+            {orders.length === 0 ? (
+              <div style={{textAlign:'center',padding:'40px 0',color:'var(--muted)'}}>Заказов пока нет</div>
+            ) : orders.map(o => (
+              <div key={o.id} className="adm-order">
+                <div className="adm-order-hd">
+                  <span className="adm-order-num">#{o.id}</span>
+                  <span className={'adm-order-status adm-status-'+o.status}>{statusLabel(o.status)}</span>
+                  <span className="adm-order-time">{new Date(o.createdAt).toLocaleString('ru-RU',{timeZone:'Europe/Riga'})}</span>
+                  <select className="adm-select" style={{marginLeft:'auto',height:30,fontSize:'.75rem'}}
+                    value={o.status} onChange={e => updateOrderStatus(o.id, e.target.value)}>
+                    <option value="new">🆕 Новый</option>
+                    <option value="cooking">👨‍🍳 Готовится</option>
+                    <option value="ready">✅ Готов</option>
+                    <option value="delivered">🚀 Доставлен</option>
+                    <option value="cancelled">❌ Отменён</option>
+                  </select>
+                </div>
+                <div className="adm-order-body">
+                  <div className="adm-order-info">
+                    <b>{o.name}</b> · {o.phone} · {o.address}
+                    {o.note && <span style={{color:'var(--muted)'}}> · {o.note}</span>}
+                  </div>
+                  <div className="adm-order-items">
+                    {o.items?.map((i,idx) => <span key={idx} className="adm-order-item">{i.e} {i.name?.ru} ×{i.qty}</span>)}
+                  </div>
+                  <div className="adm-order-total">
+                    {o.payMethod === 'cash' ? '💵' : '💳'} €{o.total?.toFixed(2)}
+                  </div>
                 </div>
               </div>
             ))}
