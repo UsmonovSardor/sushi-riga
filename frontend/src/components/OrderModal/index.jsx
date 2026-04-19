@@ -64,7 +64,12 @@ export default function OrderModal({ isOpen, onClose }) {
   const t         = T[lang];
 
   const [step,      setStep]      = useState('form');
-  const [form,      setForm]      = useState({ name:'', phone:'', address:'', note:'' });
+  const [form,      setForm]      = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('sr_form') || '{}');
+      return { name: saved.name||'', phone: saved.phone||'', address: '', note: '' };
+    } catch { return { name:'', phone:'', address:'', note:'' }; }
+  });
   const [payMethod, setPayMethod] = useState('cash');
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState('');
@@ -82,7 +87,13 @@ export default function OrderModal({ isOpen, onClose }) {
     if (isOpen) { setStep('form'); setError(''); }
   }, [isOpen]);
 
-  const set = (k,v) => setForm(f => ({...f,[k]:v}));
+  const set = (k,v) => {
+    setForm(f => {
+      const next = {...f,[k]:v};
+      try { localStorage.setItem('sr_form', JSON.stringify({name:next.name,phone:next.phone})); } catch {}
+      return next;
+    });
+  };
 
   const lbl = (ru, lv, en) => lang==='ru'?ru:lang==='lv'?lv:en;
 

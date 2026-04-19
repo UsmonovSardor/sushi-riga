@@ -1,6 +1,6 @@
 const T = {
   ru: {
-    city:'Рига, Латвия', cart:'Корзина',
+    city:'Rīga, Latvija', address:'Lokomotīves iela 100, Rīga', cart:'Корзина',
     c_hit:'Хиты', c_cold:'Холодные роллы', c_hot:'Горячие роллы',
     c_tempura:'Темпура', c_special:'Гункан / Нигири / Сашими',
     c_double:'Дабл сеты', c_sets:'Сеты', c_food:'Суп / Вок / Бургер',
@@ -19,7 +19,7 @@ const T = {
     search_placeholder:'Поиск по меню...',
   },
   lv: {
-    city:'Rīga, Latvija', cart:'Grozs',
+    city:'Rīga, Latvija', address:'Lokomotīves iela 100, Rīga', cart:'Grozs',
     c_hit:'Bestselleri', c_cold:'Aukstie rolli', c_hot:'Karstie rolli',
     c_tempura:'Tempura', c_special:'Gunkani / Nigiri / Sašimi',
     c_double:'Dubultie sēti', c_sets:'Sēti', c_food:'Zupa / Wok / Burgers',
@@ -38,7 +38,7 @@ const T = {
     search_placeholder:'Meklēt ēdienkarti...',
   },
   en: {
-    city:'Riga, Latvia', cart:'Cart',
+    city:'Riga, Latvia', address:'Lokomotīves iela 100, Riga', cart:'Cart',
     c_hit:'Best Sellers', c_cold:'Cold Rolls', c_hot:'Hot Rolls',
     c_tempura:'Tempura', c_special:'Gunkan / Nigiri / Sashimi',
     c_double:'Double Sets', c_sets:'Sets', c_food:'Soup / Wok / Burger',

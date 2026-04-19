@@ -356,3 +356,52 @@ img { display: block; max-width: 100%; }
 
 .stripe-secure { display:flex;align-items:center;gap:6px;justify-content:center;margin-top:12px;font-size:.72rem;color:var(--muted); }
 .stripe-secure span:first-child { font-size:.9rem; }
+
+/* ══ SEARCH OVERLAY ══ */
+.srch-bg  { position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;backdrop-filter:blur(4px); }
+.srch-box { position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:600px;background:#fff;z-index:210;border-radius:0 0 20px 20px;box-shadow:0 8px 32px rgba(0,0,0,.18);display:flex;flex-direction:column;max-height:85vh; }
+.srch-hd  { display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0; }
+.srch-input-wrap { flex:1;display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:10px;padding:0 12px;height:42px; }
+.srch-icon  { font-size:1rem;flex-shrink:0; }
+.srch-input { flex:1;border:none;background:none;outline:none;font-size:.93rem;font-family:inherit; }
+.srch-clear { background:none;border:none;color:var(--muted);font-size:.9rem;cursor:pointer;padding:2px 4px; }
+.srch-cancel { color:var(--red);font-size:.82rem;font-weight:700;background:none;border:none;cursor:pointer;white-space:nowrap;padding:0 4px; }
+.srch-results { overflow-y:auto;padding:8px 10px; }
+.srch-empty { text-align:center;padding:32px 0;color:var(--muted); }
+.srch-empty-ico { font-size:2.2rem;margin-bottom:8px; }
+.srch-item { display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:10px;cursor:pointer;transition:background .1s; }
+.srch-item:hover { background:var(--bg); }
+.srch-item:active { background:var(--border); }
+.srch-item-img  { width:48px;height:48px;border-radius:8px;background:var(--bg);overflow:hidden;flex-shrink:0;position:relative;display:flex;align-items:center;justify-content:center; }
+.srch-item-emoji { font-size:1.6rem;position:absolute; }
+.srch-item-img img { width:100%;height:100%;object-fit:cover;position:relative;z-index:1; }
+.srch-item-info { flex:1;min-width:0; }
+.srch-item-name { font-size:.85rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.srch-item-desc { font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.srch-item-right { display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0; }
+.srch-item-price { font-size:.9rem;font-weight:800;color:var(--text); }
+.srch-item-add   { width:24px;height:24px;border-radius:12px;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:300; }
+
+/* ══ SIDE MENU IMPROVEMENTS ══ */
+.side-location { display:flex;align-items:flex-start;gap:10px;padding:12px var(--px);background:#fff9f0;border-bottom:1px solid var(--border);text-decoration:none;color:inherit; }
+.side-location-pin  { font-size:1.1rem;margin-top:1px;flex-shrink:0; }
+.side-location-addr { font-size:.82rem;font-weight:700;color:var(--text);line-height:1.4; }
+.side-location-open { font-size:.72rem;color:var(--red);margin-top:2px; }
+.side-hours { padding:9px var(--px);font-size:.76rem;color:var(--muted);border-bottom:1px solid var(--border); }
+.side-navbtn-e { width:20px;text-align:center;flex-shrink:0; }
+
+/* ══ FOOTER IMPROVEMENTS ══ */
+.footer-link--a  { display:block;text-decoration:none;color:inherit;transition:color .15s; }
+.footer-link--a:hover { color:#fff; }
+.footer-addr  { line-height:1.4; }
+.footer-hours { color:rgba(255,255,255,.5); }
+.footer-socials { display:flex;gap:10px;margin-top:10px; }
+.footer-social { color:rgba(255,255,255,.6);font-size:.76rem;text-decoration:none;transition:color .15s; }
+.footer-social:hover { color:#fff; }
+.footer-map { display:block;text-decoration:none;background:rgba(255,255,255,.08);border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.1);transition:background .2s; }
+.footer-map:hover { background:rgba(255,255,255,.14); }
+.footer-map-inner { padding:12px;display:flex;align-items:flex-start;gap:10px; }
+.footer-map-pin  { font-size:1.3rem;flex-shrink:0; }
+.footer-map-name { color:#fff;font-weight:700;font-size:.85rem;margin-bottom:2px; }
+.footer-map-addr { color:rgba(255,255,255,.7);font-size:.75rem;margin-bottom:4px;line-height:1.4; }
+.footer-map-open { color:var(--red);font-size:.72rem;font-weight:700; }

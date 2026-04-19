@@ -6,6 +6,7 @@ const PROMOS = [
   { icon:'🎁', text:{ ru:'Бесплатная доставка от €25', en:'Free delivery from €25', lv:'Bezmaksas piegāde no €25' } },
   { icon:'⭐', text:{ ru:'Свежие роллы каждый день', en:'Fresh rolls every day', lv:'Svaigas ruletes katru dienu' } },
   { icon:'📞', text:{ ru:'Заказ по телефону: +371 XX XXX XXX', en:'Order by phone: +371 XX XXX XXX', lv:'Pasūtīt pa tālruni: +371 XX XXX XXX' } },
+  { icon:'📍', text:{ ru:'Lokomotīves iela 100, Rīga', en:'Lokomotīves iela 100, Rīga', lv:'Lokomotīves iela 100, Rīga' } },
 ];
 
 export default function PromoBar() {

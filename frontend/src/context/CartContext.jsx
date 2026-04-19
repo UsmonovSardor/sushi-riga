@@ -1,10 +1,20 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+
 const Ctx = createContext(null);
 export const useCart = () => useContext(Ctx);
 
+const LS_KEY = 'sr_cart';
+
 export function CartProvider({ children }) {
-  const [cart, setCart]     = useState([]);
+  const [cart, setCart] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch { return []; }
+  });
   const [isOpen, setIsOpen] = useState(false);
+
+  // Sync to localStorage on every change
+  useEffect(() => {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(cart)); } catch {}
+  }, [cart]);
 
   const add = useCallback((item) => {
     setCart(prev => {
@@ -22,12 +32,15 @@ export function CartProvider({ children }) {
     );
   }, []);
 
-  const clear = useCallback(() => setCart([]), []);
+  const clear = useCallback(() => {
+    setCart([]);
+    try { localStorage.removeItem(LS_KEY); } catch {}
+  }, []);
 
-  const subtotal  = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const delivery  = subtotal >= 25 ? 0 : subtotal > 0 ? 2 : 0;
-  const total     = subtotal + delivery;
-  const count     = cart.reduce((s, i) => s + i.qty, 0);
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const delivery = subtotal > 0 ? (subtotal >= 25 ? 0 : 2) : 0;
+  const total    = subtotal + delivery;
+  const count    = cart.reduce((s, i) => s + i.qty, 0);
 
   return (
     <Ctx.Provider value={{ cart, add, change, clear, subtotal, delivery, total, count, isOpen, setIsOpen }}>
