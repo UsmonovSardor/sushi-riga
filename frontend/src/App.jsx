@@ -34,7 +34,7 @@ export default function App() {
         <CategoryNav />
         <SideMenu isOpen={sideOpen} onClose={() => setSideOpen(false)} />
         <HeroSlider />
-        <main className="main-wrap">
+        <main className="main">
           {SECTIONS.map(s => (
             <MenuSection key={s.id} sectionId={s.id} emoji={s.emoji} titleKey={s.key} cats={s.cats} />
           ))}
