@@ -29,13 +29,18 @@ const SECTIONS = [
   { id:'drinks',  emoji:'🥤', key:'c_drinks',  cats:['drinks'] },
 ];
 
+// Admin route check — works both with /admin path and #admin hash
+const isAdmin = () =>
+  window.location.pathname.startsWith('/admin') ||
+  window.location.hash === '#admin';
+
 function MainApp() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [sideOpen,   setSideOpen]   = useState(false);
   const [orderOpen,  setOrderOpen]  = useState(false);
   const [authOpen,   setAuthOpen]   = useState(false);
 
-  if (window.location.pathname === '/admin') return <AdminPanel />;
+  if (isAdmin()) return <AdminPanel />;
 
   return (
     <>
@@ -49,25 +54,14 @@ function MainApp() {
       <HeroSlider />
       <main className="main">
         {SECTIONS.map(s => (
-          <MenuSection
-            key={s.id}
-            sectionId={s.id}
-            emoji={s.emoji}
-            titleKey={s.key}
-            cats={s.cats}
-          />
+          <MenuSection key={s.id} sectionId={s.id} emoji={s.emoji} titleKey={s.key} cats={s.cats} />
         ))}
       </main>
       <Footer />
-
-      {/* Floating bottom cart bar */}
       <CartBar onCheckout={() => setOrderOpen(true)} />
-
-      {/* Cart drawer */}
-      <Cart onCheckout={() => setOrderOpen(true)} />
-
-      <OrderModal  isOpen={orderOpen}  onClose={() => setOrderOpen(false)} />
-      <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      <Cart    onCheckout={() => setOrderOpen(true)} />
+      <OrderModal    isOpen={orderOpen}   onClose={() => setOrderOpen(false)} />
+      <SearchOverlay isOpen={searchOpen}  onClose={() => setSearchOpen(false)} />
       {authOpen && <AuthModal onClose={() => setAuthOpen(false)} />}
     </>
   );

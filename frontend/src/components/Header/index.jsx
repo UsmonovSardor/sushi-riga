@@ -16,20 +16,17 @@ export default function Header({ onSearch, onMenu, onAuth }) {
     <header className="header" onClick={closeAll}>
       <div className="header-in">
 
-        {/* ── LEFT: 🍣 + 🔍 + SUSHI RĪGA ── */}
+        {/* ── LEFT: ☰ + 🍣 + SUSHI RĪGA ── */}
         <div className="h-left">
-          <span className="logo-emoji">🍣</span>
-          <button
-            className="h-search-icon"
-            onClick={e => { e.stopPropagation(); onSearch(); }}
-            aria-label="Поиск"
-          >
-            🔍
+          {/* ☰ Burger — leftmost, before logo */}
+          <button className="h-burger" onClick={e => { e.stopPropagation(); onMenu(); }} aria-label="Меню">
+            <span /><span /><span />
           </button>
+          <span className="logo-emoji">🍣</span>
           <span className="logo-txt">SUSHI <em>RĪGA</em></span>
         </div>
 
-        {/* ── RIGHT: 🇷🇺 + 👤 + ☰ ── */}
+        {/* ── RIGHT: 🇷🇺 + 🔍 + 👤 ── */}
         <div className="h-right">
 
           {/* Language */}
@@ -43,11 +40,8 @@ export default function Header({ onSearch, onMenu, onAuth }) {
             {langOpen && (
               <div className="lang-dd">
                 {Object.entries(FLAGS).map(([l, f]) => (
-                  <div
-                    key={l}
-                    className={'lang-row' + (l === lang ? ' on' : '')}
-                    onClick={() => { setLang(l); setLangOpen(false); }}
-                  >
+                  <div key={l} className={'lang-row' + (l === lang ? ' on' : '')}
+                    onClick={() => { setLang(l); setLangOpen(false); }}>
                     {f} {l.toUpperCase()}
                   </div>
                 ))}
@@ -55,15 +49,17 @@ export default function Header({ onSearch, onMenu, onAuth }) {
             )}
           </div>
 
-          {/* 👤 User — right side */}
+          {/* Search */}
+          <button className="hbtn" onClick={e => { e.stopPropagation(); onSearch(); }} aria-label="Поиск">
+            🔍
+          </button>
+
+          {/* 👤 User */}
           <div className="lang-wrap" onClick={e => e.stopPropagation()}>
             {user ? (
               <>
-                <button
-                  className="h-avatar"
-                  onClick={() => { setUserOpen(o => !o); setLangOpen(false); }}
-                  aria-label="Профиль"
-                >
+                <button className="h-avatar"
+                  onClick={() => { setUserOpen(o => !o); setLangOpen(false); }}>
                   {user.name.charAt(0).toUpperCase()}
                 </button>
                 {userOpen && (
@@ -79,19 +75,12 @@ export default function Header({ onSearch, onMenu, onAuth }) {
                 )}
               </>
             ) : (
-              <button
-                className="hbtn"
-                onClick={() => { onAuth(); closeAll(); }}
-                aria-label="Войти"
-                title="Войти / Регистрация"
-              >
+              <button className="hbtn" onClick={() => { onAuth(); closeAll(); }} title="Войти">
                 👤
               </button>
             )}
           </div>
 
-          {/* ☰ Burger */}
-          <button className="hbtn" onClick={onMenu} aria-label="Меню">☰</button>
         </div>
       </div>
     </header>
