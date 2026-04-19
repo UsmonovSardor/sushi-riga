@@ -1,11 +1,9 @@
 import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import T from '../../i18n/translations';
-
 export default function Footer() {
   const { lang } = useLanguage();
   const t = T[lang];
-
   return (
     <footer className="footer">
       <div className="footer-inner">
@@ -17,7 +15,7 @@ export default function Footer() {
           <div>
             <div className="f-head">{t.c_rolls}</div>
             {['hit','sets','cold','hot','drinks'].map(k => (
-              <div key={k} className="f-link">{t['c_' + k]}</div>
+              <div key={k} className="f-link">{t['c_'+k]}</div>
             ))}
           </div>
           <div>
