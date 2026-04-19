@@ -6,31 +6,31 @@ export default function Footer() {
   const t = T[lang];
   return (
     <footer className="footer">
-      <div className="footer-inner">
+      <div className="footer-wrap">
         <div className="footer-grid">
           <div>
-            <div className="f-logo">🍣 SUSHI <span>RĪGA</span></div>
-            <p className="f-desc">{t.f_desc}</p>
+            <div className="footer-logo">🍣 SUSHI <span>RĪGA</span></div>
+            <div className="footer-desc">{t.f_desc}</div>
           </div>
           <div>
-            <div className="f-head">{t.c_rolls}</div>
-            {['hit','sets','cold','hot','drinks'].map(k => (
-              <div key={k} className="f-link">{t['c_'+k]}</div>
+            <div className="footer-h">{t.c_rolls}</div>
+            {['hit','sets','cold','hot','drinks'].map(k=>(
+              <div key={k} className="footer-link">{t['c_'+k]}</div>
             ))}
           </div>
           <div>
-            <div className="f-head">{t.s_contacts}</div>
-            <div className="f-link">📞 +371 XX XXX XXX</div>
-            <div className="f-link">✉️ info@sushiriga.lv</div>
-            <div className="f-link">📍 {t.city}</div>
+            <div className="footer-h">{t.s_contacts}</div>
+            <div className="footer-link">📞 +371 XX XXX XXX</div>
+            <div className="footer-link">✉️ info@sushiriga.lv</div>
+            <div className="footer-link">📍 {t.city}</div>
           </div>
           <div>
-            <div className="f-head">11:00 – 23:00</div>
-            <div className="f-link">Пн–Пт: 11:00–22:30</div>
-            <div className="f-link">Сб–Вс: 11:00–23:00</div>
+            <div className="footer-h">11:00 – 23:00</div>
+            <div className="footer-link">Пн–Пт: 11:00–22:30</div>
+            <div className="footer-link">Сб–Вс: 11:00–23:00</div>
           </div>
         </div>
-        <div className="f-bottom">
+        <div className="footer-bottom">
           <span>© 2026 Sushi Rīga. {t.f_rights}</span>
           <span>Made with ❤️ in Rīga</span>
         </div>
