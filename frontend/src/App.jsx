@@ -38,9 +38,11 @@ function MainApp() {
   const [authOpen,   setAuthOpen]   = useState(false);
   const [orderOpen,  setOrderOpen]  = useState(false);
 
+  const openCart  = useCallback(() => setCartOpen(true),  []);
+  const closeCart = useCallback(() => setCartOpen(false), []);
   const openOrder = useCallback(() => {
     setCartOpen(false);
-    setTimeout(() => setOrderOpen(true), 50);
+    setTimeout(() => setOrderOpen(true), 80);
   }, []);
 
   if (window.location.pathname.startsWith('/admin')) return <AdminPage />;
@@ -48,13 +50,14 @@ function MainApp() {
   return (
     <>
       <Header
-        onCartOpen  ={() => setCartOpen(true)}
+        onCartOpen  ={openCart}
         onMenuOpen  ={() => setMenuOpen(true)}
         onSearchOpen={() => setSearchOpen(true)}
         onAuthOpen  ={() => setAuthOpen(true)}
       />
       <PromoBar />
       <CategoryNav />
+
       <main className="main">
         <HeroSlider />
         {SECTIONS.map(s => (
@@ -67,10 +70,18 @@ function MainApp() {
           />
         ))}
       </main>
+
       <Footer />
 
-      <CartBar onCheckout={openOrder} />
-      <Cart isOpen={cartOpen} onClose={() => setCartOpen(false)} onCheckout={openOrder} />
+      {/* Floating cart bar */}
+      <CartBar onOpen={openCart} onCheckout={openOrder} />
+
+      {/* Drawers & Modals */}
+      <Cart
+        isOpen    ={cartOpen}
+        onClose   ={closeCart}
+        onCheckout={openOrder}
+      />
       <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
       <SideMenu      isOpen={menuOpen}   onClose={() => setMenuOpen(false)} />
       {authOpen  && <AuthModal  onClose={() => setAuthOpen(false)} />}

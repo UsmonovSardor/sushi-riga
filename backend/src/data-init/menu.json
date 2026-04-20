@@ -1,0 +1,2054 @@
+[
+  {
+    "id": 1,
+    "cat": "cold",
+    "hit": true,
+    "e": "🍣",
+    "img": "https://lh3.googleusercontent.com/d/1yznpnPsPnbBuT4ypnNnAbLH52e4yV-dX",
+    "price": 8.8,
+    "old": null,
+    "name": {
+      "en": "Philadelphia Classic",
+      "ru": "Филадельфия Классик",
+      "lv": "Philadelphia Classic"
+    },
+    "desc": {
+      "en": "Cheese, cucumber, salmon, rice, nori",
+      "ru": "Сыр, огурец, лосось, рис, нори",
+      "lv": "Cheese, cucumber, salmon, rice, nori"
+    }
+  },
+  {
+    "id": 2,
+    "cat": "cold",
+    "hit": false,
+    "e": "🍣",
+    "img": "https://lh3.googleusercontent.com/d/1dUTKLETFkrSiao3bX0Eqs37mzgT39FHm",
+    "price": 9.0,
+    "old": null,
+    "name": {
+      "en": "Philadelphia Maki",
+      "ru": "Филадельфия Маки",
+      "lv": "Philadelphia Maki"
+    },
+    "desc": {
+      "en": "Cheese, cucumber, avocado, salmon, rice, nori",
+      "ru": "Сыр, огурец, авокадо, лосось, рис, нори",
+      "lv": "Cheese, cucumber, avocado, salmon, rice, nori"
+    }
+  },
+  {
+    "id": 3,
+    "cat": "cold",
+    "hit": false,
+    "e": "🍣",
+    "img": "https://lh3.googleusercontent.com/d/1dUTKLETFkrSiao3bX0Eqs37mzgT39FHm",
+    "price": 8.7,
+    "old": null,
+    "name": {
+      "en": "Philadelphia Sesame",
+      "ru": "Филадельфия Сезам",
+      "lv": "Philadelphia Sesame"
+    },
+    "desc": {
+      "en": "Cheese, cucumber, salmon, avocado, sesame",
+      "ru": "Сыр, огурец, лосось, авокадо, кунжут",
+      "lv": "Cheese, cucumber, salmon, avocado, sesame"
+    }
+  },
+  {
+    "id": 4,
+    "cat": "cold",
+    "hit": false,
+    "e": "🍣",
+    "img": "https://lh3.googleusercontent.com/d/1j8BRPTSuQXupHppWxjt_9eBdI_K0W8rt",
+    "price": 9.0,
+    "old": null,
+    "name": {
+      "en": "Philadelphia Gold",
+      "ru": "Филадельфия Голд",
+      "lv": "Philadelphia Gold"
+    },
+    "desc": {
+      "en": "Cheese, cucumber, salmon, avocado, masago",
+      "ru": "Сыр, огурец, лосось, авокадо, масаго",
+      "lv": "Cheese, cucumber, salmon, avocado, masago"
+    }
+  },
+  {
+    "id": 5,
+    "cat": "cold",
+    "hit": false,
+    "e": "🥢",
+    "img": "https://lh3.googleusercontent.com/d/1yznpnPsPnbBuT4ypnNnAbLH52e4yV-dX",
+    "price": 9.5,
+    "old": null,
+    "name": {
+      "en": "Unagi Philadelphia",
+      "ru": "Унаги Филадельфия",
+      "lv": "Unagi Philadelphia"
+    },
+    "desc": {
+      "en": "Cheese, cucumber, avocado, eel, rice, nori",
+      "ru": "Сыр, огурец, авокадо, угорь, рис, нори",
+      "lv": "Cheese, cucumber, avocado, eel, rice, nori"
+    }
+  },
+  {
+    "id": 6,
+    "cat": "cold",
+    "hit": false,
+    "e": "🐟",
+    "img": "https://lh3.googleusercontent.com/d/1uOvUn9lwuICu7tBHF0_WSRu12dx5X1zb",
+    "price": 8.5,
+    "old": null,
+    "name": {
+      "en": "Tuna Maki",
+      "ru": "Туна Маки",
+      "lv": "Tuna Maki"
+    },
+    "desc": {
+      "en": "Cheese, cucumber, avocado, tuna, rice, nori",
+      "ru": "Сыр, огурец, авокадо, тунец, рис, нори",
+      "lv": "Cheese, cucumber, avocado, tuna, rice, nori"
+    }
+  },
+  {
+    "id": 7,
+    "cat": "cold",
+    "hit": false,
+    "e": "🥢",
+    "img": "https://lh3.googleusercontent.com/d/1dUTKLETFkrSiao3bX0Eqs37mzgT39FHm",
+    "price": 8.9,
+    "old": null,
+    "name": {
+      "en": "Unagi Sesame",
+      "ru": "Унаги Сезам",
+      "lv": "Unagi Sesame"
+    },
+    "desc": {
+      "en": "Cheese, cucumber, avocado, eel, sesame",
+      "ru": "Сыр, огурец, авокадо, угорь, кунжут",
+      "lv": "Cheese, cucumber, avocado, eel, sesame"
+    }
+  },
+  {
+    "id": 8,
+    "cat": "cold",
+    "hit": false,
+    "e": "🍣",
+    "img": "https://lh3.googleusercontent.com/d/1iZTIe_Loa-VmAsfmrjcHy_thFNlTM_BL",
+    "price": 8.8,
+    "old": null,
+    "name": {
+      "en": "Salmon Tartar",
+      "ru": "Лосось Тартар",
+      "lv": "Salmon Tartar"
+    },
+    "desc": {
+      "en": "Cheese, salmon, cucumber, spicy sauce, nori",
+      "ru": "Сыр, лосось, огурец, острый соус, нори",
+      "lv": "Cheese, salmon, cucumber, spicy sauce, nori"
+    }
+  },
+  {
+    "id": 9,
+    "cat": "cold",
+    "hit": false,
+    "e": "🦐",
+    "img": "https://lh3.googleusercontent.com/d/1WQoGX1uDIk_Indmf0cyXYHBSsalz6lx-",
+    "price": 8.9,
+    "old": null,
+    "name": {
+      "en": "Urban Shrimp",
+      "ru": "Урбан Шримп",
+      "lv": "Urban Shrimp"
+    },
+    "desc": {
+      "en": "Cheese, shrimp, paprika, cucumber, sesame",
+      "ru": "Сыр, креветка, паприка, огурец, кунжут",
+      "lv": "Cheese, shrimp, paprika, cucumber, sesame"
+    }
+  },
+  {
+    "id": 10,
+    "cat": "cold",
+    "hit": true,
+    "e": "🦀",
+    "img": "https://lh3.googleusercontent.com/d/1-npkdgrs9MeM4KRYyB-8Yn3sXJ6SmjEV",
+    "price": 8.5,
+    "old": null,
+    "name": {
+      "en": "California",
+      "ru": "Калифорния",
+      "lv": "Kalifornija"
+    },
+    "desc": {
+      "en": "Crab, cucumber, avocado, masago, rice, nori",
+      "ru": "Краб, огурец, авокадо, масаго, рис, нори",
+      "lv": "Crab, cucumber, avocado, masago, rice, nori"
+    }
+  },
+  {
+    "id": 11,
+    "cat": "cold",
+    "hit": false,
+    "e": "🥑",
+    "img": "https://lh3.googleusercontent.com/d/1iZTIe_Loa-VmAsfmrjcHy_thFNlTM_BL",
+    "price": 8.8,
+    "old": null,
+    "name": {
+      "en": "Avocado Salmon",
+      "ru": "Авокадо Лосось",
+      "lv": "Avokado Lasis"
+    },
+    "desc": {
+      "en": "Cheese, avocado, salmon, rice, nori",
+      "ru": "Сыр, авокадо, лосось, рис, нори",
+      "lv": "Cheese, avocado, salmon, rice, nori"
+    }
+  },
+  {
+    "id": 12,
+    "cat": "cold",
+    "hit": false,
+    "e": "🍣",
+    "img": "https://lh3.googleusercontent.com/d/1iZTIe_Loa-VmAsfmrjcHy_thFNlTM_BL",
+    "price": 8.5,
+    "old": null,
+    "name": {
+      "en": "Cooked Salmon",
+      "ru": "Варёный Лосось",
+      "lv": "Vārīts Lasis"
+    },
+    "desc": {
+      "en": "Cheese, cucumber, cooked salmon, rice, nori",
+      "ru": "Сыр, огурец, варёный лосось, рис, нори",
+      "lv": "Cheese, cucumber, cooked salmon, rice, nori"
+    }
+  },
+  {
+    "id": 13,
+    "cat": "cold",
+    "hit": false,
+    "e": "🥚",
+    "img": "https://lh3.googleusercontent.com/d/1nP1hAykEPXJY61BPtHDW2iR9Mc55FFJD",
+    "price": 8.5,
+    "old": null,
+    "name": {
+      "en": "Tomago Masago",
+      "ru": "Томаго Масаго",
+      "lv": "Tomago Masago"
+    },
+    "desc": {
+      "en": "Cheese, cucumber, Japanese omelet, masago, salmon",
+      "ru": "Сыр, огурец, японский омлет, масаго, лосось",
+      "lv": "Cheese, cucumber, Japanese omelet, masago, salmon"
+    }
+  },
+  {
+    "id": 14,
+    "cat": "cold",
+    "hit": false,
+    "e": "🥒",
+    "img": "https://lh3.googleusercontent.com/d/1hp_WEnSTBX64bC5w2shxq51EJei3gzJV",
+    "price": 4.2,
+    "old": null,
+    "name": {
+      "en": "Kappa Maki",
+      "ru": "Каппа Маки",
+      "lv": "Kappa Maki"
+    },
+    "desc": {
+      "en": "Sesame, cucumber, rice, nori",
+      "ru": "Кунжут, огурец, рис, нори",
+      "lv": "Sesame, cucumber, rice, nori"
+    }
+  },
+  {
+    "id": 15,
+    "cat": "cold",
+    "hit": false,
+    "e": "🥑",
+    "img": "https://lh3.googleusercontent.com/d/1kUXoOYxW2HP-yjRQ54xUIpxpv5EmiHHf",
+    "price": 4.5,
+    "old": null,
+    "name": {
+      "en": "Avocado Maki",
+      "ru": "Авокадо Маки",
+      "lv": "Avokado Maki"
+    },
+    "desc": {
+      "en": "Sesame, avocado, rice, nori",
+      "ru": "Кунжут, авокадо, рис, нори",
+      "lv": "Sesame, avocado, rice, nori"
+    }
+  },
+  {
+    "id": 16,
+    "cat": "cold",
+    "hit": false,
+    "e": "🍣",
+    "img": "https://lh3.googleusercontent.com/d/1iZTIe_Loa-VmAsfmrjcHy_thFNlTM_BL",
+    "price": 5.0,
+    "old": null,
+    "name": {
+      "en": "Sake Maki",
+      "ru": "Саке Маки",
+      "lv": "Sake Maki"
+    },
+    "desc": {
+      "en": "Salmon, rice, nori",
+      "ru": "Лосось, рис, нори",
+      "lv": "Salmon, rice, nori"
+    }
+  },
+  {
+    "id": 17,
+    "cat": "cold",
+    "hit": false,
+    "e": "🍣",
+    "img": "https://lh3.googleusercontent.com/d/1iZTIe_Loa-VmAsfmrjcHy_thFNlTM_BL",
+    "price": 5.2,
+    "old": null,
+    "name": {
+      "en": "Sake Cheese",
+      "ru": "Саке Сыр",
+      "lv": "Sake Siers"
+    },
+    "desc": {
+      "en": "Salmon, cheese, rice, nori",
+      "ru": "Лосось, сыр, рис, нори",
+      "lv": "Salmon, cheese, rice, nori"
+    }
+  },
+  {
+    "id": 18,
+    "cat": "cold",
+    "hit": false,
+    "e": "🐟",
+    "img": "https://lh3.googleusercontent.com/d/1uOvUn9lwuICu7tBHF0_WSRu12dx5X1zb",
+    "price": 5.2,
+    "old": null,
+    "name": {
+      "en": "Tuna Maki",
+      "ru": "Туна Маки",
+      "lv": "Tunča Maki"
+    },
+    "desc": {
+      "en": "Tuna, cucumber, rice, nori",
+      "ru": "Тунец, огурец, рис, нори",
+      "lv": "Tuna, cucumber, rice, nori"
+    }
+  },
+  {
+    "id": 19,
+    "cat": "cold",
+    "hit": false,
+    "e": "🥢",
+    "img": "https://lh3.googleusercontent.com/d/1nP1hAykEPXJY61BPtHDW2iR9Mc55FFJD",
+    "price": 5.5,
+    "old": null,
+    "name": {
+      "en": "Unagi Maki",
+      "ru": "Унаги Маки",
+      "lv": "Unagi Maki"
+    },
+    "desc": {
+      "en": "Cucumber, eel, rice, nori",
+      "ru": "Огурец, угорь, рис, нори",
+      "lv": "Cucumber, eel, rice, nori"
+    }
+  },
+  {
+    "id": 20,
+    "cat": "cold",
+    "hit": false,
+    "e": "🦐",
+    "img": "https://lh3.googleusercontent.com/d/1WQoGX1uDIk_Indmf0cyXYHBSsalz6lx-",
+    "price": 6.0,
+    "old": null,
+    "name": {
+      "en": "Ebi Spicy",
+      "ru": "Эби Спайси",
+      "lv": "Ebi Spicy"
+    },
+    "desc": {
+      "en": "Fried shrimp, spicy sauce, rice, nori",
+      "ru": "Жареная креветка, острый соус, рис, нори",
+      "lv": "Fried shrimp, spicy sauce, rice, nori"
+    }
+  },
+  {
+    "id": 21,
+    "cat": "cold",
+    "hit": true,
+    "e": "🦐",
+    "img": "https://lh3.googleusercontent.com/d/1OO9WG6P9Kvnd-imA-eVAUvhw7Kug2Z1H",
+    "price": 6.5,
+    "old": null,
+    "name": {
+      "en": "Ebi Cheese",
+      "ru": "Эби Сыр",
+      "lv": "Ebi Siers"
+    },
+    "desc": {
+      "en": "Fried shrimp, cheese, rice, nori",
+      "ru": "Жареная креветка, сыр, рис, нори",
+      "lv": "Fried shrimp, cheese, rice, nori"
+    }
+  },
+  {
+    "id": 22,
+    "cat": "cold",
+    "hit": false,
+    "e": "🥒",
+    "img": "https://lh3.googleusercontent.com/d/1dOUOKCEvHg2SIgFu4o3XRSIF60ZFKO18",
+    "price": 6.2,
+    "old": null,
+    "name": {
+      "en": "Kappa Avocado",
+      "ru": "Каппа Авокадо",
+      "lv": "Kappa Avokado"
+    },
+    "desc": {
+      "en": "Avocado, cucumber, sesame, rice, nori",
+      "ru": "Авокадо, огурец, кунжут, рис, нори",
+      "lv": "Avocado, cucumber, sesame, rice, nori"
+    }
+  },
+  {
+    "id": 23,
+    "cat": "cold",
+    "hit": false,
+    "e": "🥦",
+    "img": "https://lh3.googleusercontent.com/d/1kUXoOYxW2HP-yjRQ54xUIpxpv5EmiHHf",
+    "price": 6.2,
+    "old": null,
+    "name": {
+      "en": "Veggy Maki",
+      "ru": "Вегги Маки",
+      "lv": "Veggy Maki"
+    },
+    "desc": {
+      "en": "Cucumber, paprika, tomato, sesame, rice, nori",
+      "ru": "Огурец, паприка, томат, кунжут, рис, нори",
+      "lv": "Cucumber, paprika, tomato, sesame, rice, nori"
+    }
+  },
+  {
+    "id": 24,
+    "cat": "cold",
+    "hit": false,
+    "e": "🌿",
+    "img": "https://lh3.googleusercontent.com/d/1kUXoOYxW2HP-yjRQ54xUIpxpv5EmiHHf",
+    "price": 6.4,
+    "old": null,
+    "name": {
+      "en": "Wakame Maki",
+      "ru": "Вакаме Маки",
+      "lv": "Wakame Maki"
+    },
+    "desc": {
+      "en": "Cucumber, paprika, tomato, sesame, wakame",
+      "ru": "Огурец, паприка, томат, кунжут, вакаме",
+      "lv": "Cucumber, paprika, tomato, sesame, wakame"
+    }
+  },
+  {
+    "id": 25,
+    "cat": "cold",
+    "hit": true,
+    "e": "🍗",
+    "img": "https://lh3.googleusercontent.com/d/1T-aOYeAbHwQjXmwLvIWmakX4B3HksKxp",
+    "price": 7.9,
+    "old": null,
+    "name": {
+      "en": "Chicken Sesame",
+      "ru": "Чикен Сезам",
+      "lv": "Chicken Sesame"
+    },
+    "desc": {
+      "en": "Cheese, tomato, chicken, sesame, unagi sauce",
+      "ru": "Сыр, томат, курица, кунжут, соус унаги",
+      "lv": "Cheese, tomato, chicken, sesame, unagi sauce"
+    }
+  },
+  {
+    "id": 26,
+    "cat": "cold",
+    "hit": true,
+    "e": "🍗",
+    "img": "https://lh3.googleusercontent.com/d/1c_XLNW6g9_ncNg0tGRmHKskB77pB1LjQ",
+    "price": 8.2,
+    "old": null,
+    "name": {
+      "en": "Golden Chicken",
+      "ru": "Голден Чикен",
+      "lv": "Golden Chicken"
+    },
+    "desc": {
+      "en": "Cheese, paprika, chicken, cooked onion",
+      "ru": "Сыр, паприка, курица, жареный лук",
+      "lv": "Cheese, paprika, chicken, cooked onion"
+    }
+  },
+  {
+    "id": 27,
+    "cat": "cold",
+    "hit": false,
+    "e": "🌶️",
+    "img": "https://lh3.googleusercontent.com/d/1WQoGX1uDIk_Indmf0cyXYHBSsalz6lx-",
+    "price": 5.2,
+    "old": null,
+    "name": {
+      "en": "Spicy Sake Maki",
+      "ru": "Спайси Саке Маки",
+      "lv": "Spicy Sake Maki"
+    },
+    "desc": {
+      "en": "Salmon, spicy sauce, rice, nori",
+      "ru": "Лосось, острый соус, рис, нори",
+      "lv": "Salmon, spicy sauce, rice, nori"
+    }
+  },
+  {
+    "id": 28,
+    "cat": "cold",
+    "hit": false,
+    "e": "🦐",
+    "img": "https://lh3.googleusercontent.com/d/1iZTIe_Loa-VmAsfmrjcHy_thFNlTM_BL",
+    "price": 9.0,
+    "old": null,
+    "name": {
+      "en": "Torpedo Salmon",
+      "ru": "Торпедо Лосось",
+      "lv": "Torpedo Lasis"
+    },
+    "desc": {
+      "en": "Fried shrimp, cheese, cucumber, salmon",
+      "ru": "Жареная креветка, сыр, огурец, лосось",
+      "lv": "Fried shrimp, cheese, cucumber, salmon"
+    }
+  },
+  {
+    "id": 29,
+    "cat": "cold",
+    "hit": true,
+    "e": "🌊",
+    "img": "https://lh3.googleusercontent.com/d/1i1rbK0wUM-BZFJOucXjOh6El7pewbeMl",
+    "price": 9.0,
+    "old": null,
+    "name": {
+      "en": "Ocean Duo",
+      "ru": "Оушен Дуо",
+      "lv": "Ocean Duo"
+    },
+    "desc": {
+      "en": "Shrimp, salmon, cheese, masago, rice, nori",
+      "ru": "Креветка, лосось, сыр, масаго, рис, нори",
+      "lv": "Shrimp, salmon, cheese, masago, rice, nori"
+    }
+  },
+  {
+    "id": 30,
+    "cat": "cold",
+    "hit": false,
+    "e": "🍣",
+    "img": "https://lh3.googleusercontent.com/d/1iZTIe_Loa-VmAsfmrjcHy_thFNlTM_BL",
+    "price": 9.0,
+    "old": null,
+    "name": {
+      "en": "Salmon Royal",
+      "ru": "Лосось Роял",
+      "lv": "Salmon Royal"
+    },
+    "desc": {
+      "en": "Cooked salmon, cheese, cucumber, avocado",
+      "ru": "Варёный лосось, сыр, огурец, авокадо",
+      "lv": "Cooked salmon, cheese, cucumber, avocado"
+    }
+  },
+  {
+    "id": 31,
+    "cat": "hot",
+    "hit": true,
+    "e": "🔥",
+    "img": "https://lh3.googleusercontent.com/d/1yznpnPsPnbBuT4ypnNnAbLH52e4yV-dX",
+    "price": 9.0,
+    "old": null,
+    "name": {
+      "en": "Hot Philadelphia",
+      "ru": "Хот Филадельфия",
+      "lv": "Hot Philadelphia"
+    },
+    "desc": {
+      "en": "Cucumber, cheese, salmon, masago, rice, nori",
+      "ru": "Огурец, сыр, лосось, масаго, рис, нори",
+      "lv": "Cucumber, cheese, salmon, masago, rice, nori"
+    }
+  },
+  {
+    "id": 32,
+    "cat": "hot",
+    "hit": false,
+    "e": "🔥",
+    "img": "https://lh3.googleusercontent.com/d/1j8BRPTSuQXupHppWxjt_9eBdI_K0W8rt",
+    "price": 8.8,
+    "old": null,
+    "name": {
+      "en": "Hot Philadelphia Gold",
+      "ru": "Хот Филадельфия Голд",
+      "lv": "Hot Philadelphia Gold"
+    },
+    "desc": {
+      "en": "Cucumber, cheese, masago, rice, nori",
+      "ru": "Огурец, сыр, масаго, рис, нори",
+      "lv": "Cucumber, cheese, masago, rice, nori"
+    }
+  },
+  {
+    "id": 33,
+    "cat": "hot",
+    "hit": false,
+    "e": "🔥",
+    "img": "https://lh3.googleusercontent.com/d/1dUTKLETFkrSiao3bX0Eqs37mzgT39FHm",
+    "price": 8.8,
+    "old": null,
+    "name": {
+      "en": "Hot Philadelphia Sesame",
+      "ru": "Хот Филадельфия Сезам",
+      "lv": "Hot Philadelphia Sesame"
+    },
+    "desc": {
+      "en": "Cucumber, cheese, sesame, rice, nori",
+      "ru": "Огурец, сыр, кунжут, рис, нори",
+      "lv": "Cucumber, cheese, sesame, rice, nori"
+    }
+  },
+  {
+    "id": 34,
+    "cat": "hot",
+    "hit": false,
+    "e": "🐟",
+    "img": "https://lh3.googleusercontent.com/d/1uOvUn9lwuICu7tBHF0_WSRu12dx5X1zb",
+    "price": 8.5,
+    "old": null,
+    "name": {
+      "en": "Hot Tuna",
+      "ru": "Хот Туна",
+      "lv": "Hot Tuna"
+    },
+    "desc": {
+      "en": "Cucumber, cheese, tuna, rice, nori",
+      "ru": "Огурец, сыр, тунец, рис, нори",
+      "lv": "Cucumber, cheese, tuna, rice, nori"
+    }
+  },
+  {
+    "id": 35,
+    "cat": "hot",
+    "hit": false,
+    "e": "🦀",
+    "img": "https://lh3.googleusercontent.com/d/1JlME4vmLi5iBQsiizvPurJuzQMy10YZL",
+    "price": 8.2,
+    "old": null,
+    "name": {
+      "en": "Hot California",
+      "ru": "Хот Калифорния",
+      "lv": "Hot Kalifornija"
+    },
+    "desc": {
+      "en": "Cucumber, cheese, masago, rice, nori",
+      "ru": "Огурец, сыр, масаго, рис, нори",
+      "lv": "Cucumber, cheese, masago, rice, nori"
+    }
+  },
+  {
+    "id": 36,
+    "cat": "hot",
+    "hit": false,
+    "e": "🥑",
+    "img": "https://lh3.googleusercontent.com/d/1z--1VPp4QvyQ8zSeUCvVyXvV8-ay-2CY",
+    "price": 6.5,
+    "old": null,
+    "name": {
+      "en": "Hot Avocado",
+      "ru": "Хот Авокадо",
+      "lv": "Hot Avokado"
+    },
+    "desc": {
+      "en": "Avocado, cheese, rice, nori",
+      "ru": "Авокадо, сыр, рис, нори",
+      "lv": "Avocado, cheese, rice, nori"
+    }
+  },
+  {
+    "id": 37,
+    "cat": "hot",
+    "hit": false,
+    "e": "🌿",
+    "img": "https://lh3.googleusercontent.com/d/1z--1VPp4QvyQ8zSeUCvVyXvV8-ay-2CY",
+    "price": 7.2,
+    "old": null,
+    "name": {
+      "en": "Hot Veggy",
+      "ru": "Хот Вегги",
+      "lv": "Hot Veggy"
+    },
+    "desc": {
+      "en": "Cucumber, paprika, tomato, sesame",
+      "ru": "Огурец, паприка, томат, кунжут",
+      "lv": "Cucumber, paprika, tomato, sesame"
+    }
+  },
+  {
+    "id": 38,
+    "cat": "hot",
+    "hit": false,
+    "e": "🍗",
+    "img": "https://lh3.googleusercontent.com/d/1i1DfKVBPHSjeqyl-vHv3nyfKtRIvO0_b",
+    "price": 8.5,
+    "old": null,
+    "name": {
+      "en": "Hot Chicken",
+      "ru": "Хот Чикен",
+      "lv": "Hot Chicken"
+    },
+    "desc": {
+      "en": "Cheese, chicken, tomato, sesame, rice, nori",
+      "ru": "Сыр, курица, томат, кунжут, рис, нори",
+      "lv": "Cheese, chicken, tomato, sesame, rice, nori"
+    }
+  },
+  {
+    "id": 39,
+    "cat": "hot",
+    "hit": false,
+    "e": "🍗",
+    "img": "https://lh3.googleusercontent.com/d/1OIVWaqZ6pijmw7TCj5UZWfI1wym380KH",
+    "price": 8.9,
+    "old": null,
+    "name": {
+      "en": "Hot Golden Chicken",
+      "ru": "Хот Голден Чикен",
+      "lv": "Hot Golden Chicken"
+    },
+    "desc": {
+      "en": "Cheese, chicken, tomato, sesame, rice, nori",
+      "ru": "Сыр, курица, томат, кунжут, рис, нори",
+      "lv": "Cheese, chicken, tomato, sesame, rice, nori"
+    }
+  },
+  {
+    "id": 40,
+    "cat": "hot",
+    "hit": false,
+    "e": "🌊",
+    "img": "https://lh3.googleusercontent.com/d/1i1rbK0wUM-BZFJOucXjOh6El7pewbeMl",
+    "price": 9.0,
+    "old": null,
+    "name": {
+      "en": "Hot Ocean Duo",
+      "ru": "Хот Оушен Дуо",
+      "lv": "Hot Ocean Duo"
+    },
+    "desc": {
+      "en": "Cheese, shrimp, cucumber, masago",
+      "ru": "Сыр, креветка, огурец, масаго",
+      "lv": "Cheese, shrimp, cucumber, masago"
+    }
+  },
+  {
+    "id": 41,
+    "cat": "hot",
+    "hit": false,
+    "e": "🍣",
+    "img": "https://lh3.googleusercontent.com/d/1iZTIe_Loa-VmAsfmrjcHy_thFNlTM_BL",
+    "price": 9.0,
+    "old": null,
+    "name": {
+      "en": "Hot Salmon Royal",
+      "ru": "Хот Лосось Роял",
+      "lv": "Hot Salmon Royal"
+    },
+    "desc": {
+      "en": "Cheese, cooked salmon, cucumber, sesame",
+      "ru": "Сыр, варёный лосось, огурец, кунжут",
+      "lv": "Cheese, cooked salmon, cucumber, sesame"
+    }
+  },
+  {
+    "id": 42,
+    "cat": "hot",
+    "hit": true,
+    "e": "🎎",
+    "img": "https://lh3.googleusercontent.com/d/1KpUIZrdg9nM_1NXzqE7yzI5myONzxWIY",
+    "price": 8.8,
+    "old": null,
+    "name": {
+      "en": "Kyoto",
+      "ru": "Киото",
+      "lv": "Kyoto"
+    },
+    "desc": {
+      "en": "Cheese, avocado, shrimp, masago, rice, nori",
+      "ru": "Сыр, авокадо, креветка, масаго, рис, нори",
+      "lv": "Cheese, avocado, shrimp, masago, rice, nori"
+    }
+  },
+  {
+    "id": 43,
+    "cat": "hot",
+    "hit": false,
+    "e": "🎌",
+    "img": "https://lh3.googleusercontent.com/d/1dUTKLETFkrSiao3bX0Eqs37mzgT39FHm",
+    "price": 7.5,
+    "old": null,
+    "name": {
+      "en": "Kimono",
+      "ru": "Кимоно",
+      "lv": "Kimono"
+    },
+    "desc": {
+      "en": "Cheese, iceberg lettuce, cucumber, sesame",
+      "ru": "Сыр, листья салата, огурец, кунжут",
+      "lv": "Cheese, iceberg lettuce, cucumber, sesame"
+    }
+  },
+  {
+    "id": 44,
+    "cat": "hot",
+    "hit": false,
+    "e": "🏯",
+    "img": "https://lh3.googleusercontent.com/d/1nP1hAykEPXJY61BPtHDW2iR9Mc55FFJD",
+    "price": 8.0,
+    "old": null,
+    "name": {
+      "en": "Imperial",
+      "ru": "Империал",
+      "lv": "Imperial"
+    },
+    "desc": {
+      "en": "Japanese omelet, cucumber, masago, rice",
+      "ru": "Японский омлет, огурец, масаго, рис",
+      "lv": "Japanese omelet, cucumber, masago, rice"
+    }
+  },
+  {
+    "id": 45,
+    "cat": "hot",
+    "hit": false,
+    "e": "⚔️",
+    "img": "https://lh3.googleusercontent.com/d/1JlME4vmLi5iBQsiizvPurJuzQMy10YZL",
+    "price": 7.8,
+    "old": null,
+    "name": {
+      "en": "Samurai",
+      "ru": "Самурай",
+      "lv": "Samurai"
+    },
+    "desc": {
+      "en": "Cheese, cucumber, sesame, rice, nori",
+      "ru": "Сыр, огурец, кунжут, рис, нори",
+      "lv": "Cheese, cucumber, sesame, rice, nori"
+    }
+  },
+  {
+    "id": 46,
+    "cat": "hot",
+    "hit": false,
+    "e": "🥑",
+    "img": "https://lh3.googleusercontent.com/d/1dOUOKCEvHg2SIgFu4o3XRSIF60ZFKO18",
+    "price": 7.5,
+    "old": null,
+    "name": {
+      "en": "Hot Kappa Avocado",
+      "ru": "Хот Каппа Авокадо",
+      "lv": "Hot Kappa Avokado"
+    },
+    "desc": {
+      "en": "Cucumber, avocado, sesame, rice, nori",
+      "ru": "Огурец, авокадо, кунжут, рис, нори",
+      "lv": "Cucumber, avocado, sesame, rice, nori"
+    }
+  },
+  {
+    "id": 47,
+    "cat": "hot",
+    "hit": false,
+    "e": "🦐",
+    "img": "https://lh3.googleusercontent.com/d/1WQoGX1uDIk_Indmf0cyXYHBSsalz6lx-",
+    "price": 8.5,
+    "old": null,
+    "name": {
+      "en": "Shrimp Sesame",
+      "ru": "Шримп Сезам",
+      "lv": "Garnele Sesame"
+    },
+    "desc": {
+      "en": "Cheese, shrimp, cucumber, sesame",
+      "ru": "Сыр, креветка, огурец, кунжут",
+      "lv": "Cheese, shrimp, cucumber, sesame"
+    }
+  },
+  {
+    "id": 48,
+    "cat": "hot",
+    "hit": false,
+    "e": "🍤",
+    "img": "https://lh3.googleusercontent.com/d/1YfbP4VRtmOztAU8RbXyHY-GplpFhHxQR",
+    "price": 9.0,
+    "old": null,
+    "name": {
+      "en": "Tempura King",
+      "ru": "Темпура Кинг",
+      "lv": "Tempura King"
+    },
+    "desc": {
+      "en": "Cheese, salmon, avocado, tempura, panko",
+      "ru": "Сыр, лосось, авокадо, темпура, панко",
+      "lv": "Cheese, salmon, avocado, tempura, panko"
+    }
+  },
+  {
+    "id": 49,
+    "cat": "hot",
+    "hit": false,
+    "e": "🍤",
+    "img": "https://lh3.googleusercontent.com/d/1YfbP4VRtmOztAU8RbXyHY-GplpFhHxQR",
+    "price": 9.0,
+    "old": null,
+    "name": {
+      "en": "Tempura Queen",
+      "ru": "Темпура Куин",
+      "lv": "Tempura Queen"
+    },
+    "desc": {
+      "en": "Cheese, shrimp, avocado, tempura, panko",
+      "ru": "Сыр, креветка, авокадо, темпура, панко",
+      "lv": "Cheese, shrimp, avocado, tempura, panko"
+    }
+  },
+  {
+    "id": 50,
+    "cat": "hot",
+    "hit": false,
+    "e": "🍤",
+    "img": "https://lh3.googleusercontent.com/d/1IlXAA9b7Xlcu4z2f5Y71KvLHI3yTg17r",
+    "price": 8.5,
+    "old": null,
+    "name": {
+      "en": "Tempura Prince",
+      "ru": "Темпура Принц",
+      "lv": "Tempura Prince"
+    },
+    "desc": {
+      "en": "Cheese, chicken, tomato, tempura, panko",
+      "ru": "Сыр, курица, томат, темпура, панко",
+      "lv": "Cheese, chicken, tomato, tempura, panko"
+    }
+  },
+  {
+    "id": 51,
+    "cat": "tempura",
+    "hit": true,
+    "e": "🍤",
+    "img": "https://lh3.googleusercontent.com/d/1YfbP4VRtmOztAU8RbXyHY-GplpFhHxQR",
+    "price": 8.2,
+    "old": null,
+    "name": {
+      "en": "Ebi Tempura",
+      "ru": "Эби Темпура",
+      "lv": "Ebi Tempura"
+    },
+    "desc": {
+      "en": "Cheese, shrimp, avocado, tempura, panko",
+      "ru": "Сыр, креветка, авокадо, темпура, панко",
+      "lv": "Cheese, shrimp, avocado, tempura, panko"
+    }
+  },
+  {
+    "id": 52,
+    "cat": "tempura",
+    "hit": false,
+    "e": "🍣",
+    "img": "https://lh3.googleusercontent.com/d/1YfbP4VRtmOztAU8RbXyHY-GplpFhHxQR",
+    "price": 8.2,
+    "old": null,
+    "name": {
+      "en": "Salmon Tempura",
+      "ru": "Лосось Темпура",
+      "lv": "Lasis Tempura"
+    },
+    "desc": {
+      "en": "Cheese, salmon, avocado, tempura, panko",
+      "ru": "Сыр, лосось, авокадо, темпура, панко",
+      "lv": "Cheese, salmon, avocado, tempura, panko"
+    }
+  },
+  {
+    "id": 53,
+    "cat": "tempura",
+    "hit": false,
+    "e": "🍗",
+    "img": "https://lh3.googleusercontent.com/d/1IlXAA9b7Xlcu4z2f5Y71KvLHI3yTg17r",
+    "price": 8.0,
+    "old": null,
+    "name": {
+      "en": "Chicken Tempura",
+      "ru": "Чикен Темпура",
+      "lv": "Chicken Tempura"
+    },
+    "desc": {
+      "en": "Cheese, chicken, tomato, tempura, panko",
+      "ru": "Сыр, курица, томат, темпура, панко",
+      "lv": "Cheese, chicken, tomato, tempura, panko"
+    }
+  },
+  {
+    "id": 54,
+    "cat": "tempura",
+    "hit": false,
+    "e": "🦀",
+    "img": "https://lh3.googleusercontent.com/d/1YfbP4VRtmOztAU8RbXyHY-GplpFhHxQR",
+    "price": 8.0,
+    "old": null,
+    "name": {
+      "en": "Surimi Tempura",
+      "ru": "Сурими Темпура",
+      "lv": "Surimi Tempura"
+    },
+    "desc": {
+      "en": "Cheese, crab, tomato, green onion, tempura",
+      "ru": "Сыр, краб, томат, зелёный лук, темпура",
+      "lv": "Cheese, crab, tomato, green onion, tempura"
+    }
+  },
+  {
+    "id": 55,
+    "cat": "gunkan",
+    "hit": false,
+    "e": "🫙",
+    "img": "https://lh3.googleusercontent.com/d/1nP1hAykEPXJY61BPtHDW2iR9Mc55FFJD",
+    "price": 3.5,
+    "old": null,
+    "name": {
+      "en": "Ebi Gunkan",
+      "ru": "Эби Гункан",
+      "lv": "Ebi Gunkan"
+    },
+    "desc": {
+      "en": "Shrimp sauce, rice, nori",
+      "ru": "Соус из креветок, рис, нори",
+      "lv": "Shrimp sauce, rice, nori"
+    }
+  },
+  {
+    "id": 56,
+    "cat": "gunkan",
+    "hit": false,
+    "e": "🫙",
+    "img": "https://lh3.googleusercontent.com/d/1nP1hAykEPXJY61BPtHDW2iR9Mc55FFJD",
+    "price": 3.9,
+    "old": null,
+    "name": {
+      "en": "Salmon Gunkan",
+      "ru": "Лосось Гункан",
+      "lv": "Lasis Gunkan"
+    },
+    "desc": {
+      "en": "Salmon sauce, rice, nori",
+      "ru": "Соус из лосося, рис, нори",
+      "lv": "Salmon sauce, rice, nori"
+    }
+  },
+  {
+    "id": 57,
+    "cat": "gunkan",
+    "hit": false,
+    "e": "🌿",
+    "img": "https://lh3.googleusercontent.com/d/1kUXoOYxW2HP-yjRQ54xUIpxpv5EmiHHf",
+    "price": 3.2,
+    "old": null,
+    "name": {
+      "en": "Wakame Gunkan",
+      "ru": "Вакаме Гункан",
+      "lv": "Wakame Gunkan"
+    },
+    "desc": {
+      "en": "Rice, nori, wakame",
+      "ru": "Рис, нори, вакаме",
+      "lv": "Rice, nori, wakame"
+    }
+  },
+  {
+    "id": 58,
+    "cat": "nigiri",
+    "hit": false,
+    "e": "🍣",
+    "img": "https://lh3.googleusercontent.com/d/1iZTIe_Loa-VmAsfmrjcHy_thFNlTM_BL",
+    "price": 3.5,
+    "old": null,
+    "name": {
+      "en": "Salmon Nigiri",
+      "ru": "Нигири Лосось",
+      "lv": "Laša Nigiri"
+    },
+    "desc": {
+      "en": "Salmon, rice",
+      "ru": "Лосось, рис",
+      "lv": "Salmon, rice"
+    }
+  },
+  {
+    "id": 59,
+    "cat": "nigiri",
+    "hit": false,
+    "e": "🐟",
+    "img": "https://lh3.googleusercontent.com/d/1uOvUn9lwuICu7tBHF0_WSRu12dx5X1zb",
+    "price": 4.0,
+    "old": null,
+    "name": {
+      "en": "Tuna Nigiri",
+      "ru": "Нигири Тунец",
+      "lv": "Tunča Nigiri"
+    },
+    "desc": {
+      "en": "Tuna, rice",
+      "ru": "Тунец, рис",
+      "lv": "Tuna, rice"
+    }
+  },
+  {
+    "id": 60,
+    "cat": "nigiri",
+    "hit": false,
+    "e": "🥢",
+    "img": "https://lh3.googleusercontent.com/d/1nP1hAykEPXJY61BPtHDW2iR9Mc55FFJD",
+    "price": 4.2,
+    "old": null,
+    "name": {
+      "en": "Unagi Nigiri",
+      "ru": "Нигири Угорь",
+      "lv": "Unagi Nigiri"
+    },
+    "desc": {
+      "en": "Eel, rice",
+      "ru": "Угорь, рис",
+      "lv": "Eel, rice"
+    }
+  },
+  {
+    "id": 61,
+    "cat": "sashimi",
+    "hit": false,
+    "e": "🍣",
+    "img": "https://lh3.googleusercontent.com/d/1iZTIe_Loa-VmAsfmrjcHy_thFNlTM_BL",
+    "price": 9.9,
+    "old": null,
+    "name": {
+      "en": "Salmon Sashimi",
+      "ru": "Сашими Лосось",
+      "lv": "Laša Sašimi"
+    },
+    "desc": {
+      "en": "Fresh salmon slices",
+      "ru": "Свежий лосось",
+      "lv": "Fresh salmon slices"
+    }
+  },
+  {
+    "id": 62,
+    "cat": "sashimi",
+    "hit": false,
+    "e": "🐟",
+    "img": "https://lh3.googleusercontent.com/d/1uOvUn9lwuICu7tBHF0_WSRu12dx5X1zb",
+    "price": 10.9,
+    "old": null,
+    "name": {
+      "en": "Tuna Sashimi",
+      "ru": "Сашими Тунец",
+      "lv": "Tunča Sašimi"
+    },
+    "desc": {
+      "en": "Fresh tuna slices",
+      "ru": "Свежий тунец",
+      "lv": "Fresh tuna slices"
+    }
+  },
+  {
+    "id": 63,
+    "cat": "sashimi",
+    "hit": false,
+    "e": "🥢",
+    "img": "https://lh3.googleusercontent.com/d/1nP1hAykEPXJY61BPtHDW2iR9Mc55FFJD",
+    "price": 11.0,
+    "old": null,
+    "name": {
+      "en": "Unagi Sashimi",
+      "ru": "Сашими Угорь",
+      "lv": "Unagi Sašimi"
+    },
+    "desc": {
+      "en": "Fresh eel slices",
+      "ru": "Свежий угорь",
+      "lv": "Fresh eel slices"
+    }
+  },
+  {
+    "id": 64,
+    "cat": "double",
+    "hit": true,
+    "e": "🎯",
+    "img": "https://lh3.googleusercontent.com/d/1vJGu7s0mNTkQzAz5iLOsV2sJkvxFvJNz",
+    "price": 14.9,
+    "old": null,
+    "name": {
+      "en": "Double Hot",
+      "ru": "Дабл Хот",
+      "lv": "Double Hot"
+    },
+    "desc": {
+      "en": "Hot Salmon + Kyoto",
+      "ru": "Хот Лосось + Киото",
+      "lv": "Hot Salmon + Kyoto"
+    }
+  },
+  {
+    "id": 65,
+    "cat": "double",
+    "hit": false,
+    "e": "🎯",
+    "img": "https://lh3.googleusercontent.com/d/1cffCQX3sXAxW-AfCc5MvOYZ8D213oXMQ",
+    "price": 14.5,
+    "old": null,
+    "name": {
+      "en": "Double Cold",
+      "ru": "Дабл Колд",
+      "lv": "Double Cold"
+    },
+    "desc": {
+      "en": "Philadelphia Classic + Avocado Salmon",
+      "ru": "Филадельфия Классик + Авокадо Лосось",
+      "lv": "Philadelphia Classic + Avocado Salmon"
+    }
+  },
+  {
+    "id": 66,
+    "cat": "double",
+    "hit": false,
+    "e": "🎯",
+    "img": "https://lh3.googleusercontent.com/d/1xSFdRgNJNxz6TlybFGEH8l1YbRpcvZrE",
+    "price": 14.9,
+    "old": null,
+    "name": {
+      "en": "Double Mix",
+      "ru": "Дабл Микс",
+      "lv": "Double Mix"
+    },
+    "desc": {
+      "en": "Philadelphia + Samurai",
+      "ru": "Филадельфия + Самурай",
+      "lv": "Philadelphia + Samurai"
+    }
+  },
+  {
+    "id": 67,
+    "cat": "double",
+    "hit": false,
+    "e": "🎯",
+    "img": "https://lh3.googleusercontent.com/d/1Vb-sz29gMopOQC-r84oLRzw0hgj_rCbY",
+    "price": 13.9,
+    "old": null,
+    "name": {
+      "en": "Double Chicken",
+      "ru": "Дабл Чикен",
+      "lv": "Double Chicken"
+    },
+    "desc": {
+      "en": "Hot Chicken Sesame + Golden Chicken",
+      "ru": "Хот Чикен Сезам + Голден Чикен",
+      "lv": "Hot Chicken Sesame + Golden Chicken"
+    }
+  },
+  {
+    "id": 68,
+    "cat": "double",
+    "hit": false,
+    "e": "🎯",
+    "img": "https://lh3.googleusercontent.com/d/1LqO0N6xLZHytvgrH0yQA79RD3qOL2fL8",
+    "price": 15.5,
+    "old": null,
+    "name": {
+      "en": "Double Tempura",
+      "ru": "Дабл Темпура",
+      "lv": "Double Tempura"
+    },
+    "desc": {
+      "en": "Salmon Tempura + Chicken Tempura",
+      "ru": "Лосось Темпура + Чикен Темпура",
+      "lv": "Salmon Tempura + Chicken Tempura"
+    }
+  },
+  {
+    "id": 69,
+    "cat": "double",
+    "hit": false,
+    "e": "🎯",
+    "img": "https://lh3.googleusercontent.com/d/1LqO0N6xLZHytvgrH0yQA79RD3qOL2fL8",
+    "price": 15.0,
+    "old": null,
+    "name": {
+      "en": "Tempura Hot Cold",
+      "ru": "Темпура Хот Колд",
+      "lv": "Tempura Hot Cold"
+    },
+    "desc": {
+      "en": "Ebi Tempura + Avocado Salmon",
+      "ru": "Эби Темпура + Авокадо Лосось",
+      "lv": "Ebi Tempura + Avocado Salmon"
+    }
+  },
+  {
+    "id": 70,
+    "cat": "double",
+    "hit": false,
+    "e": "🎯",
+    "img": "https://lh3.googleusercontent.com/d/1xSFdRgNJNxz6TlybFGEH8l1YbRpcvZrE",
+    "price": 14.5,
+    "old": null,
+    "name": {
+      "en": "Tempura Mix",
+      "ru": "Темпура Микс",
+      "lv": "Tempura Mix"
+    },
+    "desc": {
+      "en": "Surimi Tempura + Hot Veggy",
+      "ru": "Сурими Темпура + Хот Вегги",
+      "lv": "Surimi Tempura + Hot Veggy"
+    }
+  },
+  {
+    "id": 71,
+    "cat": "sets",
+    "hit": false,
+    "e": "🎁",
+    "img": "https://lh3.googleusercontent.com/d/1JwYgBdMTWC7iwOLY0NLmcOAaIOIR6Pf5",
+    "price": 22.9,
+    "old": null,
+    "name": {
+      "en": "Cold Set",
+      "ru": "Холодный Сет",
+      "lv": "Aukstais Sēts"
+    },
+    "desc": {
+      "en": "California + Urban Shrimp + Cooked Salmon",
+      "ru": "Калифорния + Урбан Шримп + Варёный Лосось",
+      "lv": "California + Urban Shrimp + Cooked Salmon"
+    }
+  },
+  {
+    "id": 72,
+    "cat": "sets",
+    "hit": false,
+    "e": "🎁",
+    "img": "https://lh3.googleusercontent.com/d/1Zj_JpuelLodB8FdUtVfK7OP1OOZwwVwl",
+    "price": 23.9,
+    "old": null,
+    "name": {
+      "en": "Hot Set",
+      "ru": "Горячий Сет",
+      "lv": "Karstais Sēts"
+    },
+    "desc": {
+      "en": "Hot California + Hot Cooked Salmon + Shrimp Sesame",
+      "ru": "Хот Калифорния + Шримп Сезам",
+      "lv": "Hot California + Hot Cooked Salmon + Shrimp Sesame"
+    }
+  },
+  {
+    "id": 73,
+    "cat": "sets",
+    "hit": true,
+    "e": "🎁",
+    "img": "https://lh3.googleusercontent.com/d/1MDESwqiClllqt3a12KmET7Y-Lb6QuJvG",
+    "price": 32.9,
+    "old": null,
+    "name": {
+      "en": "Fish Set",
+      "ru": "Рыбный Сет",
+      "lv": "Zivju Sēts"
+    },
+    "desc": {
+      "en": "Philadelphia Classic + Gold + Sesame + Unagi",
+      "ru": "Филадельфия Классик + Голд + Сезам + Унаги",
+      "lv": "Philadelphia Classic + Gold + Sesame + Unagi"
+    }
+  },
+  {
+    "id": 74,
+    "cat": "sets",
+    "hit": false,
+    "e": "🌿",
+    "img": "https://lh3.googleusercontent.com/d/1Qhs0XXEQu1OZ9ofsF16qybejAwkvaPUw",
+    "price": 18.0,
+    "old": null,
+    "name": {
+      "en": "Veggy Set",
+      "ru": "Вегги Сет",
+      "lv": "Veggy Sēts"
+    },
+    "desc": {
+      "en": "Kappa Maki + Avocado Maki + Kappa Avocado + Veggy Maki",
+      "ru": "Каппа Маки + Авокадо Маки + Каппа Авокадо",
+      "lv": "Kappa Maki + Avocado Maki + Kappa Avocado + Veggy Maki"
+    }
+  },
+  {
+    "id": 75,
+    "cat": "sets",
+    "hit": false,
+    "e": "🌸",
+    "img": "https://lh3.googleusercontent.com/d/1Zj_JpuelLodB8FdUtVfK7OP1OOZwwVwl",
+    "price": 29.9,
+    "old": null,
+    "name": {
+      "en": "Sakura Hot Set",
+      "ru": "Сакура Хот Сет",
+      "lv": "Sakura Hot Sēts"
+    },
+    "desc": {
+      "en": "Hot Philadelphia + Hot California + Shrimp Sesame + Hot Chicken",
+      "ru": "Хот Филадельфия + Шримп Сезам + Хот Чикен",
+      "lv": "Hot Philadelphia + Hot California + Shrimp Sesame + Hot Chicken"
+    }
+  },
+  {
+    "id": 76,
+    "cat": "sets",
+    "hit": false,
+    "e": "🎁",
+    "img": "https://lh3.googleusercontent.com/d/1Qhs0XXEQu1OZ9ofsF16qybejAwkvaPUw",
+    "price": 28.5,
+    "old": null,
+    "name": {
+      "en": "Mix Set",
+      "ru": "Микс Сет",
+      "lv": "Mix Sēts"
+    },
+    "desc": {
+      "en": "Philadelphia Gold + Golden Chicken + Ebi Tempura + Hot Kappa Avocado",
+      "ru": "Филадельфия Голд + Голден Чикен + Эби Темпура",
+      "lv": "Philadelphia Gold + Golden Chicken + Ebi Tempura + Hot Kappa Avocado"
+    }
+  },
+  {
+    "id": 77,
+    "cat": "sets",
+    "hit": false,
+    "e": "🍱",
+    "img": "https://lh3.googleusercontent.com/d/19Z3menm4kfdTHVPFBAt83m2I5E2X3rD_",
+    "price": 17.9,
+    "old": null,
+    "name": {
+      "en": "Maki Set",
+      "ru": "Маки Сет",
+      "lv": "Maki Sēts"
+    },
+    "desc": {
+      "en": "Sake Maki + Avocado Maki + Ebi Cheese + Kappa Maki",
+      "ru": "Саке Маки + Авокадо Маки + Эби Сыр + Каппа Маки",
+      "lv": "Sake Maki + Avocado Maki + Ebi Cheese + Kappa Maki"
+    }
+  },
+  {
+    "id": 78,
+    "cat": "sets",
+    "hit": true,
+    "e": "👨‍👩‍👧‍👦",
+    "img": "https://lh3.googleusercontent.com/d/1uBW3n8h41VJj9V4rIk-EGe7GEo8vbm3X",
+    "price": 42.9,
+    "old": null,
+    "name": {
+      "en": "Family Set",
+      "ru": "Семейный Сет",
+      "lv": "Ģimenes Sēts"
+    },
+    "desc": {
+      "en": "6 different rolls — ideal for family!",
+      "ru": "6 разных роллов — идеально для семьи!",
+      "lv": "6 different rolls — ideal for family!"
+    }
+  },
+  {
+    "id": 79,
+    "cat": "sets",
+    "hit": false,
+    "e": "🎉",
+    "img": "https://lh3.googleusercontent.com/d/1uBW3n8h41VJj9V4rIk-EGe7GEo8vbm3X",
+    "price": 52.9,
+    "old": null,
+    "name": {
+      "en": "Party Set",
+      "ru": "Пати Сет",
+      "lv": "Party Sēts"
+    },
+    "desc": {
+      "en": "10 different rolls — perfect for parties!",
+      "ru": "10 разных роллов — идеально для компании!",
+      "lv": "10 different rolls — perfect for parties!"
+    }
+  },
+  {
+    "id": 80,
+    "cat": "burger",
+    "hit": true,
+    "e": "🍔",
+    "img": "https://lh3.googleusercontent.com/d/1iZTIe_Loa-VmAsfmrjcHy_thFNlTM_BL",
+    "price": 9.9,
+    "old": null,
+    "name": {
+      "en": "Salmon Sushi Burger",
+      "ru": "Лосось Суши Бургер",
+      "lv": "Lasis Suši Burgers"
+    },
+    "desc": {
+      "en": "Spicy sauce, masago, avocado, salmon, tempura",
+      "ru": "Острый соус, масаго, авокадо, лосось, темпура",
+      "lv": "Spicy sauce, masago, avocado, salmon, tempura"
+    }
+  },
+  {
+    "id": 81,
+    "cat": "burger",
+    "hit": false,
+    "e": "🍔",
+    "img": "https://lh3.googleusercontent.com/d/17zjgpsnkeeAy8Hrt_xnzc-mwuY_pRb3W",
+    "price": 8.5,
+    "old": null,
+    "name": {
+      "en": "Chicken Sushi Burger",
+      "ru": "Чикен Суши Бургер",
+      "lv": "Chicken Suši Burgers"
+    },
+    "desc": {
+      "en": "Cream cheese, cheddar, tomato, chicken, tempura",
+      "ru": "Сливочный сыр, чеддер, томат, курица, темпура",
+      "lv": "Cream cheese, cheddar, tomato, chicken, tempura"
+    }
+  },
+  {
+    "id": 82,
+    "cat": "soup",
+    "hit": false,
+    "e": "🍜",
+    "img": "https://lh3.googleusercontent.com/d/17W7UwUJvbiFXwPJKougnN1O7o1czXB10",
+    "price": 7.9,
+    "old": null,
+    "name": {
+      "en": "Tom Yum Soup",
+      "ru": "Том Ям Суп",
+      "lv": "Tom Yum Zupa"
+    },
+    "desc": {
+      "en": "Mushroom, cherry tomato, shrimp, rice, sesame",
+      "ru": "Грибы, томат, креветки, рис, кунжут",
+      "lv": "Mushroom, cherry tomato, shrimp, rice, sesame"
+    }
+  },
+  {
+    "id": 83,
+    "cat": "soup",
+    "hit": true,
+    "e": "🍜",
+    "img": "https://lh3.googleusercontent.com/d/17W7UwUJvbiFXwPJKougnN1O7o1czXB10",
+    "price": 8.5,
+    "old": null,
+    "name": {
+      "en": "Ramen Chicken",
+      "ru": "Рамен с Курицей",
+      "lv": "Ramen Chicken"
+    },
+    "desc": {
+      "en": "Ramen soup, noodles, carrot, chicken, egg",
+      "ru": "Рамен, лапша, морковь, курица, яйцо",
+      "lv": "Ramen soup, noodles, carrot, chicken, egg"
+    }
+  },
+  {
+    "id": 84,
+    "cat": "soup",
+    "hit": false,
+    "e": "🍜",
+    "img": "https://lh3.googleusercontent.com/d/17W7UwUJvbiFXwPJKougnN1O7o1czXB10",
+    "price": 9.2,
+    "old": null,
+    "name": {
+      "en": "Ramen Shrimp",
+      "ru": "Рамен с Креветками",
+      "lv": "Ramen Garneles"
+    },
+    "desc": {
+      "en": "Ramen soup, noodles, carrot, shrimp, egg",
+      "ru": "Рамен, лапша, морковь, креветки, яйцо",
+      "lv": "Ramen soup, noodles, carrot, shrimp, egg"
+    }
+  },
+  {
+    "id": 85,
+    "cat": "wok",
+    "hit": false,
+    "e": "🥘",
+    "img": "https://lh3.googleusercontent.com/d/17W7UwUJvbiFXwPJKougnN1O7o1czXB10",
+    "price": 8.9,
+    "old": null,
+    "name": {
+      "en": "Wok Chicken",
+      "ru": "Вок с Курицей",
+      "lv": "Wok Chicken"
+    },
+    "desc": {
+      "en": "Chicken, carrot, mushroom, paprika, noodles",
+      "ru": "Курица, морковь, грибы, паприка, лапша",
+      "lv": "Chicken, carrot, mushroom, paprika, noodles"
+    }
+  },
+  {
+    "id": 86,
+    "cat": "wok",
+    "hit": false,
+    "e": "🥘",
+    "img": "https://lh3.googleusercontent.com/d/1WQoGX1uDIk_Indmf0cyXYHBSsalz6lx-",
+    "price": 9.5,
+    "old": null,
+    "name": {
+      "en": "Wok Shrimp",
+      "ru": "Вок с Креветками",
+      "lv": "Wok Garneles"
+    },
+    "desc": {
+      "en": "Shrimp, carrot, mushroom, paprika, noodles",
+      "ru": "Креветки, морковь, грибы, паприка, лапша",
+      "lv": "Shrimp, carrot, mushroom, paprika, noodles"
+    }
+  },
+  {
+    "id": 87,
+    "cat": "wok",
+    "hit": false,
+    "e": "🥘",
+    "img": "https://lh3.googleusercontent.com/d/1kUXoOYxW2HP-yjRQ54xUIpxpv5EmiHHf",
+    "price": 7.9,
+    "old": null,
+    "name": {
+      "en": "Wok Vegetarian",
+      "ru": "Вок Вегетарианский",
+      "lv": "Wok Vegetariānis"
+    },
+    "desc": {
+      "en": "Carrot, mushroom, paprika, sesame, noodles",
+      "ru": "Морковь, грибы, паприка, кунжут, лапша",
+      "lv": "Carrot, mushroom, paprika, sesame, noodles"
+    }
+  },
+  {
+    "id": 88,
+    "cat": "salad",
+    "hit": true,
+    "e": "🥗",
+    "img": "https://lh3.googleusercontent.com/d/14KjQ_jCui8eetOyzY7Shg13WD2PWNZ1w",
+    "price": 9.5,
+    "old": null,
+    "name": {
+      "en": "Caesar Salad Salmon",
+      "ru": "Цезарь с Лососем",
+      "lv": "Cēzara Salāts Lasis"
+    },
+    "desc": {
+      "en": "Romaine lettuce, salmon, cherry tomato, hard cheese, caesar sauce",
+      "ru": "Ромэн, лосось, томат, твёрдый сыр, соус",
+      "lv": "Romaine lettuce, salmon, cherry tomato, hard cheese, caesar sauce"
+    }
+  },
+  {
+    "id": 89,
+    "cat": "salad",
+    "hit": false,
+    "e": "🥗",
+    "img": "https://lh3.googleusercontent.com/d/1-W8yaFUeWzo4Fc73eafgvq9XMxahkAu4",
+    "price": 8.9,
+    "old": null,
+    "name": {
+      "en": "Caesar Salad Chicken",
+      "ru": "Цезарь с Курицей",
+      "lv": "Cēzara Salāts Chicken"
+    },
+    "desc": {
+      "en": "Romaine lettuce, chicken, cherry tomato, hard cheese, caesar sauce",
+      "ru": "Ромэн, курица, томат, твёрдый сыр, соус",
+      "lv": "Romaine lettuce, chicken, cherry tomato, hard cheese, caesar sauce"
+    }
+  },
+  {
+    "id": 90,
+    "cat": "salad",
+    "hit": false,
+    "e": "🥗",
+    "img": "https://lh3.googleusercontent.com/d/1XAN0ZHF_Y9RFEbYWnLhV2XYJW8B6cX2H",
+    "price": 9.9,
+    "old": null,
+    "name": {
+      "en": "Caesar Salad Shrimp",
+      "ru": "Цезарь с Креветками",
+      "lv": "Cēzara Salāts Garneles"
+    },
+    "desc": {
+      "en": "Romaine lettuce, shrimp, cherry tomato, hard cheese, caesar sauce",
+      "ru": "Ромэн, креветки, томат, твёрдый сыр, соус",
+      "lv": "Romaine lettuce, shrimp, cherry tomato, hard cheese, caesar sauce"
+    }
+  },
+  {
+    "id": 91,
+    "cat": "poke",
+    "hit": false,
+    "e": "🥣",
+    "img": "https://lh3.googleusercontent.com/d/1-npkdgrs9MeM4KRYyB-8Yn3sXJ6SmjEV",
+    "price": 9.9,
+    "old": null,
+    "name": {
+      "en": "Poke Salmon",
+      "ru": "Поке Лосось",
+      "lv": "Poke Lasis"
+    },
+    "desc": {
+      "en": "Rice, salmon, avocado, cucumber, wakame, poke sauce",
+      "ru": "Рис, лосось, авокадо, огурец, вакаме, поке соус",
+      "lv": "Rice, salmon, avocado, cucumber, wakame, poke sauce"
+    }
+  },
+  {
+    "id": 92,
+    "cat": "poke",
+    "hit": false,
+    "e": "🥣",
+    "img": "https://lh3.googleusercontent.com/d/1WQoGX1uDIk_Indmf0cyXYHBSsalz6lx-",
+    "price": 10.5,
+    "old": null,
+    "name": {
+      "en": "Poke Fried Shrimp",
+      "ru": "Поке Жареные Креветки",
+      "lv": "Poke Garneles"
+    },
+    "desc": {
+      "en": "Rice, fried shrimp, avocado, cucumber, wakame",
+      "ru": "Рис, жареная креветка, авокадо, огурец, вакаме",
+      "lv": "Rice, fried shrimp, avocado, cucumber, wakame"
+    }
+  },
+  {
+    "id": 93,
+    "cat": "poke",
+    "hit": false,
+    "e": "🥣",
+    "img": "https://lh3.googleusercontent.com/d/1T-aOYeAbHwQjXmwLvIWmakX4B3HksKxp",
+    "price": 9.2,
+    "old": null,
+    "name": {
+      "en": "Poke Chicken",
+      "ru": "Поке Курица",
+      "lv": "Poke Chicken"
+    },
+    "desc": {
+      "en": "Rice, chicken, avocado, cucumber, wakame, poke sauce",
+      "ru": "Рис, курица, авокадо, огурец, вакаме, поке соус",
+      "lv": "Rice, chicken, avocado, cucumber, wakame, poke sauce"
+    }
+  },
+  {
+    "id": 94,
+    "cat": "snacks",
+    "hit": false,
+    "e": "🍟",
+    "img": "https://lh3.googleusercontent.com/d/12zyEhQl-MogHk4wbFRL6r9iubhsw6IpT",
+    "price": 3.9,
+    "old": null,
+    "name": {
+      "en": "Fries",
+      "ru": "Картофель Фри",
+      "lv": "Frī Kartupeļi"
+    },
+    "desc": {
+      "en": "Crispy golden french fries",
+      "ru": "Хрустящий картофель фри",
+      "lv": "Crispy golden french fries"
+    }
+  },
+  {
+    "id": 95,
+    "cat": "snacks",
+    "hit": false,
+    "e": "🍠",
+    "img": "https://lh3.googleusercontent.com/d/1d5keXaMJFBi84NDkglfaXEH43AC9BeJZ",
+    "price": 4.5,
+    "old": null,
+    "name": {
+      "en": "Sweet Potato",
+      "ru": "Батат",
+      "lv": "Batāts"
+    },
+    "desc": {
+      "en": "Crispy sweet potato fries",
+      "ru": "Хрустящий батат",
+      "lv": "Crispy sweet potato fries"
+    }
+  },
+  {
+    "id": 96,
+    "cat": "snacks",
+    "hit": false,
+    "e": "🦐",
+    "img": "https://lh3.googleusercontent.com/d/1WQoGX1uDIk_Indmf0cyXYHBSsalz6lx-",
+    "price": 7.5,
+    "old": null,
+    "name": {
+      "en": "Torpedo Shrimp 10pcs",
+      "ru": "Торпедо Шримп 10шт",
+      "lv": "Torpedo Garneles"
+    },
+    "desc": {
+      "en": "10 crispy fried torpedo shrimp",
+      "ru": "10 хрустящих жареных торпедо-креветок",
+      "lv": "10 crispy fried torpedo shrimp"
+    }
+  },
+  {
+    "id": 97,
+    "cat": "snacks",
+    "hit": false,
+    "e": "🧅",
+    "img": "https://lh3.googleusercontent.com/d/1d5keXaMJFBi84NDkglfaXEH43AC9BeJZ",
+    "price": 4.9,
+    "old": null,
+    "name": {
+      "en": "Onion Rings 10pcs",
+      "ru": "Луковые Кольца 10шт",
+      "lv": "Sīpolu Gredzenji"
+    },
+    "desc": {
+      "en": "Crispy onion rings in batter",
+      "ru": "Хрустящие луковые кольца в кляре",
+      "lv": "Crispy onion rings in batter"
+    }
+  },
+  {
+    "id": 98,
+    "cat": "snacks",
+    "hit": false,
+    "e": "🍗",
+    "img": "https://lh3.googleusercontent.com/d/1nVIYcdIJ1ETg0oxdO0UltoWIzAp3cF6B",
+    "price": 5.5,
+    "old": null,
+    "name": {
+      "en": "Nuggets 4pcs",
+      "ru": "Наггетсы 4шт",
+      "lv": "Nuggets 4gab"
+    },
+    "desc": {
+      "en": "4 crispy chicken nuggets",
+      "ru": "4 хрустящих куриных наггетса",
+      "lv": "4 crispy chicken nuggets"
+    }
+  },
+  {
+    "id": 99,
+    "cat": "snacks",
+    "hit": true,
+    "e": "🧀",
+    "img": "https://lh3.googleusercontent.com/d/1whYo1OppvXCrrkg7693SSAYkeJ63M6jc",
+    "price": 5.9,
+    "old": null,
+    "name": {
+      "en": "Mozzarella 10pcs",
+      "ru": "Моцарелла 10шт",
+      "lv": "Mocarella 10gab"
+    },
+    "desc": {
+      "en": "10 crispy mozzarella sticks",
+      "ru": "10 хрустящих палочек моцареллы",
+      "lv": "10 crispy mozzarella sticks"
+    }
+  },
+  {
+    "id": 100,
+    "cat": "snacks",
+    "hit": false,
+    "e": "🌱",
+    "img": "https://lh3.googleusercontent.com/d/1kUXoOYxW2HP-yjRQ54xUIpxpv5EmiHHf",
+    "price": 5.2,
+    "old": null,
+    "name": {
+      "en": "Spring Rolls",
+      "ru": "Спринг Роллс",
+      "lv": "Spring Rolls"
+    },
+    "desc": {
+      "en": "Crispy spring onion rolls",
+      "ru": "Хрустящие роллы с зелёным луком",
+      "lv": "Crispy spring onion rolls"
+    }
+  },
+  {
+    "id": 101,
+    "cat": "snacks",
+    "hit": false,
+    "e": "🍟",
+    "img": "https://lh3.googleusercontent.com/d/12zyEhQl-MogHk4wbFRL6r9iubhsw6IpT",
+    "price": 6.5,
+    "old": null,
+    "name": {
+      "en": "Cheese Fries",
+      "ru": "Сырный Картофель",
+      "lv": "Siera Frī"
+    },
+    "desc": {
+      "en": "Fries + cheese + nuggets + lettuce + ketchup",
+      "ru": "Фри + сыр + наггетсы + листья салата + кетчуп",
+      "lv": "Fries + cheese + nuggets + lettuce + ketchup"
+    }
+  },
+  {
+    "id": 102,
+    "cat": "drinks",
+    "hit": false,
+    "e": "🥤",
+    "img": "https://lh3.googleusercontent.com/d/1UrAkjGC4ygjLTxzoWcPaDiWGlKKG-6ei",
+    "price": 2.5,
+    "old": null,
+    "name": {
+      "en": "7UP",
+      "ru": "7UP",
+      "lv": "7UP"
+    },
+    "desc": {
+      "en": "Refreshing lemon-lime soda",
+      "ru": "Освежающая лимонно-лаймовая газировка",
+      "lv": "Refreshing lemon-lime soda"
+    }
+  },
+  {
+    "id": 103,
+    "cat": "drinks",
+    "hit": false,
+    "e": "🥤",
+    "img": "https://lh3.googleusercontent.com/d/1nd8QByg0pZljHXYn8ycdEQaBZv9EoV2c",
+    "price": 2.5,
+    "old": null,
+    "name": {
+      "en": "Mirinda",
+      "ru": "Миринда",
+      "lv": "Mirinda"
+    },
+    "desc": {
+      "en": "Orange flavored soda",
+      "ru": "Апельсиновая газировка",
+      "lv": "Orange flavored soda"
+    }
+  },
+  {
+    "id": 104,
+    "cat": "drinks",
+    "hit": false,
+    "e": "🍵",
+    "img": "https://lh3.googleusercontent.com/d/17Vmlvr_VSzoBz2tmO5MeAxfTyesC-ukJ",
+    "price": 2.5,
+    "old": null,
+    "name": {
+      "en": "Lipton Ice Tea",
+      "ru": "Липтон Холодный Чай",
+      "lv": "Lipton Tēja"
+    },
+    "desc": {
+      "en": "Refreshing peach ice tea",
+      "ru": "Освежающий персиковый холодный чай",
+      "lv": "Refreshing peach ice tea"
+    }
+  },
+  {
+    "id": 105,
+    "cat": "drinks",
+    "hit": false,
+    "e": "🍊",
+    "img": "https://lh3.googleusercontent.com/d/1K4t8S4MMPmU5sU5Vu1GB0L_cO_8l4MpF",
+    "price": 2.5,
+    "old": null,
+    "name": {
+      "en": "Cido Apelsinu",
+      "ru": "Сидо Апельсин",
+      "lv": "Cido Apelsīnu"
+    },
+    "desc": {
+      "en": "Natural orange juice Cido",
+      "ru": "Натуральный апельсиновый сок Cido",
+      "lv": "Natural orange juice Cido"
+    }
+  },
+  {
+    "id": 106,
+    "cat": "drinks",
+    "hit": false,
+    "e": "🍎",
+    "img": "https://lh3.googleusercontent.com/d/1PsX92vkNmcGnSaTiQ4oWqRP2q0giPXx-",
+    "price": 2.5,
+    "old": null,
+    "name": {
+      "en": "Cidi Abolu",
+      "ru": "Сиди Яблоко",
+      "lv": "Cidi Ābolu"
+    },
+    "desc": {
+      "en": "Natural apple juice Cidi",
+      "ru": "Натуральный яблочный сок Cidi",
+      "lv": "Natural apple juice Cidi"
+    }
+  },
+  {
+    "id": 107,
+    "cat": "drinks",
+    "hit": false,
+    "e": "🍹",
+    "img": "https://lh3.googleusercontent.com/d/1TR5z9FLzpZPJjxSIijK_srQqgcvHQU2R",
+    "price": 2.5,
+    "old": null,
+    "name": {
+      "en": "Mangali Sparkling",
+      "ru": "Мангали Газированная",
+      "lv": "Mangali Gāzēts"
+    },
+    "desc": {
+      "en": "Natural sparkling mineral water",
+      "ru": "Натуральная газированная минеральная вода",
+      "lv": "Natural sparkling mineral water"
+    }
+  },
+  {
+    "id": 108,
+    "cat": "drinks",
+    "hit": false,
+    "e": "💧",
+    "img": "https://lh3.googleusercontent.com/d/1fXyZ351O9bURewZEsdBsAIvqtNJVL8M1",
+    "price": 2.5,
+    "old": null,
+    "name": {
+      "en": "Mangali Still",
+      "ru": "Мангали Негазированная",
+      "lv": "Mangali Negāzēts"
+    },
+    "desc": {
+      "en": "Natural still mineral water",
+      "ru": "Натуральная негазированная минеральная вода",
+      "lv": "Natural still mineral water"
+    }
+  }
+]

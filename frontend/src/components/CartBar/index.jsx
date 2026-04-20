@@ -3,35 +3,34 @@ import { useCart }     from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import T from '../../i18n/translations';
 
-export default function CartBar({ onCheckout }) {
-  const { cart, total, setIsOpen } = useCart();
-  const { lang } = useLanguage();
-  const t = T[lang];
-  const [visible, setVisible] = useState(false);
-  const [bounce, setBounce]   = useState(false);
+export default function CartBar({ onOpen, onCheckout }) {
+  const { cart, total } = useCart();
+  const { lang }        = useLanguage();
+  const t               = T[lang];
+  const [show, setShow] = useState(false);
+  const [bump, setBump] = useState(false);
   const count = cart.reduce((s, i) => s + i.qty, 0);
 
   useEffect(() => {
-    if (cart.length > 0) {
-      setVisible(true);
-      setBounce(true);
-      setTimeout(() => setBounce(false), 400);
+    if (count > 0) {
+      setShow(true);
+      setBump(true);
+      const t = setTimeout(() => setBump(false), 400);
+      return () => clearTimeout(t);
     } else {
-      setVisible(false);
+      setShow(false);
     }
-  }, [cart.length, count]);
+  }, [count]);
 
-  if (!visible) return null;
+  if (!show) return null;
 
   return (
-    <div className={'cartbar' + (bounce ? ' cartbar--bounce' : '')}>
-      <button className="cartbar-btn" onClick={() => setIsOpen(true)}>
+    <div className={'cartbar' + (bump ? ' cartbar--bump' : '')}>
+      <button className="cartbar-btn" onClick={onOpen} aria-label="Open cart">
         <div className="cartbar-left">
-          <span className="cartbar-badge">
-            <span className="cartbar-badge-num">{count}</span>
-          </span>
+          <span className="cartbar-badge">{count}</span>
           <span className="cartbar-lbl">
-            {t.cart_title || (lang === 'lv' ? 'Grozs' : 'Корзина')}
+            {t.cart_title || (lang==='lv'?'Grozs':lang==='en'?'Cart':'Корзина')}
           </span>
         </div>
         <div className="cartbar-right">

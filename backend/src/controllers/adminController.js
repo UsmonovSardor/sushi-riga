@@ -3,9 +3,9 @@ const jwt  = require('jsonwebtoken');
 const fs   = require('fs');
 const path = require('path');
 
-const MENU_FILE   = path.join(__dirname, '../data/menu.json');
-const USERS_FILE  = path.join(__dirname, '../data/users.json');
-const ORDERS_FILE = path.join(__dirname, '../data/orders.json');
+const MENU_FILE   = require('path').join(require('../config').DATA_PATH, 'menu.json');
+const USERS_FILE  = require('path').join(require('../config').DATA_PATH, 'users.json');
+const ORDERS_FILE = require('path').join(require('../config').DATA_PATH, 'orders.json');
 const JWT_SECRET  = process.env.JWT_SECRET  || 'sushi-riga-secret-2026';
 const ADMIN_KEY   = process.env.ADMIN_SECRET || 'admin2026';
 

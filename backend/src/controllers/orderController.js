@@ -4,8 +4,8 @@ const tg   = require('../services/telegramService');
 const fs   = require('fs');
 const path = require('path');
 
-const MENU_FILE   = path.join(__dirname, '../data/menu.json');
-const ORDERS_FILE = path.join(__dirname, '../data/orders.json');
+const MENU_FILE   = require('path').join(require('../config').DATA_PATH, 'menu.json');
+const ORDERS_FILE = require('path').join(require('../config').DATA_PATH, 'orders.json');
 
 function loadMenu()   { try { return JSON.parse(fs.readFileSync(MENU_FILE,'utf8')); } catch { return []; } }
 function loadOrders() { try { return JSON.parse(fs.readFileSync(ORDERS_FILE,'utf8')); } catch { return []; } }
