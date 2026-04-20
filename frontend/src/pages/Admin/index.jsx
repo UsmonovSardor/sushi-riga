@@ -12,6 +12,10 @@ const STATUS_LABELS = {
 
 const PAY_LABELS = { cash:'💵 Наличные', card:'💳 Карта' };
 
+function emptyForm() {
+  return { cat:'cold',e:'🍣',name_ru:'',name_en:'',name_lv:'',desc_ru:'',desc_en:'',desc_lv:'',price:'',old:'',img:'',hit:false };
+}
+
 export default function AdminPanel() {
   const [token,   setToken]   = useState(()=>localStorage.getItem('sr_admin')||'');
   const [secret,  setSecret]  = useState('');
@@ -30,10 +34,6 @@ export default function AdminPanel() {
   const [autoRefresh, setAuto] = useState(true);
 
   const hdrs = { 'Content-Type':'application/json', Authorization:`Bearer ${token}` };
-
-  function emptyForm() {
-    return { cat:'cold',e:'🍣',name_ru:'',name_en:'',name_lv:'',desc_ru:'',desc_en:'',desc_lv:'',price:'',old:'',img:'',hit:false };
-  }
 
   async function adminLogin(e) {
     e.preventDefault();
