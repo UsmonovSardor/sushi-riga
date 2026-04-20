@@ -13,21 +13,17 @@ const app = express();
 app.use(helmet());
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow Railway domains, Render, and configured origins
-    const allowed = [
-      ...config.ALLOWED_ORIGINS,
-      /\.railway\.app$/,
-      /\.onrender\.com$/,
-      /localhost/,
-    ];
-    if (!origin) return cb(null, true); // same-origin / curl
-    const ok = allowed.some(p =>
-      typeof p === 'string' ? p === origin : p.test(origin)
-    );
-    cb(ok ? null : new Error('CORS'), ok);
+    if (!origin) return cb(null, true); // curl / same-origin
+    const ok =
+      origin.endsWith('.railway.app') ||
+      origin.endsWith('.onrender.com') ||
+      origin.includes('localhost') ||
+      (config.ALLOWED_ORIGINS || []).includes(origin);
+    cb(null, ok);
   },
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization'],
+  credentials: true,
 }));
 app.use(rateLimit({ windowMs:15*60*1000, max:500, standardHeaders:true, legacyHeaders:false }));
 app.use(express.json({ limit:'100kb' }));

@@ -462,3 +462,99 @@ img { display: block; max-width: 100%; }
 .dash-order-name  { flex: 1; font-size: .8rem; font-weight: 600; min-width: 70px; }
 .dash-order-time  { font-size: .7rem; color: var(--muted); white-space: nowrap; }
 .dash-order-total { font-size: .83rem; font-weight: 800; margin-left: auto; }
+
+/* ══ MOBILE SAFE AREA & GLOBAL FIXES ══ */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .order-sheet, .auth-modal { padding-bottom: calc(30px + env(safe-area-inset-bottom)); }
+  .cartbar { bottom: calc(14px + env(safe-area-inset-bottom)); }
+}
+
+/* Auth modal - mobile button fixes */
+.auth-modal { padding-bottom: max(30px, env(safe-area-inset-bottom, 30px)); }
+.auth-modal .btn-primary { 
+  min-height: 48px; 
+  font-size: .95rem;
+  -webkit-appearance: none;
+  touch-action: manipulation;
+}
+.auth-modal .btn-secondary {
+  min-height: 44px;
+  -webkit-appearance: none;
+  touch-action: manipulation;
+}
+.auth-tab {
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Order modal mobile */
+.order-sheet { padding-bottom: max(30px, env(safe-area-inset-bottom, 20px)); }
+.order-sheet .btn-primary { 
+  min-height: 52px; 
+  font-size: .96rem;
+  -webkit-appearance: none;
+  touch-action: manipulation;
+}
+.order-sheet .btn-secondary {
+  min-height: 46px;
+  -webkit-appearance: none;
+}
+
+/* Pay method buttons - mobile tap targets */
+.pay-method {
+  min-height: 52px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Form inputs - mobile */
+.form-input {
+  min-height: 48px;
+  font-size: 16px; /* prevents iOS zoom */
+  -webkit-appearance: none;
+  border-radius: 10px;
+}
+
+/* Cart buttons mobile */
+.cart-submit { min-height: 52px; touch-action: manipulation; }
+.qty-b { min-width: 32px; min-height: 32px; touch-action: manipulation; }
+
+/* CartBar mobile */
+.cartbar-btn { min-height: 54px; touch-action: manipulation; }
+
+/* Card add button - bigger tap target on mobile */
+@media (max-width: 600px) {
+  .card-add { width: 34px; height: 34px; font-size: 1.3rem; }
+  .card-foot { gap: 6px; }
+}
+
+/* Side panel mobile */
+.side-navbtn { min-height: 48px; touch-action: manipulation; }
+
+/* ══ MOBILE SCROLL FIX ══ */
+.order-sheet { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.cart-body   { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+
+/* ══ NO SELECT ON BUTTONS ══ */
+button { user-select: none; -webkit-user-select: none; }
+
+/* ══ NOTIFICATION TOAST (new) ══ */
+.toast { 
+  position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+  background: #1a1a1a; color: #fff; border-radius: 20px; padding: 10px 18px;
+  font-size: .82rem; font-weight: 600; z-index: 500; white-space: nowrap;
+  animation: fadeUp .3s ease, fadeOut .3s ease 1.7s forwards;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3); pointer-events: none;
+}
+@keyframes fadeOut { to { opacity: 0; transform: translateX(-50%) translateY(-6px); } }
+
+/* ══ LOADING SKELETON ══ */
+.skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: skeletonLoad 1.4s infinite; border-radius: 8px; }
+@keyframes skeletonLoad { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ══ EMPTY MENU STATE ══ */
+.menu-empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+.menu-empty-ico { font-size: 3rem; margin-bottom: 12px; }
+
+/* ══ HEADER SCROLL SHADOW ══ */
+.header.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,.28); }

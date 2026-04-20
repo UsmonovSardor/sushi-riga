@@ -7,7 +7,6 @@ const ctrl    = require('../controllers/orderController');
 const v = [
   body('name').trim().notEmpty().withMessage('Name required'),
   body('phone').trim().notEmpty().withMessage('Phone required'),
-  body('address').trim().notEmpty().withMessage('Address required'),
   body('items').isArray({ min: 1 }).withMessage('Cart is empty'),
 ];
 

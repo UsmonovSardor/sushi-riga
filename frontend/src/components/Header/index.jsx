@@ -1,57 +1,68 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useCart }     from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth }     from '../../context/AuthContext';
 import T from '../../i18n/translations';
 
-const FLAGS = { ru:'🇷🇺', lv:'🇱🇻', en:'🇬🇧' };
+const LANGS = [
+  { code:'lv', flag:'🇱🇻', label:'Latviešu' },
+  { code:'ru', flag:'🇷🇺', label:'Русский' },
+  { code:'en', flag:'🇬🇧', label:'English' },
+];
 
-export default function Header({ onSearch, onMenu, onAuth }) {
-  const { count, setIsOpen } = useCart();
-  const { lang, setLang }    = useLanguage();
-  const { user, logout }     = useAuth();
-  const [langOpen, setLangOpen] = useState(false);
-  const [userOpen, setUserOpen] = useState(false);
-  const [notif,    setNotif]    = useState(0);
-  const t = T[lang];
+export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpen }) {
+  const { count }        = useCart();
+  const { lang, setLang }= useLanguage();
+  const { user, logout } = useAuth();
+  const [langOpen, setLangOpen]   = useState(false);
+  const [userOpen, setUserOpen]   = useState(false);
+  const [scrolled, setScrolled]   = useState(false);
+  const langRef = useRef(null);
+  const userRef = useRef(null);
 
-  // Notification: show badge when user logged in (promo) or has new order
   useEffect(() => {
-    const seen = localStorage.getItem('sr_notif_seen');
-    if (!seen) setNotif(1);
-  }, [user]);
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
-  const clearNotif = () => { setNotif(0); localStorage.setItem('sr_notif_seen','1'); };
-  const closeAll   = () => { setLangOpen(false); setUserOpen(false); };
+  useEffect(() => {
+    const close = e => {
+      if (langRef.current && !langRef.current.contains(e.target)) setLangOpen(false);
+      if (userRef.current && !userRef.current.contains(e.target)) setUserOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, []);
+
+  const currentLang = LANGS.find(l => l.code === lang) || LANGS[0];
 
   return (
-    <header className="header" onClick={closeAll}>
+    <header className={'header' + (scrolled ? ' scrolled' : '')}>
       <div className="header-in">
-
-        {/* ── LEFT: ☰ + 🍣 + SUSHI RĪGA ── */}
+        {/* Left */}
         <div className="h-left">
-          <button className="h-burger" onClick={e=>{ e.stopPropagation(); onMenu(); }} aria-label="Меню">
+          <button className="h-burger" onClick={onMenuOpen} aria-label="Menu">
             <span/><span/><span/>
           </button>
-          <span className="logo-emoji">🍣</span>
-          <span className="logo-txt">SUSHI <em>RĪGA</em></span>
+          <div className="logo-emoji">🍣</div>
+          <div className="logo-txt">SUSHI <em>RĪGA</em></div>
         </div>
 
-        {/* ── RIGHT: RU + 🔍 + 🛒 + 👤 ── */}
+        {/* Right */}
         <div className="h-right">
-
           {/* Language */}
-          <div className="lang-wrap" onClick={e=>e.stopPropagation()}>
-            <button className="hbtn lang-btn"
-              onClick={()=>{ setLangOpen(o=>!o); setUserOpen(false); }}>
-              {FLAGS[lang]} <span className="lang-code">{lang.toUpperCase()}</span>
+          <div className="lang-wrap" ref={langRef}>
+            <button className="hbtn lang-btn" onClick={() => { setLangOpen(o => !o); setUserOpen(false); }}>
+              <span>{currentLang.flag}</span>
+              <span className="lang-code">{currentLang.code.toUpperCase()}</span>
             </button>
             {langOpen && (
               <div className="lang-dd">
-                {Object.entries(FLAGS).map(([l,f])=>(
-                  <div key={l} className={'lang-row'+(l===lang?' on':'')}
-                    onClick={()=>{ setLang(l); setLangOpen(false); }}>
-                    {f} {l.toUpperCase()}
+                {LANGS.map(l => (
+                  <div key={l.code} className={'lang-row' + (lang===l.code?' on':'')}
+                    onClick={() => { setLang(l.code); setLangOpen(false); }}>
+                    <span>{l.flag}</span><span>{l.label}</span>
                   </div>
                 ))}
               </div>
@@ -59,56 +70,61 @@ export default function Header({ onSearch, onMenu, onAuth }) {
           </div>
 
           {/* Search */}
-          <button className="hbtn" onClick={e=>{ e.stopPropagation(); onSearch(); }} aria-label="Поиск">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <button className="hbtn" onClick={onSearchOpen} aria-label="Search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
               <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
           </button>
 
-          {/* 🛒 Cart — always visible in header */}
-          <button className="h-cart-ico" onClick={e=>{ e.stopPropagation(); setIsOpen(true); }} aria-label="Корзина">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          {/* Cart */}
+          <button className="h-cart-ico" onClick={onCartOpen} aria-label="Cart">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 01-8 0"/>
             </svg>
             {count > 0 && <span className="h-cart-n">{count}</span>}
           </button>
 
-          {/* 👤 User + 🔴 notification */}
-          <div className="lang-wrap" onClick={e=>e.stopPropagation()}>
-            {user ? (
-              <>
-                <button className="h-avatar"
-                  onClick={()=>{ setUserOpen(o=>!o); setLangOpen(false); clearNotif(); }}>
-                  {user.name.charAt(0).toUpperCase()}
-                  {notif > 0 && <span className="h-notif-dot"/>}
-                </button>
-                {userOpen && (
-                  <div className="lang-dd user-dd">
+          {/* User */}
+          <div className="lang-wrap" ref={userRef}>
+            <button className={'h-avatar' + (!user?' h-avatar--guest':'')}
+              onClick={() => { setUserOpen(o => !o); setLangOpen(false); }}
+              aria-label="Account">
+              {user
+                ? <span style={{fontSize:'.78rem',fontWeight:900}}>{user.name?.slice(0,2)?.toUpperCase()}</span>
+                : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+              }
+              {!user && <span className="h-notif-dot"/>}
+            </button>
+            {userOpen && (
+              <div className="lang-dd user-dd" style={{right:0}}>
+                {user ? (
+                  <>
                     <div className="user-info">
                       <div className="user-name">{user.name}</div>
                       <div className="user-email">{user.email}</div>
                     </div>
+                    <div className="lang-row" onClick={() => { logout(); setUserOpen(false); }}>
+                      🚪 {lang==='lv'?'Iziet':lang==='en'?'Logout':'Выйти'}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="lang-row" onClick={() => { onAuthOpen(); setUserOpen(false); }}>
+                      👤 {lang==='lv'?'Pieteikties':lang==='en'?'Sign in':'Войти'}
+                    </div>
                     <div className="lang-row user-promo">
-                      🎁 Скидка 10% на 1й заказ
+                      🎁 {lang==='lv'?'Reģistrēties':lang==='en'?'Register':'Регистрация'}
                     </div>
-                    <div className="lang-row" onClick={()=>{ logout(); setUserOpen(false); }}>
-                      🚪 Выйти
-                    </div>
-                  </div>
+                  </>
                 )}
-              </>
-            ) : (
-              <button className="h-avatar h-avatar--guest"
-                onClick={()=>{ onAuth(); clearNotif(); closeAll(); }} title="Войти">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                </svg>
-                {notif > 0 && <span className="h-notif-dot"/>}
-              </button>
+              </div>
             )}
           </div>
-
         </div>
       </div>
     </header>
