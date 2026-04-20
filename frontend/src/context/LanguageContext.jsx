@@ -9,9 +9,8 @@ export function LanguageProvider({ children }) {
       const saved = localStorage.getItem('sr_lang');
       if (['ru','lv','en'].includes(saved)) return saved;
     } catch {}
-    // Auto-detect browser language
-    const bl = navigator.language?.slice(0,2).toLowerCase();
-    return ['lv','en'].includes(bl) ? bl : 'ru';
+    // Default: Latvian (site is in Latvia)
+    return 'lv';
   });
 
   const setLang = (l) => {
