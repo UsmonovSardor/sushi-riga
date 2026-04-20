@@ -11,12 +11,12 @@ const LANGS = [
 ];
 
 export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpen }) {
-  const { count }          = useCart();
-  const { lang, setLang }  = useLanguage();
-  const { user, logout }   = useAuth();
-  const [langOpen, setLO]  = useState(false);
-  const [userOpen, setUO]  = useState(false);
-  const [scrolled, setSc]  = useState(false);
+  const { count }         = useCart();
+  const { lang, setLang } = useLanguage();
+  const { user, logout }  = useAuth();
+  const [langOpen, setLO] = useState(false);
+  const [userOpen, setUO] = useState(false);
+  const [scrolled, setSc] = useState(false);
   const langRef = useRef(null);
   const userRef = useRef(null);
 
@@ -32,11 +32,7 @@ export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpe
       if (!userRef.current?.contains(e.target)) setUO(false);
     };
     document.addEventListener('mousedown', fn);
-    document.addEventListener('touchstart', fn, { passive:true });
-    return () => {
-      document.removeEventListener('mousedown', fn);
-      document.removeEventListener('touchstart', fn);
-    };
+    return () => document.removeEventListener('mousedown', fn);
   }, []);
 
   const cur = LANGS.find(l => l.code === lang) || LANGS[0];
@@ -51,14 +47,13 @@ export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpe
             <span/><span/><span/>
           </button>
           <div className="logo-wrap" onClick={() => window.scrollTo({top:0,behavior:'smooth'})} style={{cursor:'pointer'}}>
-            <span className="logo-emoji">🍣</span>
-            <span className="logo-txt">SUSHI <em>RĪGA</em></span>
+            <span className="logo-emoji">🍒</span>
+            <span className="logo-txt">CHERRY <em>SUSHI</em></span>
           </div>
         </div>
 
         {/* RIGHT */}
         <div className="h-right">
-
           {/* Lang */}
           <div className="lang-wrap" ref={langRef}>
             <button className="hbtn lang-btn" onClick={() => { setLO(o=>!o); setUO(false); }}>
@@ -83,8 +78,8 @@ export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpe
             </svg>
           </button>
 
-          {/* CART - always visible */}
-          <button className="hbtn h-cart-btn" onClick={onCartOpen} aria-label="Cart">
+          {/* Cart */}
+          <button className="hbtn h-cart-btn" onClick={onCartOpen} aria-label="Cart" style={{position:'relative'}}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
               <line x1="3" y1="6" x2="21" y2="6"/>
@@ -95,12 +90,11 @@ export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpe
 
           {/* User */}
           <div className="lang-wrap" ref={userRef}>
-            <button className={'hbtn h-avatar'+(user?'':' h-avatar--guest')}
-              onClick={() => { setUO(o=>!o); setLO(false); }}>
+            <button className={'hbtn'+(user?'':' h-avatar--guest')}
+              onClick={() => { setUO(o=>!o); setLO(false); }}
+              style={{position:'relative'}} aria-label="Account">
               {user
-                ? <span style={{fontSize:'.75rem',fontWeight:900,letterSpacing:0}}>
-                    {user.name?.slice(0,2)?.toUpperCase()}
-                  </span>
+                ? <span style={{fontSize:'.72rem',fontWeight:900}}>{user.name?.slice(0,2)?.toUpperCase()}</span>
                 : <>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                       <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
@@ -116,6 +110,7 @@ export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpe
                   <>
                     <div className="user-info">
                       <div className="user-name">{user.name}</div>
+                      <div style={{fontSize:'.72rem',color:'#888',marginTop:2}}>{user.email}</div>
                     </div>
                     <div className="lang-row" onClick={() => { logout(); setUO(false); }}>
                       🚪 {lang==='lv'?'Iziet':lang==='en'?'Sign out':'Выйти'}
@@ -126,8 +121,7 @@ export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpe
                     <div className="lang-row" onClick={() => { onAuthOpen(); setUO(false); }}>
                       👤 {lang==='lv'?'Pieteikties':lang==='en'?'Sign in':'Войти'}
                     </div>
-                    <div className="lang-row user-promo"
-                      onClick={() => { onAuthOpen(); setUO(false); }}>
+                    <div className="lang-row user-promo" onClick={() => { onAuthOpen(); setUO(false); }}>
                       🎁 {lang==='lv'?'Reģistrēties':lang==='en'?'Register':'Регистрация'}
                     </div>
                   </>
@@ -135,7 +129,6 @@ export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpe
               </div>
             )}
           </div>
-
         </div>
       </div>
     </header>

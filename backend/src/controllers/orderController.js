@@ -45,8 +45,10 @@ exports.createOrder = async (req, res) => {
     orders.unshift(order);
     saveOrders(orders);
 
-    try { await tg.sendOrder({ ...order, num }); }
-    catch(e) { console.error('TG:', e.message); }
+    try {
+      console.log('Sending TG for order #' + num + ' to chat ' + process.env.TELEGRAM_CHAT_ID);
+      await tg.sendOrder({ ...order, num });
+    } catch(e) { console.error('TG send error:', e.message); }
 
     res.status(201).json({ success: true, orderId: num });
   } catch(e) {

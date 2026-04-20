@@ -499,3 +499,9 @@ img { display: block; max-width: 100%; }
 .cart-modal-btn:active { transform:scale(.97); }
 .cart-modal-arrow { transition:transform .2s; }
 .cart-modal-btn:hover .cart-modal-arrow { transform:translateX(5px); }
+
+/* ══ ORDER LOGIN REQUIRED ══ */
+.order-login-required { text-align:center; padding:28px 10px 8px; }
+.order-lock-ico   { font-size:3.5rem; margin-bottom:14px; }
+.order-lock-title { font-size:1.05rem; font-weight:800; color:var(--text); margin-bottom:8px; }
+.order-lock-sub   { font-size:.84rem; color:var(--muted); line-height:1.55; margin-bottom:4px; max-width:280px; margin-left:auto; margin-right:auto; }

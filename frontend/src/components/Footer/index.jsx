@@ -62,7 +62,7 @@ export default function Footer() {
               <div className="footer-map-inner">
                 <span className="footer-map-pin">📍</span>
                 <div>
-                  <div className="footer-map-name">Sushi Rīga</div>
+                  <div className="footer-map-name">Cherry Sushi</div>
                   <div className="footer-map-addr">{t.address}</div>
                   <div className="footer-map-open">
                     {lang==='lv'?'Atvērt Google Maps':lang==='en'?'Open Google Maps':'Открыть карту'} →
@@ -75,7 +75,7 @@ export default function Footer() {
         </div>
 
         <div className="footer-bar">
-          <span>© {new Date().getFullYear()} Sushi Rīga. {t.f_rights}</span>
+          <span>© {new Date().getFullYear()} Cherry Sushi. {t.f_rights}</span>
           <span>Made with ❤️ in Rīga</span>
         </div>
       </div>

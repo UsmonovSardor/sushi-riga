@@ -2,51 +2,42 @@ import React, { useState, useEffect, useCallback } from 'react';
 
 const API = import.meta.env.VITE_API_URL || '';
 
-const STATUS_LABELS = {
-  new:       { text:'🆕 Yangi',          ru:'🆕 Новый',         color:'#dbeafe', txt:'#1d4ed8' },
-  cooking:   { text:'👨‍🍳 Tayyorlanmoqda', ru:'👨‍🍳 Готовится',    color:'#fef9c3', txt:'#a16207' },
-  ready:     { text:'✅ Tayyor',          ru:'✅ Готов',          color:'#dcfce7', txt:'#15803d' },
-  delivered: { text:'🚀 Yetkazildi',     ru:'🚀 Выдан',         color:'#f0fdf4', txt:'#166534' },
-  cancelled: { text:'❌ Bekor',           ru:'❌ Отменён',        color:'#fee2e2', txt:'#991b1b' },
+const STATUS = {
+  new:       { label:'Yangi',          color:'#dbeafe', text:'#1d4ed8', icon:'🆕' },
+  cooking:   { label:'Tayyorlanmoqda', color:'#fef9c3', text:'#a16207', icon:'👨‍🍳' },
+  ready:     { label:'Tayyor',         color:'#dcfce7', text:'#15803d', icon:'✅' },
+  delivered: { label:'Berildi',        color:'#f0fdf4', text:'#166534', icon:'🚀' },
+  cancelled: { label:'Bekor',          color:'#fee2e2', text:'#991b1b', icon:'❌' },
 };
-
-const PAY_LABELS = { cash:'💵 Наличные', card:'💳 Карта' };
+const PAY = { cash:'💵 Naqd', card:'💳 Karta' };
 
 function emptyForm() {
-  return { cat:'cold',e:'🍣',name_ru:'',name_en:'',name_lv:'',desc_ru:'',desc_en:'',desc_lv:'',price:'',old:'',img:'',hit:false };
+  return { cat:'cold', e:'🍣', name_ru:'', name_lv:'', name_en:'',
+           desc_ru:'', desc_lv:'', desc_en:'', price:'', old:'', img:'', hit:false };
 }
 
-export default function AdminPanel() {
-  const [token,   setToken]   = useState(()=>localStorage.getItem('sr_admin')||'');
+export default function Admin() {
+  const [token,   setToken]   = useState(() => localStorage.getItem('sr_admin') || '');
   const [secret,  setSecret]  = useState('');
-  const [loginErr,setLoginErr]= useState('');
-  const [tab,     setTab]     = useState('dashboard');
+  const [err,     setErr]     = useState('');
+  const [tab,     setTab]     = useState('orders');
   const [stats,   setStats]   = useState(null);
   const [orders,  setOrders]  = useState([]);
   const [menu,    setMenu]    = useState([]);
   const [msg,     setMsg]     = useState('');
-  const [search,  setSearch]  = useState('');
-  const [catFilter,setCatFilter]= useState('all');
-  const [editItem,setEditItem]= useState(null);
+  const [search,  setSrch]    = useState('');
+  const [catF,    setCatF]    = useState('all');
+  const [stF,     setStF]     = useState('all');
+  const [editItem,setEdit]    = useState(null);
   const [form,    setForm]    = useState(emptyForm());
-  const [loading, setLoad]    = useState(false);
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [autoRefresh, setAuto] = useState(true);
+  const [saving,  setSaving]  = useState(false);
 
   const hdrs = { 'Content-Type':'application/json', Authorization:`Bearer ${token}` };
+  const flash = m => { setMsg(m); setTimeout(()=>setMsg(''),3000); };
+  const fmt   = n => typeof n==='number' ? n.toFixed(2) : '0.00';
+  const fmtT  = iso => iso ? new Date(iso).toLocaleString('ru-RU',{timeZone:'Europe/Riga',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
 
-  async function adminLogin(e) {
-    e.preventDefault();
-    try {
-      const r = await fetch(`${API}/api/admin/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret})});
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.error);
-      localStorage.setItem('sr_admin', d.token);
-      setToken(d.token);
-    } catch(ex){ setLoginErr(ex.message); }
-  }
-
-  const loadAll = useCallback(async () => {
+  const load = useCallback(async () => {
     if (!token) return;
     try {
       const [s,o,m] = await Promise.all([
@@ -54,419 +45,422 @@ export default function AdminPanel() {
         fetch(`${API}/api/admin/orders`,{headers:hdrs}).then(r=>r.json()),
         fetch(`${API}/api/admin/menu`,{headers:hdrs}).then(r=>r.json()),
       ]);
-      setStats(s);
-      setOrders(Array.isArray(o)?o:[]);
-      setMenu(Array.isArray(m)?m:[]);
+      setStats(s); setOrders(Array.isArray(o)?o:[]); setMenu(Array.isArray(m)?m:[]);
     } catch(e){ console.error(e); }
   }, [token]);
 
-  useEffect(() => { loadAll(); }, [loadAll]);
+  useEffect(()=>{ load(); },[load]);
+  useEffect(()=>{
+    if(!token) return;
+    const id=setInterval(()=>{ if(tab==='orders'||tab==='stats') load(); },30000);
+    return ()=>clearInterval(id);
+  },[token,tab,load]);
 
-  // Auto-refresh every 30s on orders/dashboard tab
-  useEffect(() => {
-    if (!autoRefresh || !token) return;
-    const id = setInterval(() => { if(tab==='dashboard'||tab==='orders') loadAll(); }, 30000);
-    return () => clearInterval(id);
-  }, [autoRefresh, tab, token, loadAll]);
-
-  const flash = (m) => { setMsg(m); setTimeout(()=>setMsg(''),3000); };
-
-  async function updateStatus(id, status) {
-    await fetch(`${API}/api/admin/orders/${id}`,{method:'PATCH',headers:hdrs,body:JSON.stringify({status})});
-    setOrders(prev => prev.map(o => o.id==id ? {...o,status} : o));
-    // Update stats counter
-    setStats(s => s ? {...s, byStatus: {...s.byStatus}} : s);
+  async function login(e) {
+    e.preventDefault();
+    try {
+      const r = await fetch(`${API}/api/admin/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret})});
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error);
+      localStorage.setItem('sr_admin', d.token);
+      setToken(d.token);
+    } catch(ex){ setErr(ex.message); }
   }
 
-  async function saveMenuItem(e) {
-    e.preventDefault(); setLoad(true);
+  async function changeStatus(id, status) {
+    await fetch(`${API}/api/admin/orders/${id}`,{method:'PATCH',headers:hdrs,body:JSON.stringify({status})});
+    setOrders(p=>p.map(o=>o.id==id?{...o,status}:o));
+  }
+
+  async function saveItem(e) {
+    e.preventDefault(); setSaving(true);
     const body = {
       cat:form.cat, e:form.e, hit:form.hit, img:form.img,
-      price:parseFloat(form.price), old:form.old?parseFloat(form.old):null,
-      name:{ru:form.name_ru,en:form.name_en||form.name_ru,lv:form.name_lv||form.name_ru},
-      desc:{ru:form.desc_ru,en:form.desc_en||form.desc_ru,lv:form.desc_lv||form.desc_ru},
+      price:parseFloat(form.price)||0,
+      old:form.old?parseFloat(form.old):null,
+      name:{ru:form.name_ru, lv:form.name_lv||form.name_ru, en:form.name_en||form.name_ru},
+      desc:{ru:form.desc_ru, lv:form.desc_lv||form.desc_ru, en:form.desc_en||form.desc_ru},
     };
     try {
       const url = editItem ? `${API}/api/admin/menu/${editItem.id}` : `${API}/api/admin/menu`;
       const r   = await fetch(url,{method:editItem?'PUT':'POST',headers:hdrs,body:JSON.stringify(body)});
-      if (!r.ok) throw new Error('Save error');
-      flash(editItem?'✅ Обновлено':'✅ Добавлено');
-      setEditItem(null); setForm(emptyForm()); setTab('menu');
-      await loadAll();
+      if (!r.ok) throw new Error('Saqlash xatosi');
+      flash(editItem?'✅ Yangilandi':'✅ Qo\'shildi');
+      setEdit(null); setForm(emptyForm()); setTab('menu'); await load();
     } catch(ex){ flash('❌ '+ex.message); }
-    finally { setLoad(false); }
+    finally { setSaving(false); }
   }
 
-  async function deleteItem(id) {
-    if (!confirm('Удалить позицию?')) return;
+  async function delItem(id) {
+    if (!confirm('Rostdan ham o\'chirish kerakmi?')) return;
     await fetch(`${API}/api/admin/menu/${id}`,{method:'DELETE',headers:hdrs});
-    flash('🗑 Удалено'); await loadAll();
+    flash('🗑 O\'chirildi'); await load();
   }
 
   async function toggleHit(id) {
     await fetch(`${API}/api/admin/menu/${id}/hit`,{method:'PATCH',headers:hdrs});
-    await loadAll();
+    await load();
   }
 
   function startEdit(item) {
-    setEditItem(item);
-    setForm({ cat:item.cat,e:item.e||'🍣',hit:item.hit||false,img:item.img||'',
-      price:item.price,old:item.old||'',
-      name_ru:item.name.ru,name_en:item.name.en,name_lv:item.name.lv||item.name.en,
-      desc_ru:item.desc.ru,desc_en:item.desc.en,desc_lv:item.desc.lv||item.desc.en });
+    setEdit(item);
+    setForm({
+      cat:item.cat, e:item.e||'🍣', hit:!!item.hit, img:item.img||'', price:item.price, old:item.old||'',
+      name_ru:item.name?.ru||'', name_lv:item.name?.lv||'', name_en:item.name?.en||'',
+      desc_ru:item.desc?.ru||'', desc_lv:item.desc?.lv||'', desc_en:item.desc?.en||'',
+    });
     setTab('add');
   }
 
-  const fmt = (n) => typeof n==='number' ? n.toFixed(2) : '0.00';
-  const fmtTime = (iso) => {
-    if (!iso) return '—';
-    return new Date(iso).toLocaleString('ru-RU',{timeZone:'Europe/Riga',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-  };
+  const CATS = ['cold','hot','tempura','gunkan','nigiri','sashimi','double','sets','soup','wok','burger','salad','poke','snacks','drinks'];
+  const EMOJIS = ['🍣','🔥','🍤','🎎','🥗','🍜','🍱','🥤','🍟','🍛','🍔','🎁','🍒','🦐','🥢'];
 
-  const CATS = ['cold','hot','tempura','gunkan','nigiri','sashimi','double','sets','soup','wok','burger','salad','snacks','drinks'];
-  const EMOJIS = ['🍣','🔥','🍤','🎎','🥗','🍜','🍱','🥤','🍟','🍛','🍔','🎁'];
-
-  const filteredOrders = orders.filter(o =>
-    (statusFilter==='all' || o.status===statusFilter) &&
+  const filtOrders = orders.filter(o=>
+    (stF==='all'||o.status===stF) &&
     (!search || o.name?.toLowerCase().includes(search.toLowerCase()) || String(o.id).includes(search))
   );
-
-  const filteredMenu = menu.filter(i =>
-    (catFilter==='all' || i.cat===catFilter) &&
-    (!search || i.name?.ru?.toLowerCase().includes(search.toLowerCase()))
+  const filtMenu = menu.filter(i=>
+    (catF==='all'||i.cat===catF) &&
+    (!search || i.name?.ru?.toLowerCase().includes(search.toLowerCase()) || i.name?.lv?.toLowerCase().includes(search.toLowerCase()))
   );
 
-  // Not logged in
+  // LOGIN
   if (!token) return (
-    <div className="adm-login">
-      <div className="adm-login-box">
-        <div className="adm-logo">🍣 SUSHI RĪGA</div>
-        <h2 className="adm-title">Панель администратора</h2>
-        <form onSubmit={adminLogin}>
+    <div style={{minHeight:'100vh',background:'#f5f5f5',display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
+      <div style={{background:'#fff',borderRadius:18,padding:'36px 32px',width:'100%',maxWidth:380,boxShadow:'0 8px 40px rgba(0,0,0,.12)'}}>
+        <div style={{textAlign:'center',marginBottom:24}}>
+          <div style={{fontSize:'2.5rem',marginBottom:8}}>🍒</div>
+          <div style={{fontSize:'1.3rem',fontWeight:900,color:'#e31e24'}}>Cherry Sushi</div>
+          <div style={{fontSize:'.85rem',color:'#888',marginTop:4}}>Admin Panel</div>
+        </div>
+        <form onSubmit={login}>
           <div className="form-group">
-            <label className="form-label">Секретный ключ</label>
-            <input className="form-input" type="password" placeholder="Введите ключ"
-              value={secret} onChange={e=>setSecret(e.target.value)} required/>
+            <label className="form-label">Parol</label>
+            <input className="form-input" type="password" placeholder="Admin parolini kiriting"
+              value={secret} onChange={e=>setSecret(e.target.value)} required autoFocus/>
           </div>
-          {loginErr && <div className="auth-err">{loginErr}</div>}
-          <button className="btn-primary" type="submit">Войти →</button>
+          {err && <div style={{background:'#fef2f2',color:'#e31e24',borderRadius:8,padding:'9px 12px',fontSize:'.8rem',marginBottom:12}}>{err}</div>}
+          <button className="btn-primary" type="submit">Kirish →</button>
         </form>
       </div>
     </div>
   );
 
   return (
-    <div className="adm">
-      {/* Header */}
-      <div className="adm-hd">
-        <div className="adm-hd-left">
-          <span className="adm-hd-logo">🍣 SUSHI RĪGA</span>
-          <span className="adm-hd-badge">Admin</span>
+    <div style={{minHeight:'100vh',background:'#f4f5f7',fontFamily:'Inter,sans-serif'}}>
+
+      {/* TOP BAR */}
+      <div style={{background:'#e31e24',padding:'0 24px',height:56,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:100,boxShadow:'0 2px 12px rgba(0,0,0,.2)'}}>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <span style={{fontSize:'1.5rem'}}>🍒</span>
+          <div>
+            <div style={{color:'#fff',fontWeight:900,fontSize:'.95rem',letterSpacing:'-.3px'}}>Cherry Sushi</div>
+            <div style={{color:'rgba(255,255,255,.65)',fontSize:'.68rem',marginTop:-1}}>Admin Panel</div>
+          </div>
         </div>
-        <div className="adm-hd-right">
-          <label className="adm-auto">
-            <input type="checkbox" checked={autoRefresh} onChange={e=>setAuto(e.target.checked)} style={{marginRight:4}}/>
-            Авто-обновление
-          </label>
-          <button className="adm-hd-link" onClick={loadAll}>🔄 Обновить</button>
-          <a href="/" target="_blank" className="adm-hd-link">Сайт ↗</a>
-          <button className="adm-logout" onClick={()=>{localStorage.removeItem('sr_admin');setToken('');}}>Выйти</button>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <button onClick={load} style={{background:'rgba(255,255,255,.15)',border:'none',color:'#fff',borderRadius:8,padding:'6px 12px',fontSize:'.75rem',fontWeight:600,cursor:'pointer'}}>🔄 Yangilash</button>
+          <a href="/" target="_blank" style={{background:'rgba(255,255,255,.15)',border:'none',color:'#fff',borderRadius:8,padding:'6px 12px',fontSize:'.75rem',fontWeight:600,cursor:'pointer',textDecoration:'none'}}>Sayt ↗</a>
+          <button onClick={()=>{localStorage.removeItem('sr_admin');setToken('');}} style={{background:'rgba(255,255,255,.2)',border:'none',color:'#fff',borderRadius:8,padding:'6px 14px',fontSize:'.75rem',fontWeight:700,cursor:'pointer'}}>Chiqish</button>
         </div>
       </div>
 
-      {msg && <div className="adm-msg">{msg}</div>}
+      {/* FLASH */}
+      {msg && <div style={{background:msg.startsWith('❌')?'#fef2f2':'#f0fff4',borderBottom:`3px solid ${msg.startsWith('❌')?'#e31e24':'#22c55e'}`,padding:'10px 24px',fontSize:'.85rem',fontWeight:600}}>{msg}</div>}
 
-      {/* Tabs */}
-      <div className="adm-tabs">
+      {/* TABS */}
+      <div style={{background:'#fff',borderBottom:'1px solid #e5e7eb',padding:'0 24px',display:'flex',gap:0,overflowX:'auto'}}>
         {[
-          ['dashboard','📊 Дашборд'],
-          ['orders',   `📦 Заказы${stats?.todayOrders?' ('+stats.todayOrders+')':''}` ],
-          ['menu',     `🍣 Меню (${menu.length})`],
-          ['add',      editItem?'✏️ Редактировать':'➕ Добавить'],
+          ['stats','📊 Statistika'],
+          ['orders',`📦 Buyurtmalar${orders.filter(o=>o.status==='new').length>0?` (${orders.filter(o=>o.status==='new').length} yangi)`:''}`],
+          ['menu',`🍣 Menyu (${menu.length})`],
+          ['add', editItem?'✏️ Tahrirlash':'➕ Qo\'shish'],
         ].map(([k,label])=>(
-          <button key={k} className={'adm-tab'+(tab===k?' on':'')}
-            onClick={()=>{ setTab(k); if(k!=='add'){setEditItem(null);setForm(emptyForm());} setSearch(''); }}>
+          <button key={k} onClick={()=>{ setTab(k); setSrch(''); if(k!=='add'){setEdit(null);setForm(emptyForm());} }}
+            style={{padding:'14px 18px',fontWeight:700,fontSize:'.82rem',background:'none',border:'none',borderBottom:`2.5px solid ${tab===k?'#e31e24':'transparent'}`,color:tab===k?'#e31e24':'#6b7280',cursor:'pointer',whiteSpace:'nowrap',transition:'color .15s'}}>
             {label}
           </button>
         ))}
       </div>
 
-      {/* ── DASHBOARD ── */}
-      {tab==='dashboard' && stats && (
-        <div className="adm-body">
-          {/* KPI cards */}
-          <div className="dash-kpi">
-            <div className="dash-card dash-card--red">
-              <div className="dash-card-val">€{fmt(stats.totalRevenue)}</div>
-              <div className="dash-card-lbl">Общая выручка</div>
-            </div>
-            <div className="dash-card">
-              <div className="dash-card-val">{stats.totalOrders}</div>
-              <div className="dash-card-lbl">Всего заказов</div>
-            </div>
-            <div className="dash-card dash-card--green">
-              <div className="dash-card-val">€{fmt(stats.todayRevenue)}</div>
-              <div className="dash-card-lbl">Сегодня выручка</div>
-            </div>
-            <div className="dash-card">
-              <div className="dash-card-val">{stats.todayOrders}</div>
-              <div className="dash-card-lbl">Сегодня заказов</div>
-            </div>
-          </div>
+      <div style={{maxWidth:1200,margin:'0 auto',padding:'20px 24px 60px'}}>
 
-          <div className="dash-row">
-            {/* Status breakdown */}
-            <div className="dash-block">
-              <div className="dash-block-title">📊 По статусам</div>
-              {Object.entries(STATUS_LABELS).map(([k,v])=>{
-                const cnt = stats.byStatus?.[k]||0;
-                const pct = stats.totalOrders ? Math.round(cnt/stats.totalOrders*100) : 0;
-                return (
-                  <div key={k} className="dash-stat-row">
-                    <span style={{flex:1,fontSize:'.83rem',fontWeight:600}}>{v.ru}</span>
-                    <span style={{marginRight:8,fontSize:'.83rem',color:'var(--muted)'}}>{cnt}</span>
-                    <div className="dash-bar-bg">
-                      <div className="dash-bar-fill" style={{width:pct+'%',background:v.txt}}/>
+        {/* ═══ STATS ═══ */}
+        {tab==='stats' && stats && (
+          <div>
+            {/* KPI */}
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:14,marginBottom:20}}>
+              {[
+                {label:'Umumiy daromad',val:`€${fmt(stats.totalRevenue)}`,color:'#e31e24',ico:'💰'},
+                {label:'Jami buyurtmalar',val:stats.totalOrders,color:'#2563eb',ico:'📦'},
+                {label:'Bugun daromad',val:`€${fmt(stats.todayRevenue)}`,color:'#16a34a',ico:'📅'},
+                {label:'Bugun buyurtma',val:stats.todayOrders,color:'#7c3aed',ico:'🔥'},
+              ].map((c,i)=>(
+                <div key={i} style={{background:'#fff',borderRadius:14,padding:'18px 20px',boxShadow:'0 1px 4px rgba(0,0,0,.08)',borderLeft:`4px solid ${c.color}`}}>
+                  <div style={{fontSize:'1rem',marginBottom:6}}>{c.ico}</div>
+                  <div style={{fontSize:'1.6rem',fontWeight:900,color:'#111',lineHeight:1.1}}>{c.val}</div>
+                  <div style={{fontSize:'.74rem',color:'#888',marginTop:4}}>{c.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:14}}>
+              {/* Status */}
+              <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',boxShadow:'0 1px 4px rgba(0,0,0,.08)'}}>
+                <div style={{fontWeight:800,fontSize:'.78rem',textTransform:'uppercase',letterSpacing:'.6px',color:'#6b7280',marginBottom:14}}>📊 Statuslar</div>
+                {Object.entries(STATUS).map(([k,v])=>{
+                  const cnt = stats.byStatus?.[k]||0;
+                  const pct = stats.totalOrders ? Math.round(cnt/stats.totalOrders*100) : 0;
+                  return (
+                    <div key={k} style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+                      <span style={{width:70,fontSize:'.78rem',fontWeight:600}}>{v.icon} {v.label}</span>
+                      <div style={{flex:1,height:6,background:'#f0f0f0',borderRadius:3,overflow:'hidden'}}>
+                        <div style={{height:'100%',width:pct+'%',background:v.text,borderRadius:3,transition:'width .4s'}}/>
+                      </div>
+                      <span style={{width:28,textAlign:'right',fontSize:'.78rem',fontWeight:700}}>{cnt}</span>
                     </div>
-                    <span style={{width:30,textAlign:'right',fontSize:'.78rem',color:'var(--muted)'}}>{pct}%</span>
+                  );
+                })}
+              </div>
+
+              {/* 7 days */}
+              <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',boxShadow:'0 1px 4px rgba(0,0,0,.08)'}}>
+                <div style={{fontWeight:800,fontSize:'.78rem',textTransform:'uppercase',letterSpacing:'.6px',color:'#6b7280',marginBottom:14}}>📈 So'nggi 7 kun</div>
+                {Object.entries(stats.last7||{}).map(([date,d])=>(
+                  <div key={date} style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+                    <span style={{width:36,fontSize:'.76rem',color:'#888'}}>{date.slice(5)}</span>
+                    <div style={{flex:1,height:6,background:'#f0f0f0',borderRadius:3,overflow:'hidden'}}>
+                      <div style={{height:'100%',width:Math.min(100,(d.revenue/Math.max(...Object.values(stats.last7||{}).map(x=>x.revenue||0),1))*100)+'%',background:'#e31e24',borderRadius:3}}/>
+                    </div>
+                    <span style={{fontSize:'.78rem',fontWeight:700,minWidth:50,textAlign:'right'}}>€{fmt(d.revenue)}</span>
+                    <span style={{fontSize:'.74rem',color:'#888',minWidth:30}}>{d.orders}ta</span>
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
 
-            {/* Last 7 days */}
-            <div className="dash-block">
-              <div className="dash-block-title">📈 Последние 7 дней</div>
-              {Object.entries(stats.last7||{}).map(([date,d])=>(
-                <div key={date} className="dash-stat-row">
-                  <span style={{flex:1,fontSize:'.8rem',color:'var(--muted)'}}>{date.slice(5)}</span>
-                  <span style={{fontSize:'.8rem',fontWeight:700,minWidth:50,textAlign:'right'}}>€{fmt(d.revenue)}</span>
-                  <span style={{fontSize:'.75rem',color:'var(--muted)',marginLeft:6}}>{d.orders} шт</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="dash-row">
             {/* Top items */}
-            <div className="dash-block">
-              <div className="dash-block-title">⭐ Топ блюда</div>
-              {(stats.topItems||[]).map((item,i)=>(
-                <div key={i} className="dash-stat-row">
-                  <span style={{width:20,fontSize:'.78rem',color:'var(--muted)'}}>{i+1}</span>
-                  <span style={{flex:1,fontSize:'.83rem',fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.name}</span>
-                  <span style={{fontSize:'.83rem',fontWeight:800,color:'var(--red)'}}>{item.qty} шт</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Payment methods */}
-            <div className="dash-block">
-              <div className="dash-block-title">💳 Способы оплаты</div>
-              {Object.entries(stats.byPay||{}).map(([k,v])=>(
-                <div key={k} className="dash-stat-row">
-                  <span style={{flex:1,fontSize:'.83rem'}}>{PAY_LABELS[k]||k}</span>
-                  <span style={{fontWeight:800,fontSize:'.9rem'}}>{v}</span>
-                </div>
-              ))}
-              <div className="dash-divider"/>
-              <div className="dash-stat-row">
-                <span style={{flex:1,fontSize:'.83rem',fontWeight:700}}>Позиций в меню</span>
-                <span style={{fontWeight:800}}>{stats.totalItems}</span>
-              </div>
-              <div className="dash-stat-row">
-                <span style={{flex:1,fontSize:'.83rem',fontWeight:700}}>Пользователей</span>
-                <span style={{fontWeight:800}}>{stats.totalUsers}</span>
+            <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',boxShadow:'0 1px 4px rgba(0,0,0,.08)'}}>
+              <div style={{fontWeight:800,fontSize:'.78rem',textTransform:'uppercase',letterSpacing:'.6px',color:'#6b7280',marginBottom:14}}>⭐ Top mahsulotlar</div>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:10}}>
+                {(stats.topItems||[]).map((item,i)=>(
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:'#fafafa',borderRadius:10}}>
+                    <span style={{fontSize:'1.3rem',fontWeight:900,color:'#e31e24',minWidth:24}}>#{i+1}</span>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:'.8rem',fontWeight:700,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.name}</div>
+                      <div style={{fontSize:'.72rem',color:'#888'}}>{item.qty} marta</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
+        )}
 
-          {/* Recent orders */}
-          <div className="dash-block" style={{marginTop:0}}>
-            <div className="dash-block-title">🕐 Последние заказы</div>
-            {orders.slice(0,10).map(o=>(
-              <div key={o.id} className="dash-order-row" onClick={()=>setTab('orders')}>
-                <span className="dash-order-id">#{o.id}</span>
-                <span className="dash-order-name">{o.name}</span>
-                <span className="dash-order-time">{fmtTime(o.createdAt)}</span>
-                <span className="adm-order-status adm-status-s" style={{background:STATUS_LABELS[o.status]?.color,color:STATUS_LABELS[o.status]?.txt}}>
-                  {STATUS_LABELS[o.status]?.ru||o.status}
-                </span>
-                <span className="dash-order-total">€{fmt(o.total)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+        {/* ═══ ORDERS ═══ */}
+        {tab==='orders' && (
+          <div>
+            {/* Filters */}
+            <div style={{display:'flex',gap:10,marginBottom:16,flexWrap:'wrap'}}>
+              <input placeholder="🔍 Ism yoki #raqam..." value={search} onChange={e=>setSrch(e.target.value)}
+                style={{flex:1,minWidth:200,height:40,border:'1.5px solid #d1d5db',borderRadius:10,padding:'0 14px',fontSize:'.84rem',outline:'none'}}/>
+              <select value={stF} onChange={e=>setStF(e.target.value)}
+                style={{height:40,border:'1.5px solid #d1d5db',borderRadius:10,padding:'0 10px',fontSize:'.82rem',outline:'none',cursor:'pointer'}}>
+                <option value="all">Barcha ({orders.length})</option>
+                {Object.entries(STATUS).map(([k,v])=>(
+                  <option key={k} value={k}>{v.icon} {v.label} ({orders.filter(o=>o.status===k).length})</option>
+                ))}
+              </select>
+            </div>
 
-      {/* ── ORDERS ── */}
-      {tab==='orders' && (
-        <div className="adm-body">
-          <div className="adm-filters">
-            <input className="adm-search" placeholder="🔍 Поиск по имени или #номеру..."
-              value={search} onChange={e=>setSearch(e.target.value)}/>
-            <select className="adm-select" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}>
-              <option value="all">Все статусы ({orders.length})</option>
-              {Object.entries(STATUS_LABELS).map(([k,v])=>(
-                <option key={k} value={k}>{v.ru} ({orders.filter(o=>o.status===k).length})</option>
-              ))}
-            </select>
-          </div>
+            {filtOrders.length===0 && (
+              <div style={{textAlign:'center',padding:'48px',color:'#9ca3af',background:'#fff',borderRadius:14}}>Buyurtmalar topilmadi</div>
+            )}
 
-          {filteredOrders.length===0 && (
-            <div style={{textAlign:'center',padding:'40px',color:'var(--muted)'}}>Заказов нет</div>
-          )}
-
-          {filteredOrders.map(o=>(
-            <div key={o.id} className="adm-order">
-              <div className="adm-order-hd">
-                <span className="adm-order-num">#{o.id}</span>
-                <span className="adm-order-status adm-status-s"
-                  style={{background:STATUS_LABELS[o.status||'new']?.color,color:STATUS_LABELS[o.status||'new']?.txt}}>
-                  {STATUS_LABELS[o.status||'new']?.ru}
-                </span>
-                <span className="adm-order-time">🕐 {fmtTime(o.createdAt)}</span>
-                <span className="adm-order-pay">{PAY_LABELS[o.payMethod]||o.payMethod}</span>
-                <select className="adm-status-sel" value={o.status||'new'}
-                  onChange={e=>updateStatus(o.id,e.target.value)}>
-                  {Object.entries(STATUS_LABELS).map(([k,v])=>(
-                    <option key={k} value={k}>{v.ru}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="adm-order-body">
-                <div className="adm-order-customer">
-                  <span>👤 <b>{o.name}</b></span>
-                  <span>📞 <a href={`tel:${o.phone}`}>{o.phone}</a></span>
-                  {o.note && <span>💬 {o.note}</span>}
-                </div>
-                <div className="adm-order-items">
-                  {o.items?.map((i,idx)=>(
-                    <span key={idx} className="adm-order-item">
-                      {i.e} {i.name?.ru} ×{i.qty} = €{((i.price||0)*i.qty).toFixed(2)}
+            <div style={{display:'flex',flexDirection:'column',gap:10}}>
+              {filtOrders.map(o => (
+                <div key={o.id} style={{background:'#fff',borderRadius:14,overflow:'hidden',boxShadow:'0 1px 4px rgba(0,0,0,.07)'}}>
+                  {/* Order header */}
+                  <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px 18px',background:'#fafafa',borderBottom:'1px solid #f0f0f0',flexWrap:'wrap'}}>
+                    <span style={{fontWeight:900,fontSize:.9+'rem',color:'#e31e24'}}>#{o.id}</span>
+                    <span style={{background:STATUS[o.status||'new']?.color,color:STATUS[o.status||'new']?.text,borderRadius:20,padding:'3px 10px',fontSize:'.72rem',fontWeight:700}}>
+                      {STATUS[o.status||'new']?.icon} {STATUS[o.status||'new']?.label}
                     </span>
-                  ))}
-                </div>
-                <div className="adm-order-total">
-                  💰 Итого: <b>€{fmt(o.total)}</b>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+                    <span style={{fontSize:'.74rem',color:'#9ca3af'}}>🕐 {fmtT(o.createdAt)}</span>
+                    <span style={{fontSize:'.74rem',color:'#9ca3af'}}>{PAY[o.payMethod]||o.payMethod}</span>
+                    <select value={o.status||'new'} onChange={e=>changeStatus(o.id,e.target.value)}
+                      style={{marginLeft:'auto',height:30,border:'1.5px solid #d1d5db',borderRadius:8,padding:'0 8px',fontSize:'.74rem',cursor:'pointer',outline:'none'}}>
+                      {Object.entries(STATUS).map(([k,v])=><option key={k} value={k}>{v.icon} {v.label}</option>)}
+                    </select>
+                  </div>
 
-      {/* ── MENU ── */}
-      {tab==='menu' && (
-        <div className="adm-body">
-          <div className="adm-filters">
-            <input className="adm-search" placeholder="🔍 Поиск по названию..."
-              value={search} onChange={e=>setSearch(e.target.value)}/>
-            <select className="adm-select" value={catFilter} onChange={e=>setCatFilter(e.target.value)}>
-              <option value="all">Все ({menu.length})</option>
-              {CATS.map(c=><option key={c} value={c}>{c} ({menu.filter(i=>i.cat===c).length})</option>)}
-            </select>
-          </div>
-          <div className="adm-grid">
-            {filteredMenu.map(item=>(
-              <div key={item.id} className="adm-card">
-                <div className="adm-card-img">
-                  {item.img ? <img src={item.img} alt="" onError={e=>e.target.style.display='none'}/> : <span style={{fontSize:'2.5rem'}}>{item.e}</span>}
-                  {item.hit && <span className="adm-hit">ХИТ</span>}
-                </div>
-                <div className="adm-card-body">
-                  <div className="adm-card-name">{item.name?.ru}</div>
-                  <div className="adm-card-cat">{item.cat}</div>
-                  <div className="adm-card-price">€{item.price?.toFixed(2)}</div>
-                </div>
-                <div className="adm-card-actions">
-                  <button className="adm-btn adm-btn-hit" onClick={()=>toggleHit(item.id)} title="Хит">{item.hit?'⭐':'☆'}</button>
-                  <button className="adm-btn adm-btn-edit" onClick={()=>startEdit(item)}>✏️</button>
-                  <button className="adm-btn adm-btn-del"  onClick={()=>deleteItem(item.id)}>🗑</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── ADD/EDIT ── */}
-      {tab==='add' && (
-        <div className="adm-body">
-          <form onSubmit={saveMenuItem} className="adm-form">
-            <h3 className="adm-form-title">
-              {editItem ? `✏️ Редактировать: ${editItem.name?.ru}` : '➕ Добавить позицию'}
-            </h3>
-            <div className="adm-row">
-              <div className="form-group">
-                <label className="form-label">Категория *</label>
-                <select className="form-input" value={form.cat} onChange={e=>setForm(f=>({...f,cat:e.target.value}))}>
-                  {CATS.map(c=><option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Эмодзи</label>
-                <select className="form-input" value={form.e} onChange={e=>setForm(f=>({...f,e:e.target.value}))}>
-                  {EMOJIS.map(em=><option key={em} value={em}>{em}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Хит продаж</label>
-                <select className="form-input" value={form.hit?'yes':'no'} onChange={e=>setForm(f=>({...f,hit:e.target.value==='yes'}))}>
-                  <option value="no">Нет</option>
-                  <option value="yes">⭐ Да</option>
-                </select>
-              </div>
-            </div>
-            <div className="adm-row">
-              <div className="form-group" style={{flex:2}}>
-                <label className="form-label">URL картинки</label>
-                <input className="form-input" type="url" placeholder="https://..."
-                  value={form.img} onChange={e=>setForm(f=>({...f,img:e.target.value}))}/>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Цена € *</label>
-                <input className="form-input" type="number" step="0.1" min="0" placeholder="8.90"
-                  value={form.price} onChange={e=>setForm(f=>({...f,price:e.target.value}))} required/>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Старая цена €</label>
-                <input className="form-input" type="number" step="0.1" min="0" placeholder="11.00"
-                  value={form.old} onChange={e=>setForm(f=>({...f,old:e.target.value}))}/>
-              </div>
-            </div>
-            {form.img && <img src={form.img} alt="" className="adm-preview" onError={e=>e.target.style.display='none'}/>}
-            <div className="adm-section">Название</div>
-            <div className="adm-row">
-              {[['ru','🇷🇺 RU'],['en','🇬🇧 EN'],['lv','🇱🇻 LV']].map(([l,lbl])=>(
-                <div key={l} className="form-group">
-                  <label className="form-label">{lbl}</label>
-                  <input className="form-input" placeholder={`Название (${l})`}
-                    value={form[`name_${l}`]} onChange={e=>setForm(f=>({...f,[`name_${l}`]:e.target.value}))} required={l==='ru'}/>
+                  {/* Order body */}
+                  <div style={{padding:'12px 18px'}}>
+                    <div style={{display:'flex',flexWrap:'wrap',gap:16,marginBottom:10,fontSize:'.84rem'}}>
+                      <span>👤 <b>{o.name}</b></span>
+                      <a href={`tel:${o.phone}`} style={{color:'#e31e24',textDecoration:'none'}}>📞 {o.phone}</a>
+                      {o.note && <span style={{color:'#6b7280'}}>💬 {o.note}</span>}
+                    </div>
+                    <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:10}}>
+                      {o.items?.map((it,i)=>(
+                        <span key={i} style={{background:'#f4f5f7',borderRadius:8,padding:'4px 10px',fontSize:'.76rem',fontWeight:600}}>
+                          {it.e} {it.name?.lv||it.name?.ru} ×{it.qty}
+                        </span>
+                      ))}
+                    </div>
+                    <div style={{fontWeight:900,fontSize:'.9rem',color:'#e31e24'}}>💰 Jami: €{fmt(o.total)}</div>
+                  </div>
                 </div>
               ))}
             </div>
-            <div className="adm-section">Описание</div>
-            <div className="adm-row">
-              {[['ru','🇷🇺 RU'],['en','🇬🇧 EN'],['lv','🇱🇻 LV']].map(([l,lbl])=>(
-                <div key={l} className="form-group">
-                  <label className="form-label">{lbl}</label>
-                  <input className="form-input" placeholder={`Описание (${l})`}
-                    value={form[`desc_${l}`]} onChange={e=>setForm(f=>({...f,[`desc_${l}`]:e.target.value}))}/>
+          </div>
+        )}
+
+        {/* ═══ MENU ═══ */}
+        {tab==='menu' && (
+          <div>
+            <div style={{display:'flex',gap:10,marginBottom:16,flexWrap:'wrap'}}>
+              <input placeholder="🔍 Mahsulot nomi..." value={search} onChange={e=>setSrch(e.target.value)}
+                style={{flex:1,minWidth:180,height:40,border:'1.5px solid #d1d5db',borderRadius:10,padding:'0 14px',fontSize:'.84rem',outline:'none'}}/>
+              <select value={catF} onChange={e=>setCatF(e.target.value)}
+                style={{height:40,border:'1.5px solid #d1d5db',borderRadius:10,padding:'0 10px',fontSize:'.82rem',outline:'none',cursor:'pointer'}}>
+                <option value="all">Barchasi ({menu.length})</option>
+                {CATS.map(c=><option key={c} value={c}>{c} ({menu.filter(i=>i.cat===c).length})</option>)}
+              </select>
+              <button onClick={()=>{setTab('add');setEdit(null);setForm(emptyForm());}}
+                style={{height:40,background:'#e31e24',color:'#fff',border:'none',borderRadius:10,padding:'0 18px',fontWeight:700,fontSize:'.84rem',cursor:'pointer'}}>
+                + Qo'shish
+              </button>
+            </div>
+
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:12}}>
+              {filtMenu.map(item=>(
+                <div key={item.id} style={{background:'#fff',borderRadius:12,overflow:'hidden',boxShadow:'0 1px 4px rgba(0,0,0,.07)',display:'flex',flexDirection:'column',transition:'transform .2s,box-shadow .2s'}}
+                  onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,.12)'}}
+                  onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='0 1px 4px rgba(0,0,0,.07)'}}>
+                  {/* Image */}
+                  <div style={{position:'relative',paddingTop:'65%',background:'#f4f5f7',overflow:'hidden'}}>
+                    {item.img
+                      ? <img src={item.img} alt="" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} onError={e=>e.target.style.display='none'}/>
+                      : <span style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'2.5rem'}}>{item.e}</span>}
+                    {item.hit && <span style={{position:'absolute',top:7,left:7,background:'#e31e24',color:'#fff',fontSize:'.55rem',fontWeight:900,padding:'2px 7px',borderRadius:5,textTransform:'uppercase'}}>HIT</span>}
+                  </div>
+                  {/* Info */}
+                  <div style={{padding:'10px 12px',flex:1}}>
+                    <div style={{fontSize:'.82rem',fontWeight:700,marginBottom:3,lineHeight:1.3}}>{item.name?.lv||item.name?.ru}</div>
+                    <div style={{fontSize:'.7rem',color:'#9ca3af',marginBottom:6}}>{item.cat}</div>
+                    <div style={{fontSize:'.92rem',fontWeight:900,color:'#e31e24'}}>€{item.price?.toFixed(2)}</div>
+                  </div>
+                  {/* Actions */}
+                  <div style={{display:'flex',gap:4,padding:'6px 10px 10px'}}>
+                    <button onClick={()=>toggleHit(item.id)} title={item.hit?'Hit o\'chirish':'Hit qilish'}
+                      style={{flex:1,height:30,borderRadius:7,border:'none',cursor:'pointer',background:item.hit?'#fef9c3':'#f4f5f7',fontSize:'.8rem',fontWeight:700}}>
+                      {item.hit?'⭐':'☆'}
+                    </button>
+                    <button onClick={()=>startEdit(item)}
+                      style={{flex:2,height:30,borderRadius:7,border:'none',cursor:'pointer',background:'#eff6ff',fontSize:'.78rem',fontWeight:700,color:'#2563eb'}}>
+                      ✏️ Tahrir
+                    </button>
+                    <button onClick={()=>delItem(item.id)}
+                      style={{flex:1,height:30,borderRadius:7,border:'none',cursor:'pointer',background:'#fff0f0',fontSize:'.8rem'}}>
+                      🗑
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
-            <div className="adm-form-btns">
-              <button className="btn-primary" type="submit" disabled={loading} style={{flex:1}}>
-                {loading?'⏳...' : editItem?'💾 Сохранить':'➕ Добавить в меню'}
-              </button>
-              <button type="button" className="btn-secondary" onClick={()=>{setTab('menu');setEditItem(null);setForm(emptyForm());}}>
-                Отмена
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+          </div>
+        )}
+
+        {/* ═══ ADD/EDIT ═══ */}
+        {tab==='add' && (
+          <div style={{background:'#fff',borderRadius:16,padding:'24px',boxShadow:'0 1px 4px rgba(0,0,0,.08)',maxWidth:800}}>
+            <h2 style={{fontSize:'1.05rem',fontWeight:800,marginBottom:20,color:'#111'}}>
+              {editItem ? `✏️ Tahrirlash: ${editItem.name?.lv||editItem.name?.ru}` : '➕ Yangi mahsulot qo\'shish'}
+            </h2>
+            <form onSubmit={saveItem}>
+
+              {/* Row 1 */}
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:16}}>
+                <div className="form-group">
+                  <label className="form-label">Kategoriya *</label>
+                  <select className="form-input" value={form.cat} onChange={e=>setForm(f=>({...f,cat:e.target.value}))}>
+                    {CATS.map(c=><option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Emoji</label>
+                  <select className="form-input" value={form.e} onChange={e=>setForm(f=>({...f,e:e.target.value}))}>
+                    {EMOJIS.map(em=><option key={em} value={em}>{em} {em}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Hit</label>
+                  <select className="form-input" value={form.hit?'yes':'no'} onChange={e=>setForm(f=>({...f,hit:e.target.value==='yes'}))}>
+                    <option value="no">Yo'q</option>
+                    <option value="yes">⭐ Ha</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Row 2 */}
+              <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:12,marginBottom:16}}>
+                <div className="form-group">
+                  <label className="form-label">Rasm URL</label>
+                  <input className="form-input" type="url" placeholder="https://..."
+                    value={form.img} onChange={e=>setForm(f=>({...f,img:e.target.value}))}/>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Narx € *</label>
+                  <input className="form-input" type="number" step="0.1" min="0" placeholder="8.90"
+                    value={form.price} onChange={e=>setForm(f=>({...f,price:e.target.value}))} required/>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Eski narx €</label>
+                  <input className="form-input" type="number" step="0.1" min="0" placeholder="11.00"
+                    value={form.old} onChange={e=>setForm(f=>({...f,old:e.target.value}))}/>
+                </div>
+              </div>
+
+              {form.img && <img src={form.img} alt="" style={{width:100,height:68,objectFit:'cover',borderRadius:8,marginBottom:14}} onError={e=>e.target.style.display='none'}/>}
+
+              {/* Names */}
+              <div style={{fontWeight:800,fontSize:'.76rem',textTransform:'uppercase',letterSpacing:'.7px',color:'#9ca3af',marginBottom:10,paddingBottom:6,borderBottom:'1px solid #f0f0f0'}}>Nomi</div>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:16}}>
+                {[['name_lv','🇱🇻 Latviešu'],['name_ru','🇷🇺 Русский'],['name_en','🇬🇧 English']].map(([k,lbl])=>(
+                  <div key={k} className="form-group">
+                    <label className="form-label">{lbl}</label>
+                    <input className="form-input" placeholder={`Nom (${k.slice(-2)})`}
+                      value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} required={k==='name_lv'||k==='name_ru'}/>
+                  </div>
+                ))}
+              </div>
+
+              {/* Descriptions */}
+              <div style={{fontWeight:800,fontSize:'.76rem',textTransform:'uppercase',letterSpacing:'.7px',color:'#9ca3af',marginBottom:10,paddingBottom:6,borderBottom:'1px solid #f0f0f0'}}>Tavsif</div>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:24}}>
+                {[['desc_lv','🇱🇻 Latviešu'],['desc_ru','🇷🇺 Русский'],['desc_en','🇬🇧 English']].map(([k,lbl])=>(
+                  <div key={k} className="form-group">
+                    <label className="form-label">{lbl}</label>
+                    <input className="form-input" placeholder={`Tavsif (${k.slice(-2)})`}
+                      value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))}/>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{display:'flex',gap:10}}>
+                <button className="btn-primary" type="submit" disabled={saving} style={{flex:1}}>
+                  {saving ? '⏳ Saqlanmoqda...' : editItem ? '💾 Saqlash' : '➕ Qo\'shish'}
+                </button>
+                <button type="button" className="btn-secondary"
+                  onClick={()=>{setTab('menu');setEdit(null);setForm(emptyForm());}}>
+                  Bekor qilish
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

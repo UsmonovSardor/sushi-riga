@@ -1,10 +1,11 @@
-const PHONE = '+37120918484';
+const PHONE   = '+37120918484';
 const ADDRESS = 'Lokomotīves iela 100, Rīga';
-const HOURS = '11:00 – 22:00';
+const HOURS   = '11:00 – 22:00';
+const BRAND   = 'Cherry Sushi';
 
 const T = {
   lv: {
-    city:'Rīga, Latvija', address:ADDRESS, phone:PHONE, hours:HOURS,
+    brand:BRAND, city:'Rīga, Latvija', address:ADDRESS, phone:PHONE, hours:HOURS,
     cart:'Grozs',
     c_hit:'Bestselleri', c_cold:'Aukstie rolli', c_hot:'Karstie rolli',
     c_tempura:'Tempura', c_special:'Gunkani / Nigiri / Sašimi',
@@ -19,13 +20,15 @@ const T = {
     s1t:'Svaigi rolli', s1s:'Katru dienu',
     s2t:'Dubultie sēti', s2s:'Vislabākā izvēle',
     s3t:'Sēti ar atlaidi', s3s:'Līdz 30% lētāk',
-    f_desc:'Suši Rīgā. Svaigi, garšīgi, ātri.',
+    f_desc:'Cherry Sushi — svaigi, garšīgi, ātri.',
     f_rights:'Visas tiesības aizsargātas.',
     search_placeholder:'Meklēt ēdienkarti...',
     daily:'Katru dienu',
+    login_required:'Lai pasūtītu, lūdzu piesakieties',
+    login_btn:'Pieteikties / Reģistrēties',
   },
   ru: {
-    city:'Рига, Латвия', address:ADDRESS, phone:PHONE, hours:HOURS,
+    brand:BRAND, city:'Рига, Латвия', address:ADDRESS, phone:PHONE, hours:HOURS,
     cart:'Корзина',
     c_hit:'Хиты', c_cold:'Холодные роллы', c_hot:'Горячие роллы',
     c_tempura:'Темпура', c_special:'Гункан / Нигири / Сашими',
@@ -40,13 +43,15 @@ const T = {
     s1t:'Свежие роллы', s1s:'Каждый день',
     s2t:'Дабл сеты', s2s:'Лучший выбор',
     s3t:'Сеты со скидкой', s3s:'До 30% дешевле',
-    f_desc:'Суши в Риге. Свежо, вкусно, быстро.',
+    f_desc:'Cherry Sushi — свежо, вкусно, быстро.',
     f_rights:'Все права защищены.',
     search_placeholder:'Поиск по меню...',
     daily:'Ежедневно',
+    login_required:'Для заказа необходимо войти',
+    login_btn:'Войти / Регистрация',
   },
   en: {
-    city:'Riga, Latvia', address:ADDRESS, phone:PHONE, hours:HOURS,
+    brand:BRAND, city:'Riga, Latvia', address:ADDRESS, phone:PHONE, hours:HOURS,
     cart:'Cart',
     c_hit:'Best Sellers', c_cold:'Cold Rolls', c_hot:'Hot Rolls',
     c_tempura:'Tempura', c_special:'Gunkan / Nigiri / Sashimi',
@@ -61,10 +66,12 @@ const T = {
     s1t:'Fresh Rolls', s1s:'Every Day',
     s2t:'Double Sets', s2s:'Best Choice',
     s3t:'Sets on Sale', s3s:'Up to 30% off',
-    f_desc:'Sushi in Riga. Fresh, delicious, fast.',
+    f_desc:'Cherry Sushi — fresh, delicious, fast.',
     f_rights:'All rights reserved.',
     search_placeholder:'Search menu...',
     daily:'Daily',
+    login_required:'Please sign in to place an order',
+    login_btn:'Sign In / Register',
   },
 };
 export default T;

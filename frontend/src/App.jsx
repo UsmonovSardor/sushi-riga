@@ -85,7 +85,7 @@ function MainApp() {
       <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
       <SideMenu      isOpen={menuOpen}   onClose={() => setMenuOpen(false)} />
       {authOpen  && <AuthModal  onClose={() => setAuthOpen(false)} />}
-      {orderOpen && <OrderModal isOpen={orderOpen} onClose={() => setOrderOpen(false)} />}
+      {orderOpen && <OrderModal isOpen={orderOpen} onClose={() => setOrderOpen(false)} onOpenAuth={() => { setOrderOpen(false); setAuthOpen(true); }} />}
     </>
   );
 }

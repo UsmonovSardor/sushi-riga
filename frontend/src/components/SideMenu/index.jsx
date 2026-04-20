@@ -29,7 +29,7 @@ export default function SideMenu({ isOpen, onClose }) {
       {isOpen && <div className="side-bg" onClick={onClose} />}
       <nav className={'side-panel ' + (isOpen ? 'open' : 'closed')} aria-hidden={!isOpen}>
         <div className="side-hd">
-          <span className="side-hd-title">🍣 SUSHI RĪGA</span>
+          <span className="side-hd-title">🍒 CHERRY SUSHI</span>
           <button className="side-x" onClick={onClose} aria-label="Close">✕</button>
         </div>
 
