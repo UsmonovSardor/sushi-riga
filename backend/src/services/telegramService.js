@@ -1,40 +1,48 @@
 'use strict';
 const config = require('../config');
-const TG_BASE = () => `https://api.telegram.org/bot${config.BOT_TOKEN}`;
 
 async function post(method, body) {
   const fetch = (await import('node-fetch')).default;
-  const r = await fetch(`${TG_BASE()}/${method}`, {
-    method: 'POST',
+  const r = await fetch(`https://api.telegram.org/bot${config.BOT_TOKEN}/${method}`, {
+    method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body:    JSON.stringify(body),
   });
   return r.json();
 }
 
-exports.sendOrder = async ({ name, phone, address, note, items, sub, del, lang }) => {
-  const num = Math.floor(Math.random() * 9000) + 1000;
-  const lines = items.map(i =>
-    `  - ${i.e} ${i.name[lang] || i.name.ru} x${i.qty}  EUR${(i.price*i.qty).toFixed(2)}`
-  ).join('\n');
-  const now   = new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Riga' });
-  const total = (sub + del).toFixed(2);
+exports.sendOrder = async ({ id, name, phone, note, items, total, payMethod, lang }) => {
+  const now = new Date().toLocaleString('ru-RU', { timeZone:'Europe/Riga' });
+
+  const payLabel = payMethod === 'card' ? '💳 Karta' : '💵 Naqd';
+
+  const lines = (items || []).map(i => {
+    const nm = (i.name && (i.name[lang] || i.name.lv || i.name.ru || i.name.en)) || String(i.id);
+    return `  ${i.e || '🍣'} ${nm} × ${i.qty}  —  €${(i.price * i.qty).toFixed(2)}`;
+  }).join('\n');
 
   const text = [
-    `SUSHI RIGA - ZAKAZ #${num}`,
-    `Ism: ${name}`,
-    `Tel: ${phone}`,
-    `Manzil: ${address}`,
-    note ? `Izoh: ${note}` : null,
+    `🍣 *SUSHI RĪGA — Zakaz #${id}*`,
     ``,
-    `Buyurtma:`,
+    `👤 *${name}*`,
+    `📞 ${phone}`,
+    note ? `💬 ${note}` : null,
+    ``,
+    `📦 *Buyurtma:*`,
     lines,
     ``,
-    `Yetkazib berish: ${del === 0 ? 'Bepul' : 'EUR' + del.toFixed(2)}`,
-    `JAMI: EUR${total}`,
-    `Vaqt: ${now}`,
+    `💰 *JAMI: €${Number(total).toFixed(2)}*`,
+    `${payLabel}`,
+    ``,
+    `🕐 ${now}`,
   ].filter(l => l !== null).join('\n');
 
-  const r = await post('sendMessage', { chat_id: config.CHAT_ID, text });
-  if (!r.ok) throw new Error('Telegram error: ' + r.description);
+  const r = await post('sendMessage', {
+    chat_id: config.CHAT_ID,
+    text,
+    parse_mode: 'Markdown',
+  });
+
+  if (!r.ok) console.error('Telegram error:', r.description);
+  return r;
 };

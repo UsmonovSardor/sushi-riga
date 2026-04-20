@@ -4,70 +4,83 @@ import T from '../../i18n/translations';
 
 const SLIDES = [
   {
-    bg: 'https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=1200&h=500&fit=crop',
-    color: '#c0181d',
-    title: { lv:'Svaigi rolli<br>katru dienu', ru:'Свежие роллы<br>каждый день', en:'Fresh rolls<br>every day' },
+    bg: 'https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=1400&h=600&fit=crop&q=85',
+    gradient: 'linear-gradient(110deg, rgba(180,18,22,.95) 0%, rgba(180,18,22,.7) 50%, rgba(0,0,0,.1) 100%)',
+    title: { lv:'Svaigi rolli\nkatru dienu', ru:'Свежие роллы\nкаждый день', en:'Fresh rolls\nevery day' },
     sub:   { lv:'Gatavoti no svaigiem produktiem', ru:'Готовим из свежих продуктов', en:'Made from fresh ingredients' },
-    target:'cold', emoji:'🍣',
+    badge: { lv:'🍣 Populārākais', ru:'🍣 Популярное', en:'🍣 Popular' },
+    target: 'cold',
   },
   {
-    bg: 'https://images.unsplash.com/photo-1553621042-f6e147245754?w=1200&h=500&fit=crop',
-    color: '#0f1e50',
-    title: { lv:'Dubultie sēti<br>lielāka garša', ru:'Дабл сеты<br>больше вкуса', en:'Double sets<br>more flavor' },
-    sub:   { lv:'Labākā izvēle kompānijai', ru:'Лучший выбор для компании', en:'Best choice for company' },
-    target:'double', emoji:'🎯',
+    bg: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=1400&h=600&fit=crop&q=85',
+    gradient: 'linear-gradient(110deg, rgba(10,20,80,.95) 0%, rgba(10,20,80,.7) 50%, rgba(0,0,0,.1) 100%)',
+    title: { lv:'Dubultie sēti\nlielāka garša', ru:'Дабл сеты\nбольше вкуса', en:'Double sets\nmore flavor' },
+    sub:   { lv:'Labākā izvēle kompānijai', ru:'Лучший выбор для компании', en:'Best choice for the company' },
+    badge: { lv:'🎯 Jaunums', ru:'🎯 Новинка', en:'🎯 New' },
+    target: 'double',
   },
   {
-    bg: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200&h=500&fit=crop',
-    color: '#7c3a00',
-    title: { lv:'Sēti ar atlaidi<br>līdz 30%', ru:'Сеты со скидкой<br>до 30%', en:'Sets on sale<br>up to 30%' },
+    bg: 'https://images.unsplash.com/photo-1559410545-0bdcd187e0a6?w=1400&h=600&fit=crop&q=85',
+    gradient: 'linear-gradient(110deg, rgba(100,45,0,.95) 0%, rgba(100,45,0,.7) 50%, rgba(0,0,0,.1) 100%)',
+    title: { lv:'Sēti ar atlaidi\nlīdz 30%', ru:'Сеты со скидкой\nдо 30%', en:'Sets on sale\nup to 30%' },
     sub:   { lv:'Pieredzējušu šefpavāru receptes', ru:'Рецепты опытных поваров', en:'Expert chef recipes' },
-    target:'sets', emoji:'🎁',
+    badge: { lv:'🔥 Akcija', ru:'🔥 Акция', en:'🔥 Sale' },
+    target: 'sets',
   },
 ];
 
-const FLOATERS = ['🍣','🥢','🍱','🫧','🌿'];
-
 export default function HeroSlider() {
-  const [idx, setIdx] = useState(0);
+  const [idx, setIdx]         = useState(0);
+  const [animKey, setAnimKey] = useState(0);
   const { lang } = useLanguage();
   const t = T[lang];
 
   useEffect(() => {
-    const id = setInterval(() => setIdx(i => (i + 1) % SLIDES.length), 5000);
+    const id = setInterval(() => {
+      setIdx(i => (i + 1) % SLIDES.length);
+      setAnimKey(k => k + 1);
+    }, 5000);
     return () => clearInterval(id);
   }, []);
 
   const go = target => {
     const el = document.getElementById('sec-' + target);
-    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 120, behavior:'smooth' });
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth' });
   };
+
+  const s = SLIDES[idx];
 
   return (
     <div className="hero">
-      {SLIDES.map((s, i) => (
+      {SLIDES.map((sl, i) => (
         <div key={i} className={'hero-slide' + (i === idx ? ' on' : '')}>
-          <div className="hero-bg" style={{ backgroundImage:`url(${s.bg})` }} />
-          <div className="hero-overlay" style={{ background:`linear-gradient(105deg,${s.color}ee 0%,${s.color}88 55%,transparent 100%)` }} />
-          <div className="hero-floaters" aria-hidden="true">
-            {FLOATERS.map((em, fi) => <span key={fi} className={`hero-floater hero-floater--${fi}`}>{em}</span>)}
-          </div>
-          <div className="hero-body">
-            <div className="hero-tag">{s.emoji} Sushi Rīga</div>
-            <div className="hero-title" dangerouslySetInnerHTML={{ __html: s.title[lang] || s.title.lv }} />
-            <div className="hero-sub">{s.sub[lang] || s.sub.lv}</div>
-            <button className="hero-cta" onClick={() => go(s.target)}>
-              <span>{t.s_order}</span>
-              <span className="hero-cta-arrow">→</span>
-            </button>
-          </div>
+          <div className="hero-bg" style={{ backgroundImage: `url(${sl.bg})` }} />
+          <div className="hero-overlay" style={{ background: sl.gradient }} />
         </div>
       ))}
+
+      {/* Content - animates on slide change */}
+      <div className="hero-body" key={animKey}>
+        <div className="hero-badge">{s.badge[lang] || s.badge.lv}</div>
+        <div className="hero-title">
+          {(s.title[lang] || s.title.lv).split('\n').map((line, i) => (
+            <div key={i} className={i === 1 ? 'hero-title-accent' : ''}>{line}</div>
+          ))}
+        </div>
+        <div className="hero-sub">{s.sub[lang] || s.sub.lv}</div>
+        <button className="hero-cta" onClick={() => go(s.target)}>
+          {t.s_order}
+          <span className="hero-cta-arrow">→</span>
+        </button>
+      </div>
+
+      {/* Dots */}
       <div className="hero-dots">
         {SLIDES.map((_, i) => (
-          <button key={i} className={'hero-dot' + (i === idx ? ' on' : '')} onClick={() => setIdx(i)} />
+          <button key={i} className={'hero-dot' + (i === idx ? ' on' : '')} onClick={() => { setIdx(i); setAnimKey(k => k+1); }} />
         ))}
       </div>
+      {/* Progress bar */}
       <div className="hero-progress"><div className="hero-progress-bar" key={idx} /></div>
     </div>
   );
