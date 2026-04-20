@@ -1,28 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 
-const PROMOS = [
-  { icon:'🚀', text:{ ru:'Доставка за 30-45 минут', en:'Delivery in 30-45 minutes', lv:'Piegāde 30-45 minūtēs' } },
-  { icon:'🎁', text:{ ru:'Бесплатная доставка от €25', en:'Free delivery from €25', lv:'Bezmaksas piegāde no €25' } },
-  { icon:'⭐', text:{ ru:'Свежие роллы каждый день', en:'Fresh rolls every day', lv:'Svaigas ruletes katru dienu' } },
-  { icon:'📞', text:{ ru:'Заказ по телефону: +371 XX XXX XXX', en:'Order by phone: +371 XX XXX XXX', lv:'Pasūtīt pa tālruni: +371 XX XXX XXX' } },
-  { icon:'📍', text:{ ru:'Lokomotīves iela 100, Rīga', en:'Lokomotīves iela 100, Rīga', lv:'Lokomotīves iela 100, Rīga' } },
-];
+const PROMOS = {
+  lv: [
+    { icon:'📍', text:'Lokomotīves iela 100, Rīga' },
+    { icon:'🕐', text:'Katru dienu: 11:00 – 22:00' },
+    { icon:'📞', text:'+371 20 918 484' },
+    { icon:'🍣', text:'Svaigi suši katru dienu!' },
+    { icon:'🎁', text:'Sēti ar atlaidi līdz 30%' },
+  ],
+  ru: [
+    { icon:'📍', text:'Lokomotīves iela 100, Rīga' },
+    { icon:'🕐', text:'Ежедневно: 11:00 – 22:00' },
+    { icon:'📞', text:'+371 20 918 484' },
+    { icon:'🍣', text:'Свежие суши каждый день!' },
+    { icon:'🎁', text:'Сеты со скидкой до 30%' },
+  ],
+  en: [
+    { icon:'📍', text:'Lokomotīves iela 100, Riga' },
+    { icon:'🕐', text:'Daily: 11:00 – 22:00' },
+    { icon:'📞', text:'+371 20 918 484' },
+    { icon:'🍣', text:'Fresh sushi every day!' },
+    { icon:'🎁', text:'Sets up to 30% off' },
+  ],
+};
 
 export default function PromoBar() {
-  const { lang }   = useLanguage();
+  const { lang } = useLanguage();
+  const list = PROMOS[lang] || PROMOS.lv;
   const [idx, setIdx] = useState(0);
+  const [key, setKey] = useState(0);
 
   useEffect(() => {
-    const id = setInterval(() => setIdx(i => (i + 1) % PROMOS.length), 3500);
+    const id = setInterval(() => {
+      setIdx(i => (i + 1) % list.length);
+      setKey(k => k + 1);
+    }, 3500);
     return () => clearInterval(id);
-  }, []);
+  }, [list.length]);
 
+  const p = list[idx];
   return (
     <div className="promo-bar">
-      <div className="promo-bar-inner" key={idx}>
-        <span className="promo-bar-icon">{PROMOS[idx].icon}</span>
-        <span className="promo-bar-text">{PROMOS[idx].text[lang] || PROMOS[idx].text.ru}</span>
+      <div className="promo-bar-inner" key={key}>
+        <span className="promo-bar-icon">{p.icon}</span>
+        <span className="promo-bar-text">{p.text}</span>
       </div>
     </div>
   );

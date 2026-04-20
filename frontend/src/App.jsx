@@ -3,19 +3,33 @@ import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider }     from './context/AuthContext';
 import { CartProvider }     from './context/CartContext';
 
-import Header       from './components/Header';
-import PromoBar     from './components/PromoBar';
-import CategoryNav  from './components/CategoryNav';
-import HeroSlider   from './components/HeroSlider';
-import MenuSection  from './components/MenuSection';
-import Cart         from './components/Cart';
-import CartBar      from './components/CartBar';
+import Header        from './components/Header';
+import PromoBar      from './components/PromoBar';
+import CategoryNav   from './components/CategoryNav';
+import HeroSlider    from './components/HeroSlider';
+import MenuSection   from './components/MenuSection';
+import Cart          from './components/Cart';
+import CartBar       from './components/CartBar';
 import SearchOverlay from './components/SearchOverlay';
-import SideMenu     from './components/SideMenu';
-import AuthModal    from './components/AuthModal';
-import OrderModal   from './components/OrderModal';
-import Footer       from './components/Footer';
-import AdminPage    from './pages/Admin';
+import SideMenu      from './components/SideMenu';
+import AuthModal     from './components/AuthModal';
+import OrderModal    from './components/OrderModal';
+import Footer        from './components/Footer';
+import AdminPage     from './pages/Admin';
+
+const SECTIONS = [
+  { id:'hit',     e:'⭐', k:'c_hit',     cats:['hit'] },
+  { id:'cold',    e:'🍣', k:'c_cold',    cats:['cold'] },
+  { id:'hot',     e:'🔥', k:'c_hot',     cats:['hot'] },
+  { id:'tempura', e:'🍤', k:'c_tempura', cats:['tempura'] },
+  { id:'special', e:'🎎', k:'c_special', cats:['gunkan','nigiri','sashimi'] },
+  { id:'double',  e:'🎯', k:'c_double',  cats:['double'] },
+  { id:'sets',    e:'🎁', k:'c_sets',    cats:['sets'] },
+  { id:'food',    e:'🍜', k:'c_food',    cats:['soup','wok','burger'] },
+  { id:'salad',   e:'🥗', k:'c_salad',   cats:['salad'] },
+  { id:'snacks',  e:'🍟', k:'c_snacks',  cats:['snacks'] },
+  { id:'drinks',  e:'🥤', k:'c_drinks',  cats:['drinks'] },
+];
 
 function MainApp() {
   const [cartOpen,   setCartOpen]   = useState(false);
@@ -24,37 +38,43 @@ function MainApp() {
   const [authOpen,   setAuthOpen]   = useState(false);
   const [orderOpen,  setOrderOpen]  = useState(false);
 
-  const openOrder = useCallback(() => { setCartOpen(false); setOrderOpen(true); }, []);
+  const openOrder = useCallback(() => {
+    setCartOpen(false);
+    setTimeout(() => setOrderOpen(true), 50);
+  }, []);
 
   if (window.location.pathname.startsWith('/admin')) return <AdminPage />;
 
   return (
     <>
       <Header
-        onCartOpen   ={() => setCartOpen(true)}
-        onMenuOpen   ={() => setMenuOpen(true)}
-        onSearchOpen ={() => setSearchOpen(true)}
-        onAuthOpen   ={() => setAuthOpen(true)}
+        onCartOpen  ={() => setCartOpen(true)}
+        onMenuOpen  ={() => setMenuOpen(true)}
+        onSearchOpen={() => setSearchOpen(true)}
+        onAuthOpen  ={() => setAuthOpen(true)}
       />
       <PromoBar />
       <CategoryNav />
       <main className="main">
         <HeroSlider />
-        <MenuSection />
+        {SECTIONS.map(s => (
+          <MenuSection
+            key={s.id}
+            sectionId={s.id}
+            emoji={s.e}
+            titleKey={s.k}
+            cats={s.cats}
+          />
+        ))}
       </main>
       <Footer />
 
       <CartBar onCheckout={openOrder} />
-
-      <Cart
-        isOpen    ={cartOpen}
-        onClose   ={() => setCartOpen(false)}
-        onCheckout={openOrder}
-      />
+      <Cart isOpen={cartOpen} onClose={() => setCartOpen(false)} onCheckout={openOrder} />
       <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
       <SideMenu      isOpen={menuOpen}   onClose={() => setMenuOpen(false)} />
-      {authOpen  && <AuthModal   onClose={() => setAuthOpen(false)} />}
-      {orderOpen && <OrderModal  isOpen={orderOpen} onClose={() => setOrderOpen(false)} />}
+      {authOpen  && <AuthModal  onClose={() => setAuthOpen(false)} />}
+      {orderOpen && <OrderModal isOpen={orderOpen} onClose={() => setOrderOpen(false)} />}
     </>
   );
 }

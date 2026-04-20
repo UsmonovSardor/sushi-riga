@@ -2,12 +2,16 @@ import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import T from '../../i18n/translations';
 
-const ADDRESS = 'Lokomotīves iela 100, Rīga';
 const MAP_URL = 'https://maps.google.com/?q=Lokomotīves+iela+100+Riga+Latvia';
 
 export default function Footer() {
   const { lang } = useLanguage();
   const t = T[lang];
+
+  const go = id => {
+    const el = document.getElementById('sec-' + id);
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 120, behavior:'smooth' });
+  };
 
   return (
     <footer className="footer">
@@ -19,53 +23,49 @@ export default function Footer() {
             <div className="footer-logo">🍣 SUSHI <span>RĪGA</span></div>
             <div className="footer-desc">{t.f_desc}</div>
             <div className="footer-socials">
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="footer-social">Instagram</a>
-              <a href="https://t.me" target="_blank" rel="noreferrer" className="footer-social">Telegram</a>
+              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="footer-social">Instagram ↗</a>
             </div>
           </div>
 
           {/* Menu */}
           <div>
-            <div className="footer-h">{lang==='ru'?'Меню':lang==='lv'?'Ēdienkarte':'Menu'}</div>
-            {['hit','cold','hot','sets','drinks'].map(k => (
-              <div key={k} className="footer-link" style={{cursor:'pointer'}}
-                onClick={() => {
-                  const el = document.getElementById('sec-'+k);
-                  if(el) window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-120,behavior:'smooth'});
-                }}>
-                {t['c_'+k]}
+            <div className="footer-h">{lang==='lv'?'Ēdienkarte':lang==='en'?'Menu':'Меню'}</div>
+            {[
+              ['hit','⭐',t.c_hit],['cold','🍣',t.c_cold],['hot','🔥',t.c_hot],
+              ['sets','🎁',t.c_sets],['drinks','🥤',t.c_drinks],
+            ].map(([id,e,label]) => (
+              <div key={id} className="footer-link footer-link--btn" onClick={() => go(id)}>
+                {e} {label}
               </div>
             ))}
           </div>
 
-          {/* Contacts */}
+          {/* Contacts - NO email */}
           <div>
             <div className="footer-h">{t.s_contacts}</div>
-            <a href="tel:+37100000000" className="footer-link footer-link--a">
-              📞 +371 XX XXX XXX
+            <a href={`tel:${t.phone}`} className="footer-link footer-link--a footer-contact-row">
+              <span>📞</span><span>{t.phone}</span>
             </a>
-            <a href="mailto:info@sushiriga.lv" className="footer-link footer-link--a">
-              ✉️ info@sushiriga.lv
+            <a href={MAP_URL} target="_blank" rel="noreferrer" className="footer-link footer-link--a footer-contact-row">
+              <span>📍</span><span>{t.address}</span>
             </a>
-            <a href={MAP_URL} target="_blank" rel="noreferrer" className="footer-link footer-link--a footer-addr">
-              📍 {ADDRESS}
-            </a>
-            <div className="footer-link footer-hours">
-              🕐 {lang==='ru'?'Ежедневно':lang==='lv'?'Katru dienu':'Daily'}: 11:00–23:00
+            <div className="footer-link footer-contact-row">
+              <span>🕐</span>
+              <span>{t.daily}: {t.hours}</span>
             </div>
           </div>
 
-          {/* Map embed */}
+          {/* Map */}
           <div>
-            <div className="footer-h">{lang==='ru'?'Мы на карте':lang==='lv'?'Mēs kartē':'Find us'}</div>
+            <div className="footer-h">{lang==='lv'?'Mēs kartē':lang==='en'?'Find us':'На карте'}</div>
             <a href={MAP_URL} target="_blank" rel="noreferrer" className="footer-map">
               <div className="footer-map-inner">
                 <span className="footer-map-pin">📍</span>
-                <div className="footer-map-txt">
+                <div>
                   <div className="footer-map-name">Sushi Rīga</div>
-                  <div className="footer-map-addr">{ADDRESS}</div>
+                  <div className="footer-map-addr">{t.address}</div>
                   <div className="footer-map-open">
-                    {lang==='ru'?'Открыть в Google Maps':lang==='lv'?'Atvērt Google Maps':'Open in Google Maps'} →
+                    {lang==='lv'?'Atvērt Google Maps':lang==='en'?'Open Google Maps':'Открыть карту'} →
                   </div>
                 </div>
               </div>
@@ -75,7 +75,7 @@ export default function Footer() {
         </div>
 
         <div className="footer-bar">
-          <span>© 2026 Sushi Rīga. {t.f_rights}</span>
+          <span>© {new Date().getFullYear()} Sushi Rīga. {t.f_rights}</span>
           <span>Made with ❤️ in Rīga</span>
         </div>
       </div>

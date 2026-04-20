@@ -4,104 +4,71 @@ import T from '../../i18n/translations';
 
 const SLIDES = [
   {
-    bg: 'https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=1200&h=400&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=1200&h=500&fit=crop',
     color: '#c0181d',
-    titleKey: 's1t', subKey: 's1s', target: 'sets',
-    emoji: '🍣',
+    title: { lv:'Svaigi rolli<br>katru dienu', ru:'Свежие роллы<br>каждый день', en:'Fresh rolls<br>every day' },
+    sub:   { lv:'Gatavoti no svaigiem produktiem', ru:'Готовим из свежих продуктов', en:'Made from fresh ingredients' },
+    target:'cold', emoji:'🍣',
   },
   {
-    bg: 'https://images.unsplash.com/photo-1553621042-f6e147245754?w=1200&h=400&fit=crop',
+    bg: 'https://images.unsplash.com/photo-1553621042-f6e147245754?w=1200&h=500&fit=crop',
     color: '#0f1e50',
-    titleKey: 's2t', subKey: 's2s', target: 'cold',
-    emoji: '🔥',
+    title: { lv:'Dubultie sēti<br>lielāka garša', ru:'Дабл сеты<br>больше вкуса', en:'Double sets<br>more flavor' },
+    sub:   { lv:'Labākā izvēle kompānijai', ru:'Лучший выбор для компании', en:'Best choice for company' },
+    target:'double', emoji:'🎯',
   },
   {
-    bg: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200&h=400&fit=crop',
-    color: '#a04600',
-    titleKey: 's3t', subKey: 's3s', target: 'sets',
-    emoji: '🎁',
+    bg: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200&h=500&fit=crop',
+    color: '#7c3a00',
+    title: { lv:'Sēti ar atlaidi<br>līdz 30%', ru:'Сеты со скидкой<br>до 30%', en:'Sets on sale<br>up to 30%' },
+    sub:   { lv:'Pieredzējušu šefpavāru receptes', ru:'Рецепты опытных поваров', en:'Expert chef recipes' },
+    target:'sets', emoji:'🎁',
   },
 ];
 
-const FLOATERS = ['🍣','🥢','🍱','🫧','🌊'];
+const FLOATERS = ['🍣','🥢','🍱','🫧','🌿'];
 
 export default function HeroSlider() {
-  const [idx, setIdx]   = useState(0);
-  const [prev, setPrev] = useState(null);
-  const [dir, setDir]   = useState(1);
+  const [idx, setIdx] = useState(0);
   const { lang } = useLanguage();
   const t = T[lang];
 
   useEffect(() => {
-    const id = setInterval(() => {
-      setPrev(idx);
-      setDir(1);
-      setIdx(i => (i + 1) % SLIDES.length);
-    }, 5000);
+    const id = setInterval(() => setIdx(i => (i + 1) % SLIDES.length), 5000);
     return () => clearInterval(id);
-  }, [idx]);
+  }, []);
 
-  const goTo = (i) => {
-    if (i === idx) return;
-    setPrev(idx);
-    setDir(i > idx ? 1 : -1);
-    setIdx(i);
-  };
-
-  const go = (target) => {
+  const go = target => {
     const el = document.getElementById('sec-' + target);
-    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth' });
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 120, behavior:'smooth' });
   };
-
-  const s = SLIDES[idx];
 
   return (
     <div className="hero">
-      {SLIDES.map((sl, i) => (
-        <div
-          key={i}
-          className={'hero-slide' + (i === idx ? ' on' : '')}
-        >
-          <div className="hero-bg" style={{ backgroundImage: `url(${sl.bg})` }} />
-          <div className="hero-overlay" style={{
-            background: `linear-gradient(105deg, ${sl.color}ee 0%, ${sl.color}99 55%, transparent 100%)`
-          }} />
-
-          {/* Floating emojis — animata style */}
+      {SLIDES.map((s, i) => (
+        <div key={i} className={'hero-slide' + (i === idx ? ' on' : '')}>
+          <div className="hero-bg" style={{ backgroundImage:`url(${s.bg})` }} />
+          <div className="hero-overlay" style={{ background:`linear-gradient(105deg,${s.color}ee 0%,${s.color}88 55%,transparent 100%)` }} />
           <div className="hero-floaters" aria-hidden="true">
-            {FLOATERS.map((em, fi) => (
-              <span key={fi} className={`hero-floater hero-floater--${fi}`}>{em}</span>
-            ))}
+            {FLOATERS.map((em, fi) => <span key={fi} className={`hero-floater hero-floater--${fi}`}>{em}</span>)}
           </div>
-
           <div className="hero-body">
-            <div className="hero-tag">{sl.emoji} Sushi Rīga</div>
-            <div className="hero-title" dangerouslySetInnerHTML={{ __html: t[sl.titleKey] }} />
-            <div className="hero-sub">{t[sl.subKey]}</div>
-            <button className="hero-cta" onClick={() => go(sl.target)}>
+            <div className="hero-tag">{s.emoji} Sushi Rīga</div>
+            <div className="hero-title" dangerouslySetInnerHTML={{ __html: s.title[lang] || s.title.lv }} />
+            <div className="hero-sub">{s.sub[lang] || s.sub.lv}</div>
+            <button className="hero-cta" onClick={() => go(s.target)}>
               <span>{t.s_order}</span>
               <span className="hero-cta-arrow">→</span>
             </button>
           </div>
         </div>
       ))}
-
-      {/* Dots */}
       <div className="hero-dots">
         {SLIDES.map((_, i) => (
-          <button
-            key={i}
-            className={'hero-dot' + (i === idx ? ' on' : '')}
-            onClick={() => goTo(i)}
-            aria-label={`Slide ${i + 1}`}
-          />
+          <button key={i} className={'hero-dot' + (i === idx ? ' on' : '')} onClick={() => setIdx(i)} />
         ))}
       </div>
-
-      {/* Progress bar */}
-      <div className="hero-progress">
-        <div className="hero-progress-bar" key={idx} />
-      </div>
+      <div className="hero-progress"><div className="hero-progress-bar" key={idx} /></div>
     </div>
   );
 }

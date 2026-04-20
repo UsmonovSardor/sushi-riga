@@ -558,3 +558,45 @@ button { user-select: none; -webkit-user-select: none; }
 
 /* ══ HEADER SCROLL SHADOW ══ */
 .header.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,.28); }
+
+/* ══ FOOTER CONTACT ROWS ══ */
+.footer-link--btn { cursor: pointer; transition: color .15s; }
+.footer-link--btn:hover { color: #fff; }
+.footer-contact-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 7px; }
+.footer-contact-row span:first-child { flex-shrink: 0; width: 18px; }
+
+/* ══ SIDE PHONE ══ */
+.side-phone { display: flex; align-items: center; gap: 8px; padding: 10px var(--px); font-size: .85rem; font-weight: 700; color: var(--red); text-decoration: none; border-bottom: 1px solid var(--border); }
+.side-phone:hover { background: #fff5f5; }
+
+/* ══ SKELETON LOADING ══ */
+.skeleton { display: block; background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%; animation: skeletonLoad 1.4s infinite ease-in-out; border-radius: 8px; }
+@keyframes skeletonLoad { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ══ PROFESSIONAL GRID IMPROVEMENTS ══ */
+.sec { margin-top: 24px; scroll-margin-top: 120px; }
+.sec:first-child { margin-top: 14px; }
+.sec-h { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+.sec-name { font-size: 1.1rem; font-weight: 800; color: var(--text); letter-spacing: -.3px; }
+.sec-cnt { background: var(--red); color: #fff; border-radius: 20px; padding: 2px 9px; font-size: .65rem; font-weight: 800; }
+
+/* ══ IMPROVED CARD ══ */
+.card-body { padding: 10px 11px 11px; }
+.card-name { font-size: .82rem; font-weight: 700; line-height: 1.35; margin-bottom: 4px; }
+.card-desc { font-size: .69rem; color: var(--muted); line-height: 1.45; flex: 1; margin-bottom: 10px; }
+
+/* ══ HERO TAG ══ */
+.hero-tag { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.3); }
+
+/* ══ SCROLLBAR STYLING ══ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bdr2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ══ SELECTION COLOR ══ */
+::selection { background: rgba(227,30,36,.15); }
+
+/* ══ FOCUS VISIBLE ══ */
+:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; border-radius: 4px; }
+button:focus-visible { outline: 2px solid var(--red); }
