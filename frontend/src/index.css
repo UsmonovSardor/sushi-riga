@@ -505,3 +505,99 @@ img { display: block; max-width: 100%; }
 .order-lock-ico   { font-size:3.5rem; margin-bottom:14px; }
 .order-lock-title { font-size:1.05rem; font-weight:800; color:var(--text); margin-bottom:8px; }
 .order-lock-sub   { font-size:.84rem; color:var(--muted); line-height:1.55; margin-bottom:4px; max-width:280px; margin-left:auto; margin-right:auto; }
+
+/* ══ PAYMENT STEP — Yandex Eda style ══ */
+.pay-step { padding: 4px 0; }
+
+.pay-step-header {
+  text-align: center;
+  padding: 16px 0 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.pay-step-amount {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: -1px;
+  margin-bottom: 4px;
+}
+.pay-step-hint {
+  font-size: .78rem;
+  color: var(--muted);
+}
+
+.pay-step-form {
+  margin-bottom: 16px;
+  min-height: 180px;
+}
+
+.pay-step-error {
+  background: #fef2f2;
+  color: var(--red);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: .82rem;
+  margin-bottom: 12px;
+  border: 1px solid rgba(227,30,36,.2);
+}
+
+.pay-step-btn {
+  width: 100%;
+  height: 54px;
+  background: var(--red);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background .15s, transform .12s, box-shadow .15s;
+  box-shadow: 0 4px 16px rgba(227,30,36,.3);
+  touch-action: manipulation;
+  margin-bottom: 10px;
+}
+.pay-step-btn:hover    { background: var(--red-dk); box-shadow: 0 6px 22px rgba(227,30,36,.4); }
+.pay-step-btn:active   { transform: scale(.97); }
+.pay-step-btn:disabled { opacity: .6; cursor: not-allowed; box-shadow: none; }
+
+.pay-step-back {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: .84rem;
+  cursor: pointer;
+  padding: 8px;
+  transition: color .15s;
+  margin-bottom: 14px;
+}
+.pay-step-back:hover { color: var(--text); }
+
+.pay-step-badges {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: .7rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* Auth gate */
+.order-auth-gate {
+  text-align: center;
+  padding: 24px 10px 10px;
+}
+.order-auth-ico   { font-size: 3.5rem; margin-bottom: 14px; }
+.order-auth-title { font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; }
+.order-auth-sub   { font-size: .84rem; color: var(--muted); line-height: 1.55; max-width: 280px; margin: 0 auto; }
