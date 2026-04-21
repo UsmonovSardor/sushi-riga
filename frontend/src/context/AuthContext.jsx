@@ -11,11 +11,16 @@ export function AuthProvider({ children }) {
     const token = localStorage.getItem('sr_token');
     if (!token) { setLoad(false); return; }
     fetch(`${BASE}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(8000),
     })
-      .then(r => r.ok ? r.json() : null)
-      .then(u => { if (u) setUser(u); else localStorage.removeItem('sr_token'); })
-      .catch(() => localStorage.removeItem('sr_token'))
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(u => { if (u?.id) setUser(u); else localStorage.removeItem('sr_token'); })
+      .catch(() => {
+        // Keep user logged in on network error - don't clear token
+        const saved = localStorage.getItem('sr_user');
+        if (saved) try { setUser(JSON.parse(saved)); } catch {}
+      })
       .finally(() => setLoad(false));
   }, []);
 
@@ -28,6 +33,7 @@ export function AuthProvider({ children }) {
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Registration error');
     localStorage.setItem('sr_token', d.token);
+    localStorage.setItem('sr_user', JSON.stringify(d.user));
     setUser(d.user);
     return d.user;
   };
@@ -41,12 +47,14 @@ export function AuthProvider({ children }) {
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Login error');
     localStorage.setItem('sr_token', d.token);
+    localStorage.setItem('sr_user', JSON.stringify(d.user));
     setUser(d.user);
     return d.user;
   };
 
   const logout = () => {
     localStorage.removeItem('sr_token');
+    localStorage.removeItem('sr_user');
     setUser(null);
   };
 

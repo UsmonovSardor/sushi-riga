@@ -27,22 +27,24 @@ function PayForm({ total, lang, onDone, onBack }) {
 
   return (
     <div className="stripe-wrap">
-      {/* Back header */}
       <div className="stripe-head">
         <button className="stripe-back" onClick={onBack}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
           {L('Atpakaļ','Назад','Back')}
         </button>
-        <span className="stripe-head-title">{L('Maksājums','Оплата','Payment')}</span>
+        <span className="stripe-head-title">{L('Maksājums','Оплата картой','Payment')}</span>
       </div>
 
-      {/* Amount badge */}
       <div className="stripe-amount">
-        <span className="stripe-amount-label">{L('Summa','Итого','Total')}</span>
-        <span className="stripe-amount-val">€{total}</span>
+        <div>
+          <div className="stripe-amount-label">{L('Apmaksas summa','Сумма к оплате','Amount due')}</div>
+          <div className="stripe-amount-val">€{total}</div>
+        </div>
+        <div className="stripe-amount-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        </div>
       </div>
 
-      {/* Stripe Element */}
       <div className="stripe-element">
         <PaymentElement options={{
           layout:'tabs',
@@ -51,12 +53,12 @@ function PayForm({ total, lang, onDone, onBack }) {
         }}/>
       </div>
 
-      {err && <div className="stripe-err">⚠️ {err}</div>}
+      {err && <div className="stripe-err"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> {err}</div>}
 
       <button className="stripe-pay-btn" onClick={pay} disabled={busy||!stripe}>
         {busy
           ? <><span className="spin"/> {L('Apstrādā...','Обработка...','Processing...')}</>
-          : L(`Apmaksāt €${total}`, `Оплатить €${total}`, `Pay €${total}`)
+          : <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> {L(`Apmaksāt €${total}`, `Оплатить €${total}`, `Pay €${total}`)}</>
         }
       </button>
 
@@ -102,8 +104,12 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
     if (!form.phone.trim()) return setErr(L('Ievadiet tālruni','Введите телефон','Enter phone'));
     setBusy(true);
     try {
+      const token = localStorage.getItem('sr_token');
+      const headers = {'Content-Type':'application/json'};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       const or = await fetch(`${BASE}/api/orders`,{
-        method:'POST', headers:{'Content-Type':'application/json'},
+        method:'POST', headers,
         body:JSON.stringify({...form,lang,payMethod:payM,items:cart.map(i=>({id:i.id,qty:i.qty}))}),
       });
       const od = await or.json();
@@ -111,7 +117,7 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
       setOid(od.orderId);
       if (payM==='cash'||!stripeP){ clear(); setStep('done'); return; }
       const pr = await fetch(`${BASE}/api/payment/create-intent`,{
-        method:'POST', headers:{'Content-Type':'application/json'},
+        method:'POST', headers,
         body:JSON.stringify({amount:total,orderId:od.orderId}),
       });
       const pd = await pr.json();
@@ -127,15 +133,24 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
     <>
       <div className="modal-bg" onClick={onClose}/>
       <div className="order-modal">
-        <div className="modal-drag"/>
+        <div className="order-modal-handle"/>
 
-        {/* ─ Gate ─ */}
+        {/* ─ Gate: not logged in ─ */}
         {!user && (
           <div className="order-gate">
-            <div className="gate-ico">🔐</div>
+            <div className="order-gate-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
             <div className="gate-title">{t.login_required}</div>
-            <div className="gate-sub">{L('Reģistrējieties, lai pasūtītu','Войдите, чтобы сделать заказ','Sign in to place an order')}</div>
-            <button className="primary-btn" onClick={()=>{onClose();setTimeout(onOpenAuth,80);}}>
+            <div className="gate-sub">{L('Pieteikties, lai pasūtītu gardumus','Войдите, чтобы оформить заказ','Sign in to place your order')}</div>
+            <div className="gate-benefits">
+              <div className="gate-benefit"><span>⚡</span>{L('Ātra reģistrācija','Быстрая регистрация','Quick registration')}</div>
+              <div className="gate-benefit"><span>📦</span>{L('Pasūtījumu vēsture','История заказов','Order history')}</div>
+              <div className="gate-benefit"><span>🎁</span>{L('Bonusa programma','Бонусная программа','Bonus program')}</div>
+            </div>
+            <button className="gate-btn" onClick={()=>{onClose();setTimeout(onOpenAuth,80);}}>
               {t.login_btn}
             </button>
           </div>
@@ -145,31 +160,38 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
         {user && step==='form' && <>
           <div className="order-header">
             <span className="order-header-title">{L('Noformēt pasūtījumu','Оформить заказ','Checkout')}</span>
-            <button className="modal-close-btn" onClick={onClose}>✕</button>
+            <button className="order-close-btn" onClick={onClose} aria-label="Close">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
 
           {/* Cart items */}
           <div className="order-items-block">
-            {cart.map(i=>(
-              <div key={i.id} className="order-item-row">
-                <span className="oitem-e">{i.e}</span>
-                <span className="oitem-name">{i.name[lang]}</span>
-                <span className="oitem-qty">×{i.qty}</span>
-                <span className="oitem-sum">€{(i.price*i.qty).toFixed(2)}</span>
-              </div>
-            ))}
+            <div className="order-items-list">
+              {cart.map(i=>(
+                <div key={i.id} className="order-item-row">
+                  <span className="oitem-e">{i.e}</span>
+                  <span className="oitem-name">{i.name[lang]}</span>
+                  <span className="oitem-qty">×{i.qty}</span>
+                  <span className="oitem-sum">€{(i.price*i.qty).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
             <div className="order-total-bar">
               <span>{t.total}</span>
               <span className="order-total-price">€{total.toFixed(2)}</span>
             </div>
           </div>
 
-          {/* Contact */}
+          {/* Contact fields */}
           <div className="order-fields">
             {[
-              ['name','text','name',L('Vārds','Имя','Name'),'*',L('Jūsu vārds','Ваше имя','Your name'),'👤'],
-              ['phone','tel','tel',L('Tālrunis','Телефон','Phone'),'*','+371 XX XXX XXX','📞'],
-              ['note','text','off',L('Piezīmes','Комментарий','Note'),'',L('Bez sīpoliem...','Без лука...','No onion...'),'💬'],
+              ['name','text','name',L('Vārds','Имя','Name'),'*',L('Jūsu vārds','Ваше имя','Your name'),
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>],
+              ['phone','tel','tel',L('Tālrunis','Телефон','Phone'),'*','+371 XX XXX XXX',
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>],
+              ['note','text','off',L('Piezīmes','Комментарий','Note'),'',L('Bez sīpoliem...','Без лука...','No onion...'),
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>],
             ].map(([k,type,ac,lbl,req,ph,ico])=>(
               <div key={k} className="ofield">
                 <label className="ofield-label">{lbl}{req&&<span className="req"> {req}</span>}</label>
@@ -183,12 +205,18 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
             ))}
           </div>
 
-          {/* Payment */}
+          {/* Payment method */}
           <div className="pay-section-title">{L('Apmaksas veids','Способ оплаты','Payment method')}</div>
           <div className="pay-opts">
             {[
-              ['cash','💵',L('Skaidra nauda','Наличные','Cash'),L('Pie saņemšanas','При получении','On pickup')],
-              ['card','💳','Visa / Mastercard','Apple Pay · Google Pay'],
+              ['cash',
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
+                L('Skaidra nauda','Наличные','Cash'),
+                L('Pie saņemšanas','При получении','On pickup')],
+              ['card',
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
+                'Visa / Mastercard',
+                'Apple Pay · Google Pay'],
             ].map(([k,ico,name,hint])=>(
               <button key={k} className={'pay-opt'+(payM===k?' active':'')} onClick={()=>setPayM(k)}>
                 <span className="pay-opt-ico">{ico}</span>
@@ -196,24 +224,28 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
                   <span className="pay-opt-name">{name}</span>
                   <span className="pay-opt-hint">{hint}</span>
                 </span>
-                <span className={'pay-opt-dot'+(payM===k?' on':'')}/>
+                <span className={'pay-opt-check'+(payM===k?' on':'')}>
+                  {payM===k && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                </span>
               </button>
             ))}
           </div>
 
-          {err && <div className="oerr">⚠️ {err}</div>}
+          {err && <div className="oerr"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> {err}</div>}
 
-          <button className="primary-btn order-submit-btn" onClick={submit} disabled={busy}>
-            {busy
-              ? <><span className="spin"/> {L('Apstrādā...','Обработка...','Processing...')}</>
-              : payM==='cash'
-                ? L('✅ Apstiprināt','✅ Подтвердить заказ','✅ Confirm order')
-                : `💳 ${L('Turpināt apmaksu →','К оплате →','Continue to payment →')}`
-            }
-          </button>
+          <div className="order-submit-wrap">
+            <button className="order-submit-btn" onClick={submit} disabled={busy}>
+              {busy
+                ? <><span className="spin"/> {L('Apstrādā...','Обработка...','Processing...')}</>
+                : payM==='cash'
+                  ? <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> {L('Apstiprināt pasūtījumu','Подтвердить заказ','Confirm order')}</>
+                  : <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> {L('Turpināt apmaksu','К оплате','Continue to payment')}</>
+              }
+            </button>
+          </div>
         </>}
 
-        {/* ─ Stripe ─ */}
+        {/* ─ Stripe payment ─ */}
         {user && step==='pay' && secret && stripeP && (
           <Elements stripe={stripeP} options={{
             clientSecret:secret,
@@ -222,10 +254,10 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
               variables:{
                 colorPrimary:'#e31e24', colorBackground:'#fff',
                 colorText:'#111', fontFamily:'Inter,system-ui,sans-serif',
-                borderRadius:'11px', fontSizeBase:'15px',
+                borderRadius:'12px', fontSizeBase:'15px',
               },
               rules:{
-                '.Input':{border:'1.5px solid #d1d5db',boxShadow:'none',padding:'11px 13px'},
+                '.Input':{border:'1.5px solid #d1d5db',boxShadow:'none',padding:'12px 14px'},
                 '.Input:focus':{border:'1.5px solid #e31e24',boxShadow:'0 0 0 3px rgba(227,30,36,.1)'},
                 '.Tab':{border:'1.5px solid #e5e7eb',borderRadius:'10px'},
                 '.Tab--selected':{border:'2px solid #e31e24'},
@@ -240,15 +272,19 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
           </Elements>
         )}
 
-        {/* ─ Done ─ */}
+        {/* ─ Success ─ */}
         {user && step==='done' && (
           <div className="order-done">
-            <div className="done-ring">🎉</div>
+            <div className="done-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
             <div className="done-title">{t.ok_title}</div>
             <div className="done-num">#{oid}</div>
             <div className="done-sub">{t.ok_text}</div>
-            <button className="primary-btn done-btn" onClick={()=>{setStep('form');onClose();}}>
-              {L('Lieliski! 👍','Отлично! 👍','Great! 👍')}
+            <button className="done-btn" onClick={()=>{setStep('form');onClose();}}>
+              {L('Labi! 👍','Отлично! 👍','Great! 👍')}
             </button>
           </div>
         )}
