@@ -10,35 +10,44 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-const ALLOWED = [
+// ── Allowed origins ──────────────────────────────────────────────────────────
+const ORIGINS = [
   'https://cherrysushi.eu',
   'https://www.cherrysushi.eu',
   'http://cherrysushi.eu',
+  'http://www.cherrysushi.eu',
 ];
 
-app.use(helmet());
-app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin) return cb(null, true); // same-origin / curl
-    const ok =
-      ALLOWED.includes(origin) ||
-      origin.endsWith('.railway.app') ||
-      origin.endsWith('.onrender.com') ||
-      origin.includes('localhost');
-    cb(null, ok ? null : new Error('CORS'), ok);
-  },
-  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization'],
-  credentials: true,
-}));
+function isAllowed(origin) {
+  if (!origin) return true;                     // curl / server-to-server
+  if (ORIGINS.includes(origin)) return true;
+  if (/\.railway\.app$/.test(origin)) return true;
+  if (/localhost/.test(origin)) return true;
+  return false;
+}
 
-app.use(rateLimit({ windowMs:15*60*1000, max:500, standardHeaders:true, legacyHeaders:false }));
-app.use(express.json({ limit:'200kb' }));
+// Raw headers — fires before everything, guarantees CORS even on error
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (isAllowed(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
+});
+
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(cors({ origin: (o, cb) => cb(null, isAllowed(o)), credentials: true, optionsSuccessStatus: 200 }));
+app.use(rateLimit({ windowMs: 15*60*1000, max: 500, standardHeaders: true, legacyHeaders: false }));
+app.use(express.json({ limit: '200kb' }));
 app.use(morgan(config.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
-app.get('/health', (_req, res) => res.json({ status:'ok', ts: new Date() }));
+app.get('/health', (_req, res) => res.json({ status: 'ok', ts: new Date(), cors: 'enabled' }));
 app.use('/api', router);
-app.use((_req, res) => res.status(404).json({ error:'Not found' }));
+app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 app.use(errorHandler);
 
 module.exports = app;

@@ -1,8 +1,12 @@
-// API URL - works on any domain
 const BASE_URL = import.meta.env.VITE_API_URL || 'https://sushi-riga-api-production-7b54.up.railway.app';
-const BASE = `${BASE_URL}/api`;
+export const BASE = `${BASE_URL}/api`;
+export default BASE_URL;
 
-const json = async (res) => {
+const req = async (url, opts = {}) => {
+  const res = await fetch(url, {
+    ...opts,
+    headers: { 'Content-Type':'application/json', 'Cache-Control':'no-cache', ...(opts.headers||{}) },
+  });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || res.statusText);
@@ -10,21 +14,9 @@ const json = async (res) => {
   return res.json();
 };
 
-const opts = { headers: { 'Cache-Control': 'no-cache' } };
-
 export const menuApi = {
-  getAll:        ()    => fetch(`${BASE}/menu`, opts).then(json),
-  getByCategory: (cat) => fetch(`${BASE}/menu/category/${cat}`, opts).then(json),
-  getHits:       ()    => fetch(`${BASE}/menu/hits`, opts).then(json),
-  search:        (q)   => fetch(`${BASE}/menu/search?q=${encodeURIComponent(q)}`, opts).then(json),
+  getAll:        ()    => req(`${BASE}/menu`),
+  getByCategory: (cat) => req(`${BASE}/menu/category/${cat}`),
+  getHits:       ()    => req(`${BASE}/menu/hits`),
+  search:        (q)   => req(`${BASE}/menu/search?q=${encodeURIComponent(q)}`),
 };
-
-export const orderApi = {
-  create: (data) => fetch(`${BASE}/orders`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  }).then(json),
-};
-
-export default BASE_URL;
