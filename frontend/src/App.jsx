@@ -38,7 +38,10 @@ function MainApp() {
   const [authOpen,   setAuthOpen]   = useState(false);
   const [orderOpen,  setOrderOpen]  = useState(false);
 
-  const openCart  = useCallback(() => setCartOpen(true),  []);
+  const openCart = useCallback(() => {
+  alert('cart click ishladi');
+  setCartOpen(true);
+}, []);
   const closeCart = useCallback(() => setCartOpen(false), []);
   const openOrder = useCallback(() => {
     setCartOpen(false);
