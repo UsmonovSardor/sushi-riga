@@ -3,7 +3,7 @@ import { useCart }     from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import T from '../../i18n/translations';
 
-export default function CartBar({ onOpen, onCheckout }) {
+export default function CartBar({ onOpen, onCheckout, hidden = false }){
   const { cart, total } = useCart();
   const { lang }        = useLanguage();
   const t               = T[lang];
@@ -22,7 +22,7 @@ export default function CartBar({ onOpen, onCheckout }) {
     }
   }, [count]);
 
-  if (!show) return null;
+  if (!show || hidden) return null;
 
   return (
     <div className={'cartbar' + (bump ? ' cartbar--bump' : '')}>
