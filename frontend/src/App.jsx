@@ -73,7 +73,11 @@ function MainApp() {
       <Footer />
 
       {/* Floating cart bar */}
-      <CartBar onOpen={openCart} onCheckout={openOrder} />
+      <CartBar
+  onOpen={openCart}
+  onCheckout={openOrder}
+  hidden={cartOpen || orderOpen}
+/>
 
       {/* Drawers & Modals */}
       <Cart
