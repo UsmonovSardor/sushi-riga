@@ -3,7 +3,7 @@ import { useCart }     from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import T from '../../i18n/translations';
 
-export default function CartBar({ onOpen, onCheckout, hidden = false }){
+ export default function CartBar({ onOpen, onCheckout, hidden = false }) {
   const { cart, total } = useCart();
   const { lang }        = useLanguage();
   const t               = T[lang];
