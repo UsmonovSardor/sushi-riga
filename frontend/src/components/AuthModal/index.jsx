@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth }     from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 
-export default function AuthModal({ onClose }) {
+export default function AuthModal({ onClose, onSuccess }) {
   const { login, register } = useAuth();
   const { lang } = useLanguage();
   const [tab,  setTab]  = useState('login');
@@ -20,10 +20,13 @@ export default function AuthModal({ onClose }) {
     if (busy) return;
     setErr(''); setBusy(true);
     try {
-      if (tab==='login') await login(form.email, form.password);
-      else               await register(form.name, form.email, form.password, form.phone);
-      setOk(true);
-      setTimeout(onClose, 1200);
+       if (tab==='login') await login(form.email, form.password);
+else               await register(form.name, form.email, form.password, form.phone);
+setOk(true);
+setTimeout(() => {
+  onClose();
+  onSuccess?.();
+}, 1200);
     } catch(ex) { setErr(ex.message); }
     finally { setBusy(false); }
   };
