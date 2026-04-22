@@ -5,7 +5,7 @@ import { useLanguage } from '../../context/LanguageContext';
 export default function AuthModal({ onClose, onSuccess }) {
   const { register } = useAuth();
   const { lang } = useLanguage();
-  const [tab, setTab] = useState('reg');
+  
   const [form, setForm] = useState({ name:'', surname:'', address:'', phone:'' });
   const [err,  setErr]  = useState('');
   const [busy, setBusy] = useState(false);
@@ -44,17 +44,13 @@ setTimeout(() => {
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
             </div>
-            <p className="auth-ok-title">
-              {tab==='login'
-                ? L('Laipni lūdzam!','Добро пожаловать!','Welcome back!')
-                : L('Konts izveidots!','Аккаунт создан!','Account created!')}
-            </p>
-            <p className="auth-ok-sub">{L('Tiekamies drīz!','Приятного аппетита!','Enjoy your meal!')}</p>
+            <p className="auth-ok-title">{L('Dati saglabāti!','Данные сохранены!','Details saved!')}</p>
+            <p className="auth-ok-sub">{L('Turpinām pasūtījumu','Продолжаем оформление заказа','Continuing your order')}</p>
           </div>
         ) : (
           <>
             <div className="auth-header">
-              <div className="auth-brand">🍒 Cherry Sushi</div>
+              <div className="auth-brand">{L('Piegādes dati','Данные доставки','Delivery details')}</div>
               <button className="auth-close-x" onClick={onClose} aria-label="Close">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
@@ -116,7 +112,7 @@ setTimeout(() => {
               <button className="auth-btn" type="submit" disabled={busy}>
                 {busy
                   ? <><span className="spin"/>  {L('Apstrādā...','Обработка...','Please wait...')}</>
-                  : L('Izveidot kontu','Создать аккаунт','Create account')
+                  : L('Saglabāt un turpināt','Сохранить и продолжить','Save and continue')
                 }
               </button>
             </form>
