@@ -24,7 +24,7 @@ export default function Cart({ isOpen, onClose, onCheckout }) {
             </span>
             {count > 0 && <span className="cart-hd-count">{count}</span>}
           </div>
-          <button className="cart-close" onClick={onClose}>✕</button>
+          <button className="cart-close" onClick={onClose} aria-label={lbl('Aizvērt grozu', 'Закрыть корзину', 'Close cart')}>✕</button>
         </div>
 
         <div className="cart-body">
@@ -42,7 +42,7 @@ export default function Cart({ isOpen, onClose, onCheckout }) {
                     <span className="cart-item-emoji">{item.e}</span>
                     <img
                       src={item.img}
-                      alt=""
+                      alt={item.name[lang]}
                       onError={(e) => {
                         e.target.style.opacity = 0;
                       }}
@@ -55,9 +55,9 @@ export default function Cart({ isOpen, onClose, onCheckout }) {
                   </div>
 
                   <div className="cart-item-qty">
-                    <button className="cart-qbtn" onClick={() => change(item.id, -1)}>−</button>
+                    <button className="cart-qbtn" onClick={() => change(item.id, -1)} aria-label={lbl('Samazināt daudzumu', 'Уменьшить количество', 'Decrease quantity')}>−</button>
                     <span className="cart-qnum">{item.qty}</span>
-                    <button className="cart-qbtn cart-qbtn--p" onClick={() => change(item.id, 1)}>+</button>
+                    <button className="cart-qbtn cart-qbtn--p" onClick={() => change(item.id, 1)} aria-label={lbl('Palielināt daudzumu', 'Увеличить количество', 'Increase quantity')}>+</button>
                   </div>
 
                   <div className="cart-item-sum">€{(item.price * item.qty).toFixed(2)}</div>
@@ -80,8 +80,8 @@ export default function Cart({ isOpen, onClose, onCheckout }) {
                 setTimeout(onCheckout, 100);
               }}
             >
-              {lbl('Noformēt pasūtījumu', 'Оформить заказ', 'Checkout')}
-              <span className="cart-order-btn-arrow">→</span>
+              {lbl('Noformēt pasūtījumu', 'Оформить заказ', 'Proceed to checkout')}
+              <span className="cart-order-btn-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
             </button>
           </div>
         )}
