@@ -76,7 +76,7 @@ function MainApp() {
       <CartBar
   onOpen={openCart}
   onCheckout={openOrder}
-  hidden={cartOpen || orderOpen}
+  hidden={cartOpen || orderOpen || authOpen}
 />
 
       {/* Drawers & Modals */}
