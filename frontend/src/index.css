@@ -448,3 +448,5 @@ button{user-select:none;-webkit-user-select:none}
 .cart-item{animation:fadeIn .3s ease}
 .cart-order-btn{letter-spacing:.3px}
 .cart-footer-total span:last-child{color:var(--red)}
+
+@media(max-width:768px){.admin-wrap{padding:14px!important}.admin-topbar{padding:10px 14px!important;height:auto!important}.admin-tabs{padding:0 12px!important}.admin-filters{grid-template-columns:1fr!important}.admin-order-meta{grid-template-columns:1fr!important}.admin-stats-grid{grid-template-columns:1fr!important}.admin-two-col{grid-template-columns:1fr!important}}
