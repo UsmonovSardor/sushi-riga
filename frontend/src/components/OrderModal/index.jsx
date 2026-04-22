@@ -74,7 +74,7 @@ function PayForm({ total, lang, onDone, onBack }) {
 export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
   const { cart, total, clear } = useCart();
   const { lang } = useLanguage();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const t = T[lang];
   const L = (lv,ru,en) => lang==='lv'?lv:lang==='ru'?ru:en;
 
@@ -136,7 +136,7 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
         <div className="order-modal-handle"/>
 
         {/* ─ Gate: not logged in ─ */}
-        {!user && (
+        {!loading && !user && (
           <div className="order-gate">
             <div className="order-gate-icon">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -157,7 +157,7 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
         )}
 
         {/* ─ Form ─ */}
-        {user && step==='form' && <>
+        {!loading && user && step==='form' && <>
           <div className="order-header">
             <span className="order-header-title">{L('Noformēt pasūtījumu','Оформить заказ','Checkout')}</span>
             <button className="order-close-btn" onClick={onClose} aria-label="Close">
