@@ -328,7 +328,7 @@ img{display:block;max-width:100%}
 .order-close-btn{width:32px;height:32px;border-radius:50%;background:var(--bg);border:none;display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;transition:background .15s}
 .order-close-btn svg{stroke:currentColor}
 .order-close-btn:hover{background:var(--border)}
-.order-items-block{padding:16px 20px 0;border-bottom:1px solid var(--border);margin-bottom:0}
+.order-items-block{padding:12px 20px 0;border-bottom:1px solid var(--border);margin-bottom:0;max-height:180px;overflow-y:auto}
 .order-items-list{display:flex;flex-direction:column;gap:0}
 .order-item-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f3f3f3;font-size:.83rem}
 .order-item-row:last-child{border:none}
@@ -338,7 +338,7 @@ img{display:block;max-width:100%}
 .oitem-sum{font-weight:800;flex-shrink:0;font-size:.86rem}
 .order-total-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 0 14px;font-size:.88rem;font-weight:600;color:var(--muted)}
 .order-total-price{font-size:1.4rem;font-weight:900;color:var(--text)}
-.order-fields{padding:16px 20px 0}
+.order-fields{padding:12px 20px 0}
 .ofield{margin-bottom:12px}
 .ofield-label{display:block;font-size:.73rem;font-weight:700;color:var(--muted);margin-bottom:5px}
 .ofield-input-w{display:flex;align-items:center;border:1.5px solid var(--border2);border-radius:12px;background:#fafafa;transition:border-color .18s,box-shadow .18s,background .18s}
@@ -403,7 +403,7 @@ img{display:block;max-width:100%}
 .stripe-amount-val{font-size:2rem;font-weight:900;letter-spacing:-1px}
 .stripe-amount-badge{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center}
 .stripe-amount-badge svg{stroke:#fff}
-.stripe-element{margin-bottom:16px;min-height:180px}
+.stripe-element{margin-bottom:12px;min-height:140px}
 .stripe-err{display:flex;align-items:center;gap:6px;background:#fef2f2;color:var(--red);border-radius:10px;padding:10px 14px;font-size:.82rem;margin-bottom:14px}
 .stripe-err svg{stroke:var(--red);flex-shrink:0}
 .stripe-pay-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:56px;background:var(--red);color:#fff;border:none;border-radius:16px;font-size:.96rem;font-weight:800;cursor:pointer;transition:background .15s,transform .12s;margin-bottom:16px;box-shadow:0 4px 18px rgba(227,30,36,.32);touch-action:manipulation}
@@ -444,15 +444,7 @@ img{display:block;max-width:100%}
 button{user-select:none;-webkit-user-select:none}
 
 /* ORDER MODAL FOOTER */
-.order-modal-ft{
-  position: sticky;
-  bottom: 0;
-  background: #fff;
-  padding: 16px;
-  border-top: 1px solid #eee;
-  box-shadow: 0 -8px 20px rgba(0,0,0,.08);
-  z-index: 5;
-}
+.order-modal-ft{position:sticky;bottom:0;background:#fff;padding:14px 20px;border-top:1px solid var(--border);box-shadow:0 -8px 20px rgba(0,0,0,.08);z-index:5}
 .cart-item{animation:fadeIn .3s ease}
 .cart-order-btn{letter-spacing:.3px}
 .cart-footer-total span:last-child{color:var(--red)}
