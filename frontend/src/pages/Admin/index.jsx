@@ -150,7 +150,7 @@ export default function Admin() {
     <div style={{minHeight:'100vh',background:'#f4f5f7',fontFamily:'Inter,sans-serif'}}>
 
       {/* TOP BAR */}
-      <div style={{background:'#e31e24',padding:'0 24px',height:56,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:100,boxShadow:'0 2px 12px rgba(0,0,0,.2)'}}>
+      <div style={{background:'#e31e24',padding:'10px 16px',minHeight:64,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',position:'sticky',top:0,zIndex:100,boxShadow:'0 2px 12px rgba(0,0,0,.2)'}}>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           <span style={{fontSize:'1.5rem'}}>🍒</span>
           <div>
@@ -158,10 +158,10 @@ export default function Admin() {
             <div style={{color:'rgba(255,255,255,.65)',fontSize:'.68rem',marginTop:-1}}>Admin Panel</div>
           </div>
         </div>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
-          <button onClick={load} style={{background:'rgba(255,255,255,.15)',border:'none',color:'#fff',borderRadius:8,padding:'6px 12px',fontSize:'.75rem',fontWeight:600,cursor:'pointer'}}>🔄 Yangilash</button>
-          <a href="/" target="_blank" style={{background:'rgba(255,255,255,.15)',border:'none',color:'#fff',borderRadius:8,padding:'6px 12px',fontSize:'.75rem',fontWeight:600,cursor:'pointer',textDecoration:'none'}}>Sayt ↗</a>
-          <button onClick={()=>{localStorage.removeItem('sr_admin');setToken('');}} style={{background:'rgba(255,255,255,.2)',border:'none',color:'#fff',borderRadius:8,padding:'6px 14px',fontSize:'.75rem',fontWeight:700,cursor:'pointer'}}>Chiqish</button>
+        <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',justifyContent:'flex-end'}}>
+          <button onClick={load} style={{background:'rgba(255,255,255,.14)',border:'1px solid rgba(255,255,255,.18)',color:'#fff',borderRadius:12,padding:'8px 14px',fontSize:'.75rem',fontWeight:700,cursor:'pointer',backdropFilter:'blur(8px)'}}>🔄 Yangilash</button>
+          <a href="/" target="_blank" style={{background:'rgba(255,255,255,.14)',border:'1px solid rgba(255,255,255,.18)',color:'#fff',borderRadius:12,padding:'8px 14px',fontSize:'.75rem',fontWeight:700,cursor:'pointer',textDecoration:'none',backdropFilter:'blur(8px)'}}>Sayt ↗</a>
+          <button onClick={()=>{localStorage.removeItem('sr_admin');setToken('');}} style={{background:'#fff',border:'none',color:'#e31e24',borderRadius:12,padding:'8px 14px',fontSize:'.75rem',fontWeight:800,cursor:'pointer'}}>Chiqish</button>
         </div>
       </div>
 
@@ -169,7 +169,7 @@ export default function Admin() {
       {msg && <div style={{background:msg.startsWith('❌')?'#fef2f2':'#f0fff4',borderBottom:`3px solid ${msg.startsWith('❌')?'#e31e24':'#22c55e'}`,padding:'10px 24px',fontSize:'.85rem',fontWeight:600}}>{msg}</div>}
 
       {/* TABS */}
-      <div style={{background:'#fff',borderBottom:'1px solid #e5e7eb',padding:'0 24px',display:'flex',gap:0,overflowX:'auto'}}>
+      <div style={{background:'#fff',borderBottom:'1px solid #e5e7eb',padding:'0 16px',display:'flex',gap:6,overflowX:'auto',position:'sticky',top:64,zIndex:90}}>
         {[
           ['stats','📊 Statistika'],
           ['orders',`📦 Buyurtmalar${orders.filter(o=>o.status==='new').length>0?` (${orders.filter(o=>o.status==='new').length} yangi)`:''}`],
@@ -177,7 +177,7 @@ export default function Admin() {
           ['add', editItem?'✏️ Tahrirlash':'➕ Qo\'shish'],
         ].map(([k,label])=>(
           <button key={k} onClick={()=>{ setTab(k); setSrch(''); if(k!=='add'){setEdit(null);setForm(emptyForm());} }}
-            style={{padding:'14px 18px',fontWeight:700,fontSize:'.82rem',background:'none',border:'none',borderBottom:`2.5px solid ${tab===k?'#e31e24':'transparent'}`,color:tab===k?'#e31e24':'#6b7280',cursor:'pointer',whiteSpace:'nowrap',transition:'color .15s'}}>
+            style={{padding:'14px 16px',fontWeight:800,fontSize:'.82rem',background:tab===k?'#fff5f5':'transparent',border:'none',borderBottom:`2.5px solid ${tab===k?'#e31e24':'transparent'}`,color:tab===k?'#e31e24':'#6b7280',cursor:'pointer',whiteSpace:'nowrap',transition:'all .15s',borderTopLeftRadius:12,borderTopRightRadius:12}}
             {label}
           </button>
         ))}
@@ -261,11 +261,11 @@ export default function Admin() {
         {tab==='orders' && (
           <div>
             {/* Filters */}
-            <div style={{display:'flex',gap:10,marginBottom:16,flexWrap:'wrap'}}>
+            <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 220px',gap:12,marginBottom:18}}>
               <input placeholder="🔍 Ism yoki #raqam..." value={search} onChange={e=>setSrch(e.target.value)}
-                style={{flex:1,minWidth:200,height:40,border:'1.5px solid #d1d5db',borderRadius:10,padding:'0 14px',fontSize:'.84rem',outline:'none'}}/>
+                style={{width:'100%',height:48,border:'1.5px solid #d1d5db',borderRadius:14,padding:'0 16px',fontSize:'.9rem',outline:'none',background:'#fff'}}
               <select value={stF} onChange={e=>setStF(e.target.value)}
-                style={{height:40,border:'1.5px solid #d1d5db',borderRadius:10,padding:'0 10px',fontSize:'.82rem',outline:'none',cursor:'pointer'}}>
+                style={{height:48,border:'1.5px solid #d1d5db',borderRadius:14,padding:'0 14px',fontSize:'.85rem',outline:'none',cursor:'pointer',background:'#fff'}}
                 <option value="all">Barcha ({orders.length})</option>
                 {Object.entries(STATUS).map(([k,v])=>(
                   <option key={k} value={k}>{v.icon} {v.label} ({orders.filter(o=>o.status===k).length})</option>
@@ -279,9 +279,9 @@ export default function Admin() {
 
             <div style={{display:'flex',flexDirection:'column',gap:10}}>
               {filtOrders.map(o => (
-                <div key={o.id} style={{background:'#fff',borderRadius:14,overflow:'hidden',boxShadow:'0 1px 4px rgba(0,0,0,.07)'}}>
+                <div key={o.id} style={{background:'#fff',borderRadius:20,overflow:'hidden',boxShadow:'0 10px 30px rgba(15,23,42,.08)',border:'1px solid #eef0f3'}}>
                   {/* Order header */}
-                  <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px 18px',background:'#fafafa',borderBottom:'1px solid #f0f0f0',flexWrap:'wrap'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:10,padding:'14px 18px',background:'#fcfcfd',borderBottom:'1px solid #f1f3f5',flexWrap:'wrap'}}>
                     <span style={{fontWeight:900,fontSize:.9+'rem',color:'#e31e24'}}>#{o.id}</span>
                     <span style={{background:STATUS[o.status||'new']?.color,color:STATUS[o.status||'new']?.text,borderRadius:20,padding:'3px 10px',fontSize:'.72rem',fontWeight:700}}>
                       {STATUS[o.status||'new']?.icon} {STATUS[o.status||'new']?.label}
@@ -289,26 +289,27 @@ export default function Admin() {
                     <span style={{fontSize:'.74rem',color:'#9ca3af'}}>🕐 {fmtT(o.createdAt)}</span>
                     <span style={{fontSize:'.74rem',color:'#9ca3af'}}>{PAY[o.payMethod]||o.payMethod}</span>
                     <select value={o.status||'new'} onChange={e=>changeStatus(o.id,e.target.value)}
-                      style={{marginLeft:'auto',height:30,border:'1.5px solid #d1d5db',borderRadius:8,padding:'0 8px',fontSize:'.74rem',cursor:'pointer',outline:'none'}}>
+                      style={{marginLeft:'auto',height:38,border:'1.5px solid #d1d5db',borderRadius:12,padding:'0 12px',fontSize:'.76rem',cursor:'pointer',outline:'none',background:'#fff',fontWeight:700}}
                       {Object.entries(STATUS).map(([k,v])=><option key={k} value={k}>{v.icon} {v.label}</option>)}
                     </select>
                   </div>
 
                   {/* Order body */}
-                  <div style={{padding:'12px 18px'}}>
-                    <div style={{display:'flex',flexWrap:'wrap',gap:16,marginBottom:10,fontSize:'.84rem'}}>
+                    <div style={{padding:'16px 18px'}}>
+                      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:10,marginBottom:12,fontSize:'.84rem'}}>
                       <span>👤 <b>{o.name}</b></span>
                       <a href={`tel:${o.phone}`} style={{color:'#e31e24',textDecoration:'none'}}>📞 {o.phone}</a>
                       {o.note && <span style={{color:'#6b7280'}}>💬 {o.note}</span>}
                     </div>
-                    <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:10}}>
+                      <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:14}}>
                       {o.items?.map((it,i)=>(
-                        <span key={i} style={{background:'#f4f5f7',borderRadius:8,padding:'4px 10px',fontSize:'.76rem',fontWeight:600}}>
+                       <span key={i} style={{background:'#f8fafc',borderRadius:999,padding:'6px 12px',fontSize:'.76rem',fontWeight:700,border:'1px solid #eef2f7'}}>
+      
                           {it.e} {it.name?.lv||it.name?.ru} ×{it.qty}
                         </span>
                       ))}
                     </div>
-                    <div style={{fontWeight:900,fontSize:'.9rem',color:'#e31e24'}}>💰 Jami: €{fmt(o.total)}</div>
+                      <div style={{fontWeight:900,fontSize:'1rem',color:'#e31e24',display:'flex',justifyContent:'space-between',alignItems:'center',paddingTop:4}}><span>💰 Jami</span><span>€{fmt(o.total)}</span></div>
                   </div>
                 </div>
               ))}
@@ -332,10 +333,9 @@ export default function Admin() {
                 + Qo'shish
               </button>
             </div>
-
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:12}}>
+             <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))',gap:16}}>
               {filtMenu.map(item=>(
-                <div key={item.id} style={{background:'#fff',borderRadius:12,overflow:'hidden',boxShadow:'0 1px 4px rgba(0,0,0,.07)',display:'flex',flexDirection:'column',transition:'transform .2s,box-shadow .2s'}}
+                 <div key={item.id} style={{background:'#fff',borderRadius:18,overflow:'hidden',boxShadow:'0 10px 24px rgba(15,23,42,.08)',display:'flex',flexDirection:'column',transition:'transform .2s,box-shadow .2s',border:'1px solid #eef0f3'}}
                   onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,.12)'}}
                   onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='0 1px 4px rgba(0,0,0,.07)'}}>
                   {/* Image */}
