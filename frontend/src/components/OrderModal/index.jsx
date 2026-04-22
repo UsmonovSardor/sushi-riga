@@ -80,27 +80,26 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
 
   const [step,   setStep]  = useState('form');
   const [payM,   setPayM]  = useState('cash');
-  const [form,   setForm]  = useState(()=>{
-    try{ const s=JSON.parse(localStorage.getItem('sr_form')||'{}'); return{name:s.name||'',phone:s.phone||'',note:''}; }
-    catch{ return{name:'',phone:'',note:''}; }
-  });
+  const [form, setForm] = useState(()=>{ try{ const s=JSON.parse(localStorage.getItem('sr_form')||'{}'); return { name:s.name||'', surname:s.surname||'', address:s.address||'', phone:s.phone||'', note:'' }; } catch { return { name:'', surname:'', address:'', phone:'', note:'' }; } });
   const [busy,   setBusy]  = useState(false);
   const [err,    setErr]   = useState('');
   const [oid,    setOid]   = useState(null);
   const [secret, setSec]   = useState('');
 
-  useEffect(()=>{ if(user) setForm(f=>({...f,name:user.name||f.name,phone:user.phone||f.phone})); },[user]);
+  useEffect(()=>{ if(user) setForm(f=>({...f,name:user.name||f.name,surname:user.surname||f.surname,address:user.address||f.address,phone:user.phone||f.phone})); },[user]);
   useEffect(()=>{ if(isOpen){setStep('form');setErr('');} },[isOpen]);
 
   const sf = (k,v) => setForm(f=>{
     const n={...f,[k]:v};
-    try{localStorage.setItem('sr_form',JSON.stringify({name:n.name,phone:n.phone}));}catch{}
+   try{localStorage.setItem('sr_form',JSON.stringify({name:n.name,surname:n.surname,address:n.address,phone:n.phone}));}catch{}
     return n;
   });
 
   const submit = async () => {
     setErr('');
-    if (!form.name.trim())  return setErr(L('Ievadiet vārdu','Введите имя','Enter name'));
+    if (!form.name.trim()) return setErr(L('Ievadiet vārdu','Введите имя','Enter name'));
+    if (!form.surname.trim()) return setErr(L('Ievadiet uzvārdu','Введите фамилию','Enter surname'));
+    if (!form.address.trim()) return setErr(L('Ievadiet adresi','Введите адрес','Enter address'));
     if (!form.phone.trim()) return setErr(L('Ievadiet tālruni','Введите телефон','Enter phone'));
     setBusy(true);
     try {
@@ -143,15 +142,15 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
               </svg>
             </div>
-            <div className="gate-title">{t.login_required}</div>
-            <div className="gate-sub">{L('Pieteikties, lai pasūtītu gardumus','Войдите, чтобы оформить заказ','Sign in to place your order')}</div>
+            <div className="gate-title">{L('Piegādes dati','Данные доставки','Delivery details')}</div>
+            <div className="gate-sub">{L('Ievadiet piegādes datus, lai turpinātu pasūtījumu','Введите данные доставки, чтобы продолжить заказ','Enter delivery details to continue your order')}</div>
             <div className="gate-benefits">
               <div className="gate-benefit"><span>⚡</span>{L('Ātra reģistrācija','Быстрая регистрация','Quick registration')}</div>
               <div className="gate-benefit"><span>📦</span>{L('Pasūtījumu vēsture','История заказов','Order history')}</div>
               <div className="gate-benefit"><span>🎁</span>{L('Bonusa programma','Бонусная программа','Bonus program')}</div>
             </div>
             <button className="gate-btn" onClick={()=>{onClose();setTimeout(onOpenAuth,80);}}>
-              {t.login_btn}
+              {L('Ievadīt datus','Ввести данные','Enter details')}
             </button>
           </div>
         )}
@@ -186,20 +185,23 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
           {/* Contact fields */}
           <div className="order-fields">
             {[
-              ['name','text','name',L('Vārds','Имя','Name'),'*',L('Jūsu vārds','Ваше имя','Your name'),
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>],
-              ['phone','tel','tel',L('Tālrunis','Телефон','Phone'),'*','+371 XX XXX XXX',
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>],
-              ['note','text','off',L('Piezīmes','Комментарий','Note'),'',L('Bez sīpoliem...','Без лука...','No onion...'),
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>],
+             ['name','text','name',L('Vārds','Имя','Name'),'*',L('Jūsu vārds','Ваше имя','Your name'),
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>],
+             ['surname','text','family-name',L('Uzvārds','Фамилия','Surname'),'*',L('Jūsu uzvārds','Ваша фамилия','Your surname'),
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>],
+            ['address','text','street-address',L('Adrese','Адрес','Address'),'*',L('Piegādes adrese','Адрес доставки','Delivery address'),
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>],
+          ['phone','tel','tel',L('Tālrunis','Телефон','Phone'),'*','+371 XX XXX XXX',
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>],
+           ['note','text','off',L('Piezīmes','Комментарий','Comment'),'',L('Bez sīpoliem...','Без лука...','No onion...'),
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>],
+
             ].map(([k,type,ac,lbl,req,ph,ico])=>(
               <div key={k} className="ofield">
                 <label className="ofield-label">{lbl}{req&&<span className="req"> {req}</span>}</label>
                 <div className="ofield-input-w">
                   <span className="ofield-ico">{ico}</span>
-                  <input className="ofield-input" type={type} autoComplete={ac}
-                    inputMode={type==='tel'?'tel':'text'} placeholder={ph}
-                    value={form[k]} onChange={e=>sf(k,e.target.value)}/>
+                  <input className="ofield-input" type={type} autoComplete={ac} inputMode={type==='tel'?'tel':'text'} placeholder={ph} value={form[k] || ''} onChange={e=>sf(k,e.target.value)} />
                 </div>
               </div>
             ))}
@@ -216,7 +218,7 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
               ['card',
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
                 'Visa / Mastercard',
-                'Apple Pay · Google Pay'],
+              L('Apple Pay · Google Pay','Apple Pay · Google Pay','Apple Pay · Google Pay')],
             ].map(([k,ico,name,hint])=>(
               <button key={k} className={'pay-opt'+(payM===k?' active':'')} onClick={()=>setPayM(k)}>
                 <span className="pay-opt-ico">{ico}</span>
@@ -239,7 +241,7 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
                 ? <><span className="spin"/> {L('Apstrādā...','Обработка...','Processing...')}</>
                 : payM==='cash'
                   ? <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> {L('Apstiprināt pasūtījumu','Подтвердить заказ','Confirm order')}</>
-                  : <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> {L('Turpināt apmaksu','К оплате','Continue to payment')}</>
+                  : <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> {L(`Apmaksāt €${total.toFixed(2)}`,`Оплатить €${total.toFixed(2)}`,`Pay €${total.toFixed(2)}`)}</>
               }
             </button>
           </div>
