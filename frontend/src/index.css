@@ -38,6 +38,7 @@ img{display:block;max-width:100%}
 @keyframes skeleton  {0%{background-position:200% 0}100%{background-position:-200% 0}}
 @keyframes float     {0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @keyframes scaleIn   {from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes cartItemIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
 /* ══ HEADER ══ */
 .header{background:var(--red);position:sticky;top:0;z-index:100;transition:box-shadow .25s}
@@ -179,7 +180,7 @@ img{display:block;max-width:100%}
 .cart-empty-title{font-size:1rem;font-weight:800;margin-bottom:6px}
 .cart-empty-sub{font-size:.82rem;color:var(--muted)}
 .cart-items{padding:0 20px}
-.cart-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:#fafafa;margin-bottom:10px;border:1px solid var(--border);transition:all .2s}.cart-item:hover{background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.cart-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:#fafafa;margin-bottom:10px;border:1px solid var(--border);transition:all .2s;animation:cartItemIn .28s ease}.cart-item:hover{background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.08)}
 .cart-item:last-child{border:none}
 .cart-item-img{position:relative;width:62px;height:62px;border-radius:14px;background:var(--bg);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .cart-item-emoji{font-size:1.8rem;position:absolute;z-index:0}
@@ -197,7 +198,7 @@ img{display:block;max-width:100%}
 .cart-footer{padding:18px 20px;border-top:1px solid var(--border);background:#fff;box-shadow:0 -6px 20px rgba(0,0,0,.08)}
 .cart-footer-total{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .cart-footer-lbl{font-size:.88rem;color:var(--muted);font-weight:600}
-.cart-footer-val{font-size:1.35rem;font-weight:900}
+.cart-footer-val{font-size:1.35rem;font-weight:900;color:var(--red)}
 .cart-order-btn{width:100%;height:58px;background:linear-gradient(135deg,var(--red),#ff3b3b);color:#fff;border:none;border-radius:18px;font-size:1rem;font-weight:900;cursor:pointer;box-shadow:0 10px 28px rgba(227,30,36,.35);transition:.2s}.cart-order-btn:hover{transform:translateY(-2px)}
 .cart-order-btn:active{transform:scale(.97)}
 .cart-order-btn-arrow{transition:transform .2s}
