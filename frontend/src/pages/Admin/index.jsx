@@ -147,7 +147,7 @@ export default function Admin() {
   );
 
   return (
-    <div style={{minHeight:'100vh',background:'#f4f5f7',fontFamily:'Inter,sans-serif'}}>
+    <div className="admin-root" style={{minHeight:'100vh',background:'#f4f5f7',fontFamily:'Inter,sans-serif'}}>
 
       {/* TOP BAR */}
       <div style={{background:'#e31e24',padding:'10px 16px',minHeight:64,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',position:'sticky',top:0,zIndex:100,boxShadow:'0 2px 12px rgba(0,0,0,.2)'}}>
@@ -160,7 +160,7 @@ export default function Admin() {
         </div>
         <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',justifyContent:'flex-end'}}>
           <button onClick={load} style={{background:'rgba(255,255,255,.14)',border:'1px solid rgba(255,255,255,.18)',color:'#fff',borderRadius:12,padding:'8px 14px',fontSize:'.75rem',fontWeight:700,cursor:'pointer',backdropFilter:'blur(8px)'}}>🔄 Yangilash</button>
-          <a href="/" target="_blank" style={{background:'rgba(255,255,255,.14)',border:'1px solid rgba(255,255,255,.18)',color:'#fff',borderRadius:12,padding:'8px 14px',fontSize:'.75rem',fontWeight:700,cursor:'pointer',textDecoration:'none',backdropFilter:'blur(8px)'}}>Sayt ↗</a>
+          <a href="/" target="_blank" rel="noreferrer" style={{background:'rgba(255,255,255,.14)',border:'1px solid rgba(255,255,255,.18)',color:'#fff',borderRadius:12,padding:'8px 14px',fontSize:'.75rem',fontWeight:700,cursor:'pointer',textDecoration:'none',backdropFilter:'blur(8px)'}}>Sayt ↗</a>
           <button onClick={()=>{localStorage.removeItem('sr_admin');setToken('');}} style={{background:'#fff',border:'none',color:'#e31e24',borderRadius:12,padding:'8px 14px',fontSize:'.75rem',fontWeight:800,cursor:'pointer'}}>Chiqish</button>
         </div>
       </div>
@@ -177,14 +177,13 @@ export default function Admin() {
           ['add', editItem?'✏️ Tahrirlash':'➕ Qo\'shish'],
         ].map(([k,label])=>(
           <button key={k} onClick={()=>{ setTab(k); setSrch(''); if(k!=='add'){setEdit(null);setForm(emptyForm());} }}
-            style={{padding:'14px 16px',fontWeight:800,fontSize:'.82rem',background:tab===k?'#fff5f5':'transparent',border:'none',borderBottom:`2.5px solid ${tab===k?'#e31e24':'transparent'}`,color:tab===k?'#e31e24':'#6b7280',cursor:'pointer',whiteSpace:'nowrap',transition:'all .15s',borderTopLeftRadius:12,borderTopRightRadius:12}}
+            style={{padding:'14px 16px',fontWeight:800,fontSize:'.82rem',background:tab===k?'#fff5f5':'transparent',border:'none',borderBottom:`2.5px solid ${tab===k?'#e31e24':'transparent'}`,color:tab===k?'#e31e24':'#6b7280',cursor:'pointer',whiteSpace:'nowrap',transition:'all .15s',borderTopLeftRadius:12,borderTopRightRadius:12}}>
             {label}
           </button>
         ))}
       </div>
 
-      <div style={{maxWidth:1200,margin:'0 auto',padding:'20px 24px 60px'}}>
-
+       <div className="admin-wrap" style={{maxWidth:1200,margin:'0 auto',padding:'20px 24px 60px'}}>
         {/* ═══ STATS ═══ */}
         {tab==='stats' && stats && (
           <div>
@@ -263,9 +262,8 @@ export default function Admin() {
             {/* Filters */}
             <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 220px',gap:12,marginBottom:18}}>
               <input placeholder="🔍 Ism yoki #raqam..." value={search} onChange={e=>setSrch(e.target.value)}
-                style={{width:'100%',height:48,border:'1.5px solid #d1d5db',borderRadius:14,padding:'0 16px',fontSize:'.9rem',outline:'none',background:'#fff'}}
-              <select value={stF} onChange={e=>setStF(e.target.value)}
-                style={{height:48,border:'1.5px solid #d1d5db',borderRadius:14,padding:'0 14px',fontSize:'.85rem',outline:'none',cursor:'pointer',background:'#fff'}}
+                style={{width:'100%',height:48,border:'1.5px solid #d1d5db',borderRadius:14,padding:'0 16px',fontSize:'.9rem',outline:'none',background:'#fff'}}/>
+              <select value={stF} onChange={e=>setStF(e.target.value)} style={{height:48,border:'1.5px solid #d1d5db',borderRadius:14,padding:'0 14px',fontSize:'.85rem',outline:'none',cursor:'pointer',background:'#fff'}}>
                 <option value="all">Barcha ({orders.length})</option>
                 {Object.entries(STATUS).map(([k,v])=>(
                   <option key={k} value={k}>{v.icon} {v.label} ({orders.filter(o=>o.status===k).length})</option>
@@ -288,8 +286,7 @@ export default function Admin() {
                     </span>
                     <span style={{fontSize:'.74rem',color:'#9ca3af'}}>🕐 {fmtT(o.createdAt)}</span>
                     <span style={{fontSize:'.74rem',color:'#9ca3af'}}>{PAY[o.payMethod]||o.payMethod}</span>
-                    <select value={o.status||'new'} onChange={e=>changeStatus(o.id,e.target.value)}
-                      style={{marginLeft:'auto',height:38,border:'1.5px solid #d1d5db',borderRadius:12,padding:'0 12px',fontSize:'.76rem',cursor:'pointer',outline:'none',background:'#fff',fontWeight:700}}
+                    <select value={o.status||'new'} onChange={e=>changeStatus(o.id,e.target.value)} style={{marginLeft:'auto',height:38,border:'1.5px solid #d1d5db',borderRadius:12,padding:'0 12px',fontSize:'.76rem',cursor:'pointer',outline:'none',background:'#fff',fontWeight:700}}>
                       {Object.entries(STATUS).map(([k,v])=><option key={k} value={k}>{v.icon} {v.label}</option>)}
                     </select>
                   </div>
@@ -464,3 +461,4 @@ export default function Admin() {
     </div>
   );
 }
+
