@@ -72,11 +72,11 @@ setTimeout(() => {
                   </div>
                 </div>
                 <div className="afield">
-                 <label>Familiya <span className="req">*</span></label>
+                 <label>{L('Uzvārds','Фамилия','Surname')} <span className="req">*</span></label>
                  <div className="ainput-w">
                    <input
                      type="text"
-                     placeholder="Familiyangiz"
+                     placeholder={L('Jūsu uzvārds','Ваша фамилия','Your surname')}
                      value={form.surname}
                      onChange={e=>s('surname', e.target.value)}
                      required
@@ -84,11 +84,11 @@ setTimeout(() => {
                   </div>
               </div>
                 <div className="afield">
-                <label>Adres <span className="req">*</span></label>
+                <label>{L('Adrese','Адрес','Address')} <span className="req">*</span></label>
                  <div className="ainput-w">
                  <input
                  type="text"
-                 placeholder="Yetkazib berish manzili"
+                 placeholder={L('Piegādes adrese','Адрес доставки','Delivery address')}
                  autoComplete="street-address"
                  value={form.address}
                  onChange={e => s('address', e.target.value)}
