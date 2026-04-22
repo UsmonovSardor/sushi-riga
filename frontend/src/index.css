@@ -188,7 +188,7 @@ img{display:block;max-width:100%}
 .cart-item-name{font-size:.86rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cart-item-price{font-size:.75rem;color:var(--muted);margin-top:2px}
 .cart-item-qty{display:flex;align-items:center;background:#fff;border-radius:30px;border:1px solid var(--border);padding:2px;flex-shrink:0}
-.cart-qbtn{width:34px;height:34px;background:none;border:none;font-size:1.2rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;transition:background .12s;color:var(--muted)}
+.cart-qbtn{width:30px;height:30px;background:none;border:none;font-size:1.2rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;transition:background .12s;color:var(--muted);border-radius:50%}
 .cart-qbtn:hover{background:var(--border)}
 .cart-qbtn:active{transform:scale(.85)}
 .cart-qbtn--p{color:var(--red)}
@@ -199,10 +199,9 @@ img{display:block;max-width:100%}
 .cart-footer-lbl{font-size:.88rem;color:var(--muted);font-weight:600}
 .cart-footer-val{font-size:1.35rem;font-weight:900}
 .cart-order-btn{width:100%;height:58px;background:linear-gradient(135deg,var(--red),#ff3b3b);color:#fff;border:none;border-radius:18px;font-size:1rem;font-weight:900;cursor:pointer;box-shadow:0 10px 28px rgba(227,30,36,.35);transition:.2s}.cart-order-btn:hover{transform:translateY(-2px)}
-.cart-order-btn:hover{background:var(--red-dk)}
 .cart-order-btn:active{transform:scale(.97)}
 .cart-order-btn-arrow{transition:transform .2s}
-.cart-order-btn:hover .cart-order-btn-arrow{transform:translateX(4px)}
+.cart-order-btn:hover{transform:translateY(-2px);background:var(--red-dk)}
 
 /* ══ SIDE MENU ══ */
 .side-bg{position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:200;backdrop-filter:blur(4px);animation:fadeIn .2s ease}
@@ -453,3 +452,6 @@ button{user-select:none;-webkit-user-select:none}
   box-shadow: 0 -8px 20px rgba(0,0,0,.08);
   z-index: 5;
 }
+.cart-item{animation:fadeIn .3s ease}
+.cart-order-btn{letter-spacing:.3px}
+.cart-footer-total span:last-child{color:var(--red)}
