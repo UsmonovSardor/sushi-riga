@@ -16,17 +16,17 @@ function saveUsers(users) {
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, phone } = req.body;
-    if (!name || !email || !password) return res.status(400).json({ error: 'Name, email and password required' });
-    if (password.length < 6) return res.status(400).json({ error: 'Password min 6 chars' });
-    const users = loadUsers();
+    const { name, surname, address, phone } = req.body;
+    if (!name || !surname || !address || !phone) return res.status(400).json({ error: 'Name, surname, address and phone required' });
     if (users.find(u => u.email === email.toLowerCase())) return res.status(409).json({ error: 'Email already exists' });
-    const hash = await bcrypt.hash(password, 10);
-    const user = { id: Date.now(), name, email: email.toLowerCase(), phone: phone || '', hash, role: 'user', createdAt: new Date().toISOString() };
+    const users = loadUsers();
+    if (users.find(u => u.phone === phone.trim())) return res.status(409).json({ error: 'Phone already exists' });
+
+    const user = { id: Date.now(), name, surname, address, phone: phone.trim(), role: 'user', createdAt: new Date().toISOString() };
     users.push(user);
     saveUsers(users);
-    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role } });
+    const token = jwt.sign({ id: user.id, phone: user.phone, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, user: { id: user.id, name: user.name, surname: user.surname, address: user.address, phone: user.phone, role: user.role } });
   } catch(e) { res.status(500).json({ error: 'Server error' }); }
 };
 
