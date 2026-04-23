@@ -20,3 +20,11 @@ export const menuApi = {
   getHits:       ()    => req(`${BASE}/menu/hits`),
   search:        (q)   => req(`${BASE}/menu/search?q=${encodeURIComponent(q)}`),
 };
+const authHeaders = () => {
+  const token = localStorage.getItem('sr_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+export const ordersApi = {
+  getMine: () => req(`${BASE}/orders/my`, { headers: authHeaders() }),
+};
