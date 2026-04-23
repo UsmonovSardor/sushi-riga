@@ -17,6 +17,7 @@ exports.createOrder = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    const user = getUserFromReq(req);
 
     const { name, phone, note='', items, lang='lv', payMethod='cash' } = req.body;
 
@@ -38,7 +39,15 @@ exports.createOrder = async (req, res) => {
       total,
       payMethod,
       lang,
+      customerId: user?.id || null,
       status: 'new',
+      statusHistory: [
+      {
+    status: 'new',
+    at: new Date().toISOString(),
+    by: 'system'
+  }
+],
     };
 
     const orders = loadOrders();
