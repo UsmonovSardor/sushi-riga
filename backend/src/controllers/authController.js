@@ -4,7 +4,7 @@ const bcrypt   = require('bcryptjs');
 const fs       = require('fs');
 const path     = require('path');
 
-const USERS_FILE = path.join(__dirname, '../data/users.json');
+const USERS_FILE = require('path').join(require('../config').DATA_PATH, 'users.json');
 const JWT_SECRET = process.env.JWT_SECRET || 'sushi-riga-secret-2026';
 
 function loadUsers() {
