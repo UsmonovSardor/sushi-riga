@@ -115,7 +115,25 @@ exports.updateOrder = [authAdmin, (req,res) => {
   const orders = load(ORDERS_FILE);
   const idx    = orders.findIndex(o => o.id == req.params.id);
   if (idx===-1) return res.status(404).json({error:'Not found'});
-  orders[idx] = { ...orders[idx], ...req.body };
+  const nextStatus = req.body.status;
+
+const allowed = ['new','cooking','ready','delivered','cancelled'];
+if (!allowed.includes(nextStatus)) {
+  return res.status(400).json({ error:'Invalid status' });
+}
+
+const prevStatus = orders[idx].status;
+orders[idx].status = nextStatus;
+
+if (!Array.isArray(orders[idx].statusHistory)) {
+  orders[idx].statusHistory = [];
+}
+
+orders[idx].statusHistory.push({
+  status: nextStatus,
+  at: new Date().toISOString(),
+  by: 'admin'
+});
   save(ORDERS_FILE, orders);
   res.json(orders[idx]);
 }];
