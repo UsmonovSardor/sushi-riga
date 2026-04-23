@@ -13,3 +13,5 @@ const v = [
 router.post('/',   v, ctrl.createOrder);
 router.get('/',    ctrl.getOrders);
 module.exports = router;
+
+router.get('/my', ctrl.getMyOrders);
