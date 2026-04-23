@@ -288,7 +288,7 @@ img{display:block;max-width:100%}
 .req{color:var(--red)}
 
 /* ══ AUTH MODAL ══ */
-.auth-modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,420px);max-height:90vh;overflow-y:auto;background:#fff;border-radius:24px;z-index:310;padding-bottom:24px;animation:fadeIn .2s ease;box-shadow:0 24px 80px rgba(0,0,0,.18)}
+.auth-modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,420px);max-height:90vh;overflow-y:auto;background:#fff;border-radius:24px;z-index:310;padding-bottom:24px;box-shadow:0 24px 80px rgba(0,0,0,.18)}
 .auth-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 12px}
 .auth-brand{font-size:.88rem;font-weight:800;color:var(--red)}
 .auth-close-x{width:30px;height:30px;border-radius:50%;background:var(--bg);border:none;display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;transition:background .15s}
