@@ -18,7 +18,6 @@ exports.register = async (req, res) => {
   try {
     const { name, surname, address, phone } = req.body;
     if (!name || !surname || !address || !phone) return res.status(400).json({ error: 'Name, surname, address and phone required' });
-    if (users.find(u => u.email === email.toLowerCase())) return res.status(409).json({ error: 'Email already exists' });
     const users = loadUsers();
     if (users.find(u => u.phone === phone.trim())) return res.status(409).json({ error: 'Phone already exists' });
 
@@ -52,6 +51,6 @@ exports.me = (req, res) => {
     const users = loadUsers();
     const user = users.find(u => u.id === payload.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json({ id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role });
+    res.json({ id: user.id, name: user.name, surname: user.surname, address: user.address, phone: user.phone, role: user.role });
   } catch { res.status(401).json({ error: 'Invalid token' }); }
 };
