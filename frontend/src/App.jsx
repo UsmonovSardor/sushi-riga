@@ -17,7 +17,7 @@ import OrderModal    from './components/OrderModal';
 import Footer        from './components/Footer';
 import AdminPage     from './pages/Admin';
 import MyOrdersPage from './pages/MyOrders';
-const [myOrdersOpen, setMyOrdersOpen] = useState(false);
+
 
 const SECTIONS = [
   { id:'hit',     e:'⭐', k:'c_hit',     cats:['hit'] },
@@ -39,6 +39,7 @@ function MainApp() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [authOpen,   setAuthOpen]   = useState(false);
   const [orderOpen,  setOrderOpen]  = useState(false);
+  const [myOrdersOpen, setMyOrdersOpen] = useState(false);
   const openCart  = useCallback(() => setCartOpen(true),  []);
   const closeCart = useCallback(() => setCartOpen(false), []);
   const openOrder = useCallback(() => {
