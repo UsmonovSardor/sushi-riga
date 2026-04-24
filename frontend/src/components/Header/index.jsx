@@ -115,13 +115,13 @@ export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpe
                       </div>
                     </div>
 
-<div className="lang-row" onClick={() => { onMyOrdersOpen(); setUO(false); }}>
-  📦 {lang==='lv' ? 'Mani pasūtījumi' : lang==='en' ? 'My Orders' : 'Мои заказы'}
-</div>
+                 <div className="lang-row" onClick={() => { onMyOrdersOpen(); setUO(false); }}>
+                    📦 {lang==='lv' ? 'Mani pasūtījumi' : lang==='en' ? 'My Orders' : 'Мои заказы'}
+                 </div>
 
-<div className="lang-row" onClick={() => { logout(); setUO(false); }}>
-  🚪 {lang==='lv'?'Iziet':lang==='en'?'Sign out':'Выйти'}
-</div>
+                  <div className="lang-row" onClick={() => { logout(); setUO(false); }}>
+                    🚪 {lang==='lv'?'Iziet':lang==='en'?'Sign out':'Выйти'}
+                  </div>
                     <div className="lang-row" onClick={() => { logout(); setUO(false); }}>
                       🚪 {lang==='lv'?'Iziet':lang==='en'?'Sign out':'Выйти'}
                     </div>
