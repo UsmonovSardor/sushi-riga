@@ -10,7 +10,7 @@ const LANGS = [
   { code:'en', flag:'🇬🇧', label:'English'  },
 ];
 
-export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpen }) {
+export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpen, onMyOrdersOpen }) {
   const { count }         = useCart();
   const { lang, setLang } = useLanguage();
   const { user, logout }  = useAuth();
