@@ -16,6 +16,8 @@ import AuthModal     from './components/AuthModal';
 import OrderModal    from './components/OrderModal';
 import Footer        from './components/Footer';
 import AdminPage     from './pages/Admin';
+import MyOrdersPage from './pages/MyOrders';
+const [myOrdersOpen, setMyOrdersOpen] = useState(false);
 
 const SECTIONS = [
   { id:'hit',     e:'⭐', k:'c_hit',     cats:['hit'] },
