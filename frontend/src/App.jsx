@@ -11,16 +11,18 @@ import MenuSection   from './components/MenuSection';
 import Cart          from './components/Cart';
 import CartBar       from './components/CartBar';
 import SearchOverlay from './components/SearchOverlay';
+import Notification from './components/Notification';
+import MyOrdersPage from './pages/MyOrders';
 import SideMenu      from './components/SideMenu';
 import AuthModal     from './components/AuthModal';
 import OrderModal    from './components/OrderModal';
 import Footer        from './components/Footer';
 import AdminPage     from './pages/Admin';
-import MyOrdersPage from './pages/MyOrders';
-import Notification from './components/Notification';
+
 import { ordersApi } from './services/api';
 import { useAuth } from './context/AuthContext';
 import { useLanguage } from './context/LanguageContext';
+
 
 
 const SECTIONS = [
@@ -43,6 +45,7 @@ function MainApp() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [authOpen,   setAuthOpen]   = useState(false);
   const [orderOpen,  setOrderOpen]  = useState(false);
+  
   const [myOrdersOpen, setMyOrdersOpen] = useState(false);
   const [readyNote, setReadyNote] = useState('');
   const { user } = useAuth();
