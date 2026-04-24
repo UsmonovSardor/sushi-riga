@@ -108,10 +108,20 @@ export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpe
               <div className="lang-dd user-dd">
                 {user ? (
                   <>
-                    <div className="user-info">
-                      <div className="user-name">{user.name}</div>
-                      <div style={{fontSize:'.72rem',color:'#888',marginTop:2}}>{user.email}</div>
+                   <div className="user-info">
+                    <div className="user-name">{user.name}</div>
+                     <div style={{fontSize:'.72rem',color:'#888',marginTop:2}}>
+                        {user.email}
+                      </div>
                     </div>
+
+<div className="lang-row" onClick={() => { onMyOrdersOpen(); setUO(false); }}>
+  📦 {lang==='lv' ? 'Mani pasūtījumi' : lang==='en' ? 'My Orders' : 'Мои заказы'}
+</div>
+
+<div className="lang-row" onClick={() => { logout(); setUO(false); }}>
+  🚪 {lang==='lv'?'Iziet':lang==='en'?'Sign out':'Выйти'}
+</div>
                     <div className="lang-row" onClick={() => { logout(); setUO(false); }}>
                       🚪 {lang==='lv'?'Iziet':lang==='en'?'Sign out':'Выйти'}
                     </div>
