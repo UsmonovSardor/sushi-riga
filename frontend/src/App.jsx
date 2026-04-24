@@ -17,6 +17,10 @@ import OrderModal    from './components/OrderModal';
 import Footer        from './components/Footer';
 import AdminPage     from './pages/Admin';
 import MyOrdersPage from './pages/MyOrders';
+import Notification from './components/Notification';
+import { ordersApi } from './services/api';
+import { useAuth } from './context/AuthContext';
+import { useLanguage } from './context/LanguageContext';
 
 
 const SECTIONS = [
@@ -40,6 +44,39 @@ function MainApp() {
   const [authOpen,   setAuthOpen]   = useState(false);
   const [orderOpen,  setOrderOpen]  = useState(false);
   const [myOrdersOpen, setMyOrdersOpen] = useState(false);
+  const [readyNote, setReadyNote] = useState('');
+  const { user } = useAuth();
+  const { lang } = useLanguage();
+
+React.useEffect(() => {
+  if (!user) return;
+
+  const seenKey = 'sr_ready_seen';
+
+  const check = async () => {
+    try {
+      const seen = JSON.parse(localStorage.getItem(seenKey) || '[]');
+      const list = await ordersApi.getMine();
+      const ready = list.find(o => o.status === 'ready' && !seen.includes(o.id));
+
+      if (ready) {
+        localStorage.setItem(seenKey, JSON.stringify([...seen, ready.id].slice(-50)));
+        setReadyNote(
+          lang === 'lv'
+            ? `Pasūtījums #${ready.id} ir gatavs!`
+            : lang === 'ru'
+              ? `Заказ #${ready.id} готов!`
+              : `Order #${ready.id} is ready!`
+        );
+      }
+    } catch {}
+  };
+
+  check();
+  const id = setInterval(check, 20000);
+  return () => clearInterval(id);
+}, [user, lang]);
+  
   const openCart  = useCallback(() => setCartOpen(true),  []);
   const closeCart = useCallback(() => setCartOpen(false), []);
   const openOrder = useCallback(() => {
@@ -56,6 +93,7 @@ function MainApp() {
         onMenuOpen  ={() => setMenuOpen(true)}
         onSearchOpen={() => setSearchOpen(true)}
         onAuthOpen  ={() => setAuthOpen(true)}
+        onMyOrdersOpen={() => setMyOrdersOpen(true)}
       />
       <PromoBar />
       <CategoryNav />
@@ -91,6 +129,8 @@ function MainApp() {
       <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
       <SideMenu      isOpen={menuOpen}   onClose={() => setMenuOpen(false)} />
       {authOpen && <AuthModal onClose={() => setAuthOpen(false)} onSuccess={() => setOrderOpen(true)} />}
+      <MyOrdersPage isOpen={myOrdersOpen} onClose={() => setMyOrdersOpen(false)} />
+        {readyNote && <Notification message={readyNote} onDone={() => setReadyNote('')} />}
       {orderOpen && <OrderModal isOpen={orderOpen} onClose={() => setOrderOpen(false)} onOpenAuth={() => { setOrderOpen(false); setAuthOpen(true); }} />}
     </>
   );
