@@ -124,6 +124,9 @@ if (!allowed.includes(nextStatus)) {
 
 const prevStatus = orders[idx].status;
 orders[idx].status = nextStatus;
+orders[idx].updatedAt = new Date().toISOString();
+if (nextStatus === 'ready' && prevStatus !== 'ready') orders[idx].readyAt = orders[idx].updatedAt;
+if (nextStatus === 'delivered' && prevStatus !== 'delivered') orders[idx].deliveredAt = orders[idx].updatedAt;
 
 if (!Array.isArray(orders[idx].statusHistory)) {
   orders[idx].statusHistory = [];
