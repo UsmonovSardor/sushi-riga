@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 const API = import.meta.env.VITE_API_URL || '';
-
 const STATUS = {
   new:       { label:'Yangi',          color:'#dbeafe', text:'#1d4ed8', icon:'🆕' },
   cooking:   { label:'Tayyorlanmoqda', color:'#fef9c3', text:'#a16207', icon:'👨‍🍳' },
@@ -9,45 +7,64 @@ const STATUS = {
   delivered: { label:'Berildi',        color:'#f0fdf4', text:'#166534', icon:'🚀' },
   cancelled: { label:'Bekor',          color:'#fee2e2', text:'#991b1b', icon:'❌' },
 };
-const PAY = { cash:'💵 Naqd', card:'💳 Karta' };
-
-function emptyForm() {
-  return { cat:'cold', e:'🍣', name_ru:'', name_lv:'', name_en:'',
-           desc_ru:'', desc_lv:'', desc_en:'', price:'', old:'', img:'', hit:false };
-}
+const PAY  = { cash:'💵 Naqd', card:'💳 Karta' };
+const CATS = ['cold','hot','tempura','gunkan','nigiri','sashimi','double','sets','soup','wok','burger','salad','poke','snacks','drinks'];
+const EMOJIS = ['🍣','🔥','🍤','🎎','🥗','🍜','🍱','🥤','🍟','🍛','🍔','🎁','🍒','🦐','🥢','🐟','🍙','🌮'];
+const S = {
+  inp: { width:'100%', height:42, border:'1.5px solid #e2e8f0', borderRadius:10, padding:'0 14px', fontSize:'.88rem', outline:'none', background:'#fff', boxSizing:'border-box', fontFamily:'Inter,sans-serif' },
+  lbl: { fontSize:'.72rem', fontWeight:700, color:'#64748b', marginBottom:5, display:'block', textTransform:'uppercase', letterSpacing:'.5px' },
+  card:{ background:'#fff', borderRadius:16, boxShadow:'0 1px 8px rgba(0,0,0,.07)', border:'1px solid #f1f5f9' },
+  btn: (bg,col='#fff',pad='0 18px')=>({ background:bg, color:col, border:'none', borderRadius:10, padding:pad, height:40, fontWeight:700, fontSize:'.84rem', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:6, fontFamily:'Inter,sans-serif', whiteSpace:'nowrap' }),
+};
+const Stars = ({n,size=16,onClick})=>(
+  <span style={{display:'inline-flex',gap:2}}>
+    {[1,2,3,4,5].map(i=>(
+      <span key={i} onClick={onClick?()=>onClick(i):undefined}
+        style={{fontSize:size,color:i<=n?'#f59e0b':'#d1d5db',cursor:onClick?'pointer':'default',lineHeight:1}}>★</span>
+    ))}
+  </span>
+);
+const emptyForm = ()=>({ cat:'cold', e:'🍣', name_ru:'', name_lv:'', name_en:'', desc_ru:'', desc_lv:'', desc_en:'', price:'', old:'', img:'', hit:false });
 
 export default function Admin() {
-  const [token,   setToken]   = useState(() => localStorage.getItem('sr_admin') || '');
-  const [secret,  setSecret]  = useState('');
-  const [err,     setErr]     = useState('');
-  const [tab,     setTab]     = useState('orders');
-  const [stats,   setStats]   = useState(null);
-  const [orders,  setOrders]  = useState([]);
-  const [menu,    setMenu]    = useState([]);
-  const [msg,     setMsg]     = useState('');
-  const [search,  setSrch]    = useState('');
-  const [catF,    setCatF]    = useState('all');
-  const [stF,     setStF]     = useState('all');
-  const [editItem,setEdit]    = useState(null);
-  const [form,    setForm]    = useState(emptyForm());
-  const [saving,  setSaving]  = useState(false);
+  const [token,    setToken]   = useState(()=>localStorage.getItem('sr_admin')||'');
+  const [secret,   setSecret]  = useState('');
+  const [loginErr, setLoginErr]= useState('');
+  const [tab,      setTab]     = useState('orders');
+  const [stats,    setStats]   = useState(null);
+  const [orders,   setOrders]  = useState([]);
+  const [menu,     setMenu]    = useState([]);
+  const [reviews,  setReviews] = useState([]);
+  const [msg,      setMsg]     = useState('');
+  const [search,   setSrch]    = useState('');
+  const [catF,     setCatF]    = useState('all');
+  const [stF,      setStF]     = useState('all');
+  const [editItem, setEdit]    = useState(null);
+  const [form,     setForm]    = useState(emptyForm());
+  const [saving,   setSaving]  = useState(false);
+  const [selected, setSelected]= useState(new Set());
+  const [imgMode,  setImgMode] = useState('url');
+  const [imgLoad,  setImgLoad] = useState(false);
+  const fileRef = useRef(null);
 
-  const hdrs = { 'Content-Type':'application/json', Authorization:`Bearer ${token}` };
-  const flash = m => { setMsg(m); setTimeout(()=>setMsg(''),3000); };
-  const fmt   = n => typeof n==='number' ? n.toFixed(2) : '0.00';
-  const fmtT  = iso => iso ? new Date(iso).toLocaleString('ru-RU',{timeZone:'Europe/Riga',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+  const hdrs  = { 'Content-Type':'application/json', Authorization:`Bearer ${token}` };
+  const flash = m=>{ setMsg(m); setTimeout(()=>setMsg(''),3500); };
+  const fmt   = n=>typeof n==='number'?n.toFixed(2):'0.00';
+  const fmtT  = iso=>iso?new Date(iso).toLocaleString('ru-RU',{timeZone:'Europe/Riga',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
 
-  const load = useCallback(async () => {
-    if (!token) return;
+  const load = useCallback(async()=>{
+    if(!token) return;
     try {
-      const [s,o,m] = await Promise.all([
+      const [s,o,m,rv]=await Promise.all([
         fetch(`${API}/api/admin/stats`,{headers:hdrs}).then(r=>r.json()),
         fetch(`${API}/api/admin/orders`,{headers:hdrs}).then(r=>r.json()),
         fetch(`${API}/api/admin/menu`,{headers:hdrs}).then(r=>r.json()),
+        fetch(`${API}/api/reviews/all`,{headers:hdrs}).then(r=>r.json()).catch(()=>[]),
       ]);
-      setStats(s); setOrders(Array.isArray(o)?o:[]); setMenu(Array.isArray(m)?m:[]);
+      setStats(s); setOrders(Array.isArray(o)?o.slice().reverse():[]);
+      setMenu(Array.isArray(m)?m:[]); setReviews(Array.isArray(rv)?rv:[]);
     } catch(e){ console.error(e); }
-  }, [token]);
+  },[token]);
 
   useEffect(()=>{ load(); },[load]);
   useEffect(()=>{
@@ -56,198 +73,207 @@ export default function Admin() {
     return ()=>clearInterval(id);
   },[token,tab,load]);
 
-  async function login(e) {
+  async function login(e){
     e.preventDefault();
     try {
-      const r = await fetch(`${API}/api/admin/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret})});
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.error);
-      localStorage.setItem('sr_admin', d.token);
-      setToken(d.token);
-    } catch(ex){ setErr(ex.message); }
+      const r=await fetch(`${API}/api/admin/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret})});
+      const d=await r.json(); if(!r.ok) throw new Error(d.error);
+      localStorage.setItem('sr_admin',d.token); setToken(d.token);
+    } catch(ex){ setLoginErr(ex.message); }
   }
 
-  async function changeStatus(id, status) {
+  async function changeStatus(id,status){
     await fetch(`${API}/api/admin/orders/${id}`,{method:'PATCH',headers:hdrs,body:JSON.stringify({status})});
     setOrders(p=>p.map(o=>o.id==id?{...o,status}:o));
   }
+  async function deleteOrder(id){
+    if(!confirm('O'chirishni tasdiqlaysizmi?')) return;
+    await fetch(`${API}/api/admin/orders/${id}`,{method:'DELETE',headers:hdrs});
+    setOrders(p=>p.filter(o=>o.id!=id));
+    setSelected(s=>{const ns=new Set(s);ns.delete(id);return ns;});
+    flash('🗑 O'chirildi');
+  }
+  async function deleteSelected(){
+    if(!selected.size||!confirm(`${selected.size} ta o'chirishni tasdiqlaysizmi?`)) return;
+    await fetch(`${API}/api/admin/orders`,{method:'DELETE',headers:hdrs,body:JSON.stringify({ids:[...selected]})});
+    setOrders(p=>p.filter(o=>!selected.has(o.id))); setSelected(new Set());
+    flash(`🗑 ${selected.size} ta o'chirildi`);
+  }
+  async function clearAll(){
+    if(!confirm('BARCHA buyurtmalar o'chirilsinmi? Qaytarib bo'lmaydi!')) return;
+    await fetch(`${API}/api/admin/orders`,{method:'DELETE',headers:hdrs,body:JSON.stringify({})});
+    setOrders([]); setSelected(new Set()); flash('🗑 Barchasi tozalandi');
+  }
+  const toggleSel=id=>setSelected(s=>{const ns=new Set(s);ns.has(id)?ns.delete(id):ns.add(id);return ns;});
+  const toggleAll=()=>{
+    const vis=filtOrders.map(o=>o.id);
+    const all=vis.every(id=>selected.has(id));
+    setSelected(s=>{const ns=new Set(s);vis.forEach(id=>all?ns.delete(id):ns.add(id));return ns;});
+  };
 
-  async function saveItem(e) {
-    e.preventDefault(); setSaving(true);
-    const body = {
-      cat:form.cat, e:form.e, hit:form.hit, img:form.img,
-      price:parseFloat(form.price)||0,
-      old:form.old?parseFloat(form.old):null,
-      name:{ru:form.name_ru, lv:form.name_lv||form.name_ru, en:form.name_en||form.name_ru},
-      desc:{ru:form.desc_ru, lv:form.desc_lv||form.desc_ru, en:form.desc_en||form.desc_ru},
+  async function handleFile(file){
+    if(!file) return; setImgLoad(true);
+    const reader=new FileReader();
+    reader.onload=async ev=>{
+      const base64=ev.target.result, ext=file.name.split('.').pop();
+      const r=await fetch(`${API}/api/admin/upload-image`,{method:'POST',headers:hdrs,body:JSON.stringify({base64,ext})});
+      const d=await r.json();
+      if(d.url){setForm(f=>({...f,img:API+d.url}));flash('✅ Rasm yuklandi');}
+      else flash('❌ '+(d.error||'Xato')); setImgLoad(false);
     };
+    reader.readAsDataURL(file);
+  }
+
+  async function saveItem(e){
+    e.preventDefault(); setSaving(true);
+    const body={cat:form.cat,e:form.e,hit:form.hit,img:form.img,
+      price:parseFloat(form.price)||0, old:form.old?parseFloat(form.old):null,
+      name:{ru:form.name_ru,lv:form.name_lv||form.name_ru,en:form.name_en||form.name_ru},
+      desc:{ru:form.desc_ru,lv:form.desc_lv||form.desc_ru,en:form.desc_en||form.desc_ru}};
     try {
-      const url = editItem ? `${API}/api/admin/menu/${editItem.id}` : `${API}/api/admin/menu`;
-      const r   = await fetch(url,{method:editItem?'PUT':'POST',headers:hdrs,body:JSON.stringify(body)});
-      if (!r.ok) throw new Error('Saqlash xatosi');
-      flash(editItem?'✅ Yangilandi':'✅ Qo\'shildi');
+      const url=editItem?`${API}/api/admin/menu/${editItem.id}`:`${API}/api/admin/menu`;
+      const r=await fetch(url,{method:editItem?'PUT':'POST',headers:hdrs,body:JSON.stringify(body)});
+      if(!r.ok) throw new Error('Xato'); flash(editItem?'✅ Yangilandi':'✅ Qo'shildi');
       setEdit(null); setForm(emptyForm()); setTab('menu'); await load();
-    } catch(ex){ flash('❌ '+ex.message); }
-    finally { setSaving(false); }
+    } catch(ex){flash('❌ '+ex.message);}finally{setSaving(false);}
   }
-
-  async function delItem(id) {
-    if (!confirm('Rostdan ham o\'chirish kerakmi?')) return;
+  async function delItem(id){
+    if(!confirm('O'chirilsinmi?')) return;
     await fetch(`${API}/api/admin/menu/${id}`,{method:'DELETE',headers:hdrs});
-    flash('🗑 O\'chirildi'); await load();
+    flash('🗑 O'chirildi'); await load();
   }
-
-  async function toggleHit(id) {
-    await fetch(`${API}/api/admin/menu/${id}/hit`,{method:'PATCH',headers:hdrs});
-    await load();
+  async function toggleHit(id){
+    await fetch(`${API}/api/admin/menu/${id}/hit`,{method:'PATCH',headers:hdrs}); await load();
   }
-
-  function startEdit(item) {
-    setEdit(item);
-    setForm({
-      cat:item.cat, e:item.e||'🍣', hit:!!item.hit, img:item.img||'', price:item.price, old:item.old||'',
-      name_ru:item.name?.ru||'', name_lv:item.name?.lv||'', name_en:item.name?.en||'',
-      desc_ru:item.desc?.ru||'', desc_lv:item.desc?.lv||'', desc_en:item.desc?.en||'',
-    });
+  function startEdit(item){
+    setEdit(item); setImgMode('url');
+    setForm({cat:item.cat,e:item.e||'🍣',hit:!!item.hit,img:item.img||'',price:item.price,old:item.old||'',
+      name_ru:item.name?.ru||'',name_lv:item.name?.lv||'',name_en:item.name?.en||'',
+      desc_ru:item.desc?.ru||'',desc_lv:item.desc?.lv||'',desc_en:item.desc?.en||''});
     setTab('add');
   }
+  async function deleteReview(id){
+    if(!confirm('Izohni o'chirishni tasdiqlaysizmi?')) return;
+    await fetch(`${API}/api/reviews/${id}`,{method:'DELETE',headers:hdrs});
+    setReviews(p=>p.filter(r=>r.id!==id)); flash('🗑 Izoh o'chirildi');
+  }
 
-  const CATS = ['cold','hot','tempura','gunkan','nigiri','sashimi','double','sets','soup','wok','burger','salad','poke','snacks','drinks'];
-  const EMOJIS = ['🍣','🔥','🍤','🎎','🥗','🍜','🍱','🥤','🍟','🍛','🍔','🎁','🍒','🦐','🥢'];
+  const filtOrders=orders.filter(o=>(stF==='all'||o.status===stF)&&(!search||o.name?.toLowerCase().includes(search.toLowerCase())||String(o.id).includes(search)));
+  const filtMenu=menu.filter(i=>(catF==='all'||i.cat===catF)&&(!search||i.name?.ru?.toLowerCase().includes(search.toLowerCase())||i.name?.lv?.toLowerCase().includes(search.toLowerCase())));
+  const newCount=orders.filter(o=>o.status==='new').length;
 
-  const filtOrders = orders.filter(o=>
-    (stF==='all'||o.status===stF) &&
-    (!search || o.name?.toLowerCase().includes(search.toLowerCase()) || String(o.id).includes(search))
-  );
-  const filtMenu = menu.filter(i=>
-    (catF==='all'||i.cat===catF) &&
-    (!search || i.name?.ru?.toLowerCase().includes(search.toLowerCase()) || i.name?.lv?.toLowerCase().includes(search.toLowerCase()))
-  );
-
-  // LOGIN
-  if (!token) return (
-    <div style={{minHeight:'100vh',background:'#f5f5f5',display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
-      <div style={{background:'#fff',borderRadius:18,padding:'36px 32px',width:'100%',maxWidth:380,boxShadow:'0 8px 40px rgba(0,0,0,.12)'}}>
-        <div style={{textAlign:'center',marginBottom:24}}>
-          <div style={{fontSize:'2.5rem',marginBottom:8}}>🍒</div>
-          <div style={{fontSize:'1.3rem',fontWeight:900,color:'#e31e24'}}>Cherry Sushi</div>
-          <div style={{fontSize:'.85rem',color:'#888',marginTop:4}}>Admin Panel</div>
+  if(!token) return(
+    <div style={{minHeight:'100vh',background:'linear-gradient(135deg,#0f0c29,#302b63,#24243e)',display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
+      <div style={{background:'#fff',borderRadius:24,padding:'44px 40px',width:'100%',maxWidth:380,boxShadow:'0 24px 80px rgba(0,0,0,.4)'}}>
+        <div style={{textAlign:'center',marginBottom:32}}>
+          <div style={{fontSize:'3.5rem',marginBottom:10}}>🍒</div>
+          <div style={{fontSize:'1.5rem',fontWeight:900,color:'#e31e24'}}>Cherry Sushi</div>
+          <div style={{fontSize:'.85rem',color:'#9ca3af',marginTop:6}}>Admin boshqaruv paneli</div>
         </div>
         <form onSubmit={login}>
-          <div className="form-group">
-            <label className="form-label">Parol</label>
-            <input className="form-input" type="password" placeholder="Admin parolini kiriting"
-              value={secret} onChange={e=>setSecret(e.target.value)} required autoFocus/>
+          <div style={{marginBottom:18}}>
+            <label style={S.lbl}>Parol</label>
+            <input style={S.inp} type="password" placeholder="Admin parolini kiriting" value={secret} onChange={e=>setSecret(e.target.value)} required autoFocus/>
           </div>
-          {err && <div style={{background:'#fef2f2',color:'#e31e24',borderRadius:8,padding:'9px 12px',fontSize:'.8rem',marginBottom:12}}>{err}</div>}
-          <button className="btn-primary" type="submit">Kirish →</button>
+          {loginErr&&<div style={{background:'#fef2f2',color:'#e31e24',borderRadius:8,padding:'10px 14px',fontSize:'.82rem',marginBottom:14}}>{loginErr}</div>}
+          <button style={{...S.btn('#e31e24'),width:'100%',height:48,fontSize:'.95rem',justifyContent:'center'}} type="submit">Kirish →</button>
         </form>
       </div>
     </div>
   );
 
-  return (
-    <div className="admin-root" style={{minHeight:'100vh',background:'#f4f5f7',fontFamily:'Inter,sans-serif'}}>
-
-      {/* TOP BAR */}
-      <div style={{background:'#e31e24',padding:'10px 16px',minHeight:64,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',position:'sticky',top:0,zIndex:100,boxShadow:'0 2px 12px rgba(0,0,0,.2)'}}>
-        <div style={{display:'flex',alignItems:'center',gap:10}}>
-          <span style={{fontSize:'1.5rem'}}>🍒</span>
+  return(
+    <div style={{minHeight:'100vh',background:'#f8fafc',fontFamily:'Inter,system-ui,sans-serif'}}>
+      <div style={{background:'linear-gradient(90deg,#c0392b,#e31e24)',padding:'10px 24px',minHeight:64,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',position:'sticky',top:0,zIndex:100,boxShadow:'0 2px 20px rgba(227,30,36,.35)'}}>
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <span style={{fontSize:'1.8rem'}}>🍒</span>
           <div>
-            <div style={{color:'#fff',fontWeight:900,fontSize:'.95rem',letterSpacing:'-.3px'}}>Cherry Sushi</div>
-            <div style={{color:'rgba(255,255,255,.65)',fontSize:'.68rem',marginTop:-1}}>Admin Panel</div>
+            <div style={{color:'#fff',fontWeight:900,fontSize:'1rem'}}>Cherry Sushi</div>
+            <div style={{color:'rgba(255,255,255,.6)',fontSize:'.7rem'}}>Admin Panel</div>
           </div>
         </div>
-        <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',justifyContent:'flex-end'}}>
-          <button onClick={load} style={{background:'rgba(255,255,255,.14)',border:'1px solid rgba(255,255,255,.18)',color:'#fff',borderRadius:12,padding:'8px 14px',fontSize:'.75rem',fontWeight:700,cursor:'pointer',backdropFilter:'blur(8px)'}}>🔄 Yangilash</button>
-          <a href="/" target="_blank" rel="noreferrer" style={{background:'rgba(255,255,255,.14)',border:'1px solid rgba(255,255,255,.18)',color:'#fff',borderRadius:12,padding:'8px 14px',fontSize:'.75rem',fontWeight:700,cursor:'pointer',textDecoration:'none',backdropFilter:'blur(8px)'}}>Sayt ↗</a>
-          <button onClick={()=>{localStorage.removeItem('sr_admin');setToken('');}} style={{background:'#fff',border:'none',color:'#e31e24',borderRadius:12,padding:'8px 14px',fontSize:'.75rem',fontWeight:800,cursor:'pointer'}}>Chiqish</button>
+        <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+          <button onClick={load} style={{background:'rgba(255,255,255,.15)',border:'1px solid rgba(255,255,255,.2)',color:'#fff',borderRadius:10,padding:'8px 16px',fontSize:'.78rem',fontWeight:700,cursor:'pointer'}}>🔄 Yangilash</button>
+          <a href="/" target="_blank" rel="noreferrer" style={{background:'rgba(255,255,255,.15)',border:'1px solid rgba(255,255,255,.2)',color:'#fff',borderRadius:10,padding:'8px 16px',fontSize:'.78rem',fontWeight:700,textDecoration:'none'}}>Sayt ↗</a>
+          <button onClick={()=>{localStorage.removeItem('sr_admin');setToken('');}} style={{background:'#fff',border:'none',color:'#e31e24',borderRadius:10,padding:'8px 16px',fontSize:'.78rem',fontWeight:800,cursor:'pointer'}}>Chiqish</button>
         </div>
       </div>
 
-      {/* FLASH */}
-      {msg && <div style={{background:msg.startsWith('❌')?'#fef2f2':'#f0fff4',borderBottom:`3px solid ${msg.startsWith('❌')?'#e31e24':'#22c55e'}`,padding:'10px 24px',fontSize:'.85rem',fontWeight:600}}>{msg}</div>}
+      {msg&&<div style={{background:msg.startsWith('❌')?'#fff5f5':'#f0fdf4',borderBottom:`3px solid ${msg.startsWith('❌')?'#e31e24':'#22c55e'}`,padding:'11px 24px',fontSize:'.88rem',fontWeight:600}}>{msg}</div>}
 
-      {/* TABS */}
-      <div style={{background:'#fff',borderBottom:'1px solid #e5e7eb',padding:'0 16px',display:'flex',gap:6,overflowX:'auto',position:'sticky',top:64,zIndex:90}}>
+      <div style={{background:'#fff',borderBottom:'1px solid #e2e8f0',padding:'0 24px',display:'flex',gap:2,overflowX:'auto',position:'sticky',top:64,zIndex:90}}>
         {[
           ['stats','📊 Statistika'],
-          ['orders',`📦 Buyurtmalar${orders.filter(o=>o.status==='new').length>0?` (${orders.filter(o=>o.status==='new').length} yangi)`:''}`],
+          ['orders',`📦 Buyurtmalar${newCount>0?` (${newCount} 🔴)":""}`],
           ['menu',`🍣 Menyu (${menu.length})`],
-          ['add', editItem?'✏️ Tahrirlash':'➕ Qo\'shish'],
+          ['reviews',`⭐ Baholar (${reviews.length})`],
+          ['add',editItem?'✏️ Tahrirlash':'➕ Qo\'shish'],
         ].map(([k,label])=>(
-          <button key={k} onClick={()=>{ setTab(k); setSrch(''); if(k!=='add'){setEdit(null);setForm(emptyForm());} }}
-            style={{padding:'14px 16px',fontWeight:800,fontSize:'.82rem',background:tab===k?'#fff5f5':'transparent',border:'none',borderBottom:`2.5px solid ${tab===k?'#e31e24':'transparent'}`,color:tab===k?'#e31e24':'#6b7280',cursor:'pointer',whiteSpace:'nowrap',transition:'all .15s',borderTopLeftRadius:12,borderTopRightRadius:12}}>
+          <button key={k} onClick={()=>{setTab(k);setSrch('');if(k!=='add'){setEdit(null);setForm(emptyForm());}}}
+            style={{padding:'14px 18px',fontWeight:800,fontSize:'.82rem',background:tab===k?'#fff5f5':'transparent',border:'none',borderBottom:`3px solid ${tab===k?'#e31e24':'transparent'}`,color:tab===k?'#e31e24':'#64748b',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'Inter,sans-serif'}}>
             {label}
           </button>
         ))}
       </div>
 
-       <div className="admin-wrap" style={{maxWidth:1200,margin:'0 auto',padding:'20px 24px 60px'}}>
-        {/* ═══ STATS ═══ */}
-        {tab==='stats' && stats && (
+      <div style={{maxWidth:1240,margin:'0 auto',padding:'24px 24px 80px'}}>
+
+        {tab==='stats'&&stats&&(
           <div>
-            {/* KPI */}
-            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:14,marginBottom:20}}>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(190px,1fr))',gap:16,marginBottom:24}}>
               {[
                 {label:'Umumiy daromad',val:`€${fmt(stats.totalRevenue)}`,color:'#e31e24',ico:'💰'},
                 {label:'Jami buyurtmalar',val:stats.totalOrders,color:'#2563eb',ico:'📦'},
                 {label:'Bugun daromad',val:`€${fmt(stats.todayRevenue)}`,color:'#16a34a',ico:'📅'},
-                {label:'Bugun buyurtma',val:stats.todayOrders,color:'#7c3aed',ico:'🔥'},
+                {label:'Bugun buyurtmalar',val:stats.todayOrders,color:'#7c3aed',ico:'🔥'},
+                {label:'Menyu pozitsiyalari',val:stats.totalItems,color:'#0891b2',ico:'🍣'},
+                {label:'Foydalanuvchilar',val:stats.totalUsers,color:'#d97706',ico:'👤'},
               ].map((c,i)=>(
-                <div key={i} style={{background:'#fff',borderRadius:14,padding:'18px 20px',boxShadow:'0 1px 4px rgba(0,0,0,.08)',borderLeft:`4px solid ${c.color}`}}>
-                  <div style={{fontSize:'1rem',marginBottom:6}}>{c.ico}</div>
-                  <div style={{fontSize:'1.6rem',fontWeight:900,color:'#111',lineHeight:1.1}}>{c.val}</div>
-                  <div style={{fontSize:'.74rem',color:'#888',marginTop:4}}>{c.label}</div>
+                <div key={i} style={{...S.card,padding:'20px 22px',borderLeft:`4px solid ${c.color}`}}>
+                  <div style={{fontSize:'1.3rem',marginBottom:8}}>{c.ico}</div>
+                  <div style={{fontSize:'1.8rem',fontWeight:900,color:'#0f172a',lineHeight:1}}>{c.val}</div>
+                  <div style={{fontSize:'.74rem',color:'#94a3b8',marginTop:6}}>{c.label}</div>
                 </div>
               ))}
             </div>
-
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:14}}>
-              {/* Status */}
-              <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',boxShadow:'0 1px 4px rgba(0,0,0,.08)'}}>
-                <div style={{fontWeight:800,fontSize:'.78rem',textTransform:'uppercase',letterSpacing:'.6px',color:'#6b7280',marginBottom:14}}>📊 Statuslar</div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}}>
+              <div style={{...S.card,padding:'20px'}}>
+                <div style={{fontWeight:800,fontSize:'.74rem',textTransform:'uppercase',letterSpacing:'.6px',color:'#94a3b8',marginBottom:16}}>📊 Statuslar</div>
                 {Object.entries(STATUS).map(([k,v])=>{
-                  const cnt = stats.byStatus?.[k]||0;
-                  const pct = stats.totalOrders ? Math.round(cnt/stats.totalOrders*100) : 0;
-                  return (
-                    <div key={k} style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
-                      <span style={{width:70,fontSize:'.78rem',fontWeight:600}}>{v.icon} {v.label}</span>
-                      <div style={{flex:1,height:6,background:'#f0f0f0',borderRadius:3,overflow:'hidden'}}>
-                        <div style={{height:'100%',width:pct+'%',background:v.text,borderRadius:3,transition:'width .4s'}}/>
-                      </div>
-                      <span style={{width:28,textAlign:'right',fontSize:'.78rem',fontWeight:700}}>{cnt}</span>
+                  const cnt=stats.byStatus?.[k]||0, pct=stats.totalOrders?Math.round(cnt/stats.totalOrders*100):0;
+                  return(<div key={k} style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
+                    <span style={{width:82,fontSize:'.77rem',fontWeight:600}}>{v.icon} {v.label}</span>
+                    <div style={{flex:1,height:7,background:'#f1f5f9',borderRadius:4,overflow:'hidden'}}>
+                      <div style={{height:'100%',width:pct+'%',background:v.text,borderRadius:4,transition:'width .5s'}}/>
                     </div>
-                  );
+                    <span style={{width:28,textAlign:'right',fontSize:'.8rem',fontWeight:700}}>{cnt}</span>
+                  </div>);
                 })}
               </div>
-
-              {/* 7 days */}
-              <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',boxShadow:'0 1px 4px rgba(0,0,0,.08)'}}>
-                <div style={{fontWeight:800,fontSize:'.78rem',textTransform:'uppercase',letterSpacing:'.6px',color:'#6b7280',marginBottom:14}}>📈 So'nggi 7 kun</div>
-                {Object.entries(stats.last7||{}).map(([date,d])=>(
-                  <div key={date} style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
-                    <span style={{width:36,fontSize:'.76rem',color:'#888'}}>{date.slice(5)}</span>
-                    <div style={{flex:1,height:6,background:'#f0f0f0',borderRadius:3,overflow:'hidden'}}>
-                      <div style={{height:'100%',width:Math.min(100,(d.revenue/Math.max(...Object.values(stats.last7||{}).map(x=>x.revenue||0),1))*100)+'%',background:'#e31e24',borderRadius:3}}/>
+              <div style={{...S.card,padding:'20px'}}>
+                <div style={{fontWeight:800,fontSize:'.74rem',textTransform:'uppercase',letterSpacing:'.6px',color:'#94a3b8',marginBottom:16}}>📈 So'nggi 7 kun</div>
+                {Object.entries(stats.last7||{}).map(([date,d])=>{
+                  const mx=Math.max(...Object.values(stats.last7||{}).map(x=>x.revenue||0),1);
+                  return(<div key={date} style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
+                    <span style={{width:36,fontSize:'.75rem',color:'#64748b'}}>{date.slice(5)}</span>
+                    <div style={{flex:1,height:7,background:'#f1f5f9',borderRadius:4,overflow:'hidden'}}>
+                      <div style={{height:'100%',width:Math.min(100,(d.revenue/mx)*100)+'%',background:'#e31e24',borderRadius:4}}/>
                     </div>
-                    <span style={{fontSize:'.78rem',fontWeight:700,minWidth:50,textAlign:'right'}}>€{fmt(d.revenue)}</span>
-                    <span style={{fontSize:'.74rem',color:'#888',minWidth:30}}>{d.orders}ta</span>
-                  </div>
-                ))}
+                    <span style={{fontSize:'.78rem',fontWeight:700,minWidth:52,textAlign:'right'}}>€{fmt(d.revenue)}</span>
+                    <span style={{fontSize:'.73rem',color:'#94a3b8',minWidth:28}}>{d.orders}ta</span>
+                  </div>);
+                })}
               </div>
             </div>
-
-            {/* Top items */}
-            <div style={{background:'#fff',borderRadius:14,padding:'18px 20px',boxShadow:'0 1px 4px rgba(0,0,0,.08)'}}>
-              <div style={{fontWeight:800,fontSize:'.78rem',textTransform:'uppercase',letterSpacing:'.6px',color:'#6b7280',marginBottom:14}}>⭐ Top mahsulotlar</div>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:10}}>
+            <div style={{...S.card,padding:'20px'}}>
+              <div style={{fontWeight:800,fontSize:'.74rem',textTransform:'uppercase',letterSpacing:'.6px',color:'#94a3b8',marginBottom:16}}>⭐ Top mahsulotlar</div>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:12}}>
                 {(stats.topItems||[]).map((item,i)=>(
-                  <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:'#fafafa',borderRadius:10}}>
-                    <span style={{fontSize:'1.3rem',fontWeight:900,color:'#e31e24',minWidth:24}}>#{i+1}</span>
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',background:'#f8fafc',borderRadius:12,border:'1px solid #e2e8f0'}}>
+                    <span style={{fontSize:'1.4rem',fontWeight:900,color:'#e31e24',minWidth:26}}>#{i+1}</span>
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:'.8rem',fontWeight:700,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.name}</div>
-                      <div style={{fontSize:'.72rem',color:'#888'}}>{item.qty} marta</div>
+                      <div style={{fontSize:'.82rem',fontWeight:700,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.name}</div>
+                      <div style={{fontSize:'.72rem',color:'#94a3b8'}}>{item.qty} marta</div>
                     </div>
                   </div>
                 ))}
@@ -256,57 +282,61 @@ export default function Admin() {
           </div>
         )}
 
-        {/* ═══ ORDERS ═══ */}
-        {tab==='orders' && (
+        {tab==='orders'&&(
           <div>
-            {/* Filters */}
-            <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 220px',gap:12,marginBottom:18}}>
-              <input placeholder="🔍 Ism yoki #raqam..." value={search} onChange={e=>setSrch(e.target.value)}
-                style={{width:'100%',height:48,border:'1.5px solid #d1d5db',borderRadius:14,padding:'0 16px',fontSize:'.9rem',outline:'none',background:'#fff'}}/>
-              <select value={stF} onChange={e=>setStF(e.target.value)} style={{height:48,border:'1.5px solid #d1d5db',borderRadius:14,padding:'0 14px',fontSize:'.85rem',outline:'none',cursor:'pointer',background:'#fff'}}>
-                <option value="all">Barcha ({orders.length})</option>
+            <div style={{display:'flex',gap:10,marginBottom:16,flexWrap:'wrap',alignItems:'center'}}>
+              <input placeholder="🔍 Ism yoki #raqam..." value={search} onChange={e=>setSrch(e.target.value)} style={{...S.inp,flex:1,minWidth:200}}/>
+              <select value={stF} onChange={e=>setStF(e.target.value)} style={{...S.inp,width:200,cursor:'pointer'}}>
+                <option value="all">Barchasi ({orders.length})</option>
                 {Object.entries(STATUS).map(([k,v])=>(
                   <option key={k} value={k}>{v.icon} {v.label} ({orders.filter(o=>o.status===k).length})</option>
                 ))}
               </select>
+              {selected.size>0&&<button onClick={deleteSelected} style={S.btn('#ef4444')}>🗑 Tanlanganlar ({selected.size})</button>}
+              <button onClick={clearAll} style={S.btn('#1e293b')}>🗑 Hammasini tozala</button>
             </div>
-
-            {filtOrders.length===0 && (
-              <div style={{textAlign:'center',padding:'48px',color:'#9ca3af',background:'#fff',borderRadius:14}}>Buyurtmalar topilmadi</div>
+            {filtOrders.length>0&&(
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10,padding:'0 4px'}}>
+                <input type="checkbox" checked={filtOrders.every(o=>selected.has(o.id))} onChange={toggleAll} style={{width:16,height:16,cursor:'pointer'}}/>
+                <span style={{fontSize:'.8rem',color:'#64748b'}}>Hammasini tanlash ({filtOrders.length})</span>
+              </div>
             )}
-
-            <div style={{display:'flex',flexDirection:'column',gap:10}}>
-              {filtOrders.map(o => (
-                <div key={o.id} style={{background:'#fff',borderRadius:20,overflow:'hidden',boxShadow:'0 10px 30px rgba(15,23,42,.08)',border:'1px solid #eef0f3'}}>
-                  {/* Order header */}
-                  <div style={{display:'flex',alignItems:'center',gap:10,padding:'14px 18px',background:'#fcfcfd',borderBottom:'1px solid #f1f3f5',flexWrap:'wrap'}}>
-                    <span style={{fontWeight:900,fontSize:.9+'rem',color:'#e31e24'}}>#{o.id}</span>
-                    <span style={{background:STATUS[o.status||'new']?.color,color:STATUS[o.status||'new']?.text,borderRadius:20,padding:'3px 10px',fontSize:'.72rem',fontWeight:700}}>
+            {filtOrders.length===0&&<div style={{...S.card,padding:'48px',textAlign:'center',color:'#94a3b8'}}>Buyurtmalar topilmadi</div>}
+            <div style={{display:'flex',flexDirection:'column',gap:12}}>
+              {filtOrders.map(o=>(
+                <div key={o.id} style={{...S.card,overflow:'hidden',border:`1.5px solid ${selected.has(o.id)?'#e31e24':'#f1f5f9'}`}}>
+                  <div style={{display:'flex',alignItems:'center',gap:10,padding:'14px 18px',background:'#fafafa',borderBottom:'1px solid #f1f5f9',flexWrap:'wrap'}}>
+                    <input type="checkbox" checked={selected.has(o.id)} onChange={()=>toggleSel(o.id)} style={{width:16,height:16,cursor:'pointer'}} onClick={e=>e.stopPropagation()}/>
+                    <span style={{fontWeight:900,fontSize:'.92rem',color:'#e31e24'}}>#{o.id}</span>
+                    <span style={{background:STATUS[o.status||'new']?.color,color:STATUS[o.status||'new']?.text,borderRadius:20,padding:'3px 12px',fontSize:'.73rem',fontWeight:700}}>
                       {STATUS[o.status||'new']?.icon} {STATUS[o.status||'new']?.label}
                     </span>
-                    <span style={{fontSize:'.74rem',color:'#9ca3af'}}>🕐 {fmtT(o.createdAt)}</span>
-                    <span style={{fontSize:'.74rem',color:'#9ca3af'}}>{PAY[o.payMethod]||o.payMethod}</span>
-                    <select value={o.status||'new'} onChange={e=>changeStatus(o.id,e.target.value)} style={{marginLeft:'auto',height:38,border:'1.5px solid #d1d5db',borderRadius:12,padding:'0 12px',fontSize:'.76rem',cursor:'pointer',outline:'none',background:'#fff',fontWeight:700}}>
-                      {Object.entries(STATUS).map(([k,v])=><option key={k} value={k}>{v.icon} {v.label}</option>)}
-                    </select>
+                    <span style={{fontSize:'.75rem',color:'#94a3b8'}}>🕐 {fmtT(o.createdAt)}</span>
+                    <span style={{fontSize:'.75rem',color:'#94a3b8'}}>{PAY[o.payMethod]||o.payMethod}</span>
+                    <div style={{marginLeft:'auto',display:'flex',gap:8}}>
+                      <select value={o.status||'new'} onChange={e=>changeStatus(o.id,e.target.value)}
+                        style={{height:36,border:'1.5px solid #e2e8f0',borderRadius:10,padding:'0 10px',fontSize:'.76rem',cursor:'pointer',outline:'none',background:'#fff',fontWeight:700}}>
+                        {Object.entries(STATUS).map(([k,v])=><option key={k} value={k}>{v.icon} {v.label}</option>)}
+                      </select>
+                      <button onClick={()=>deleteOrder(o.id)} style={{...S.btn('#fef2f2','#e31e24','0 10px'),height:36,fontSize:'1rem'}}>🗑</button>
+                    </div>
                   </div>
-
-                  {/* Order body */}
-                    <div style={{padding:'16px 18px'}}>
-                      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:10,marginBottom:12,fontSize:'.84rem'}}>
+                  <div style={{padding:'16px 18px'}}>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:8,marginBottom:12,fontSize:'.85rem'}}>
                       <span>👤 <b>{o.name}</b></span>
                       <a href={`tel:${o.phone}`} style={{color:'#e31e24',textDecoration:'none'}}>📞 {o.phone}</a>
-                      {o.note && <span style={{color:'#6b7280'}}>💬 {o.note}</span>}
+                      {o.note&&<span style={{color:'#64748b'}}>💬 {o.note}</span>}
                     </div>
-                      <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:14}}>
+                    <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:14}}>
                       {o.items?.map((it,i)=>(
-                       <span key={i} style={{background:'#f8fafc',borderRadius:999,padding:'6px 12px',fontSize:'.76rem',fontWeight:700,border:'1px solid #eef2f7'}}>
-      
+                        <span key={i} style={{background:'#f8fafc',borderRadius:999,padding:'6px 14px',fontSize:'.77rem',fontWeight:700,border:'1px solid #e2e8f0'}}>
                           {it.e} {it.name?.lv||it.name?.ru} ×{it.qty}
                         </span>
                       ))}
                     </div>
-                      <div style={{fontWeight:900,fontSize:'1rem',color:'#e31e24',display:'flex',justifyContent:'space-between',alignItems:'center',paddingTop:4}}><span>💰 Jami</span><span>€{fmt(o.total)}</span></div>
+                    <div style={{fontWeight:900,fontSize:'1.05rem',color:'#e31e24',display:'flex',justifyContent:'space-between'}}>
+                      <span>💰 Jami</span><span>€{fmt(o.total)}</span>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -314,54 +344,35 @@ export default function Admin() {
           </div>
         )}
 
-        {/* ═══ MENU ═══ */}
-        {tab==='menu' && (
+        {tab==='menu'&&(
           <div>
-            <div style={{display:'flex',gap:10,marginBottom:16,flexWrap:'wrap'}}>
-              <input placeholder="🔍 Mahsulot nomi..." value={search} onChange={e=>setSrch(e.target.value)}
-                style={{flex:1,minWidth:180,height:40,border:'1.5px solid #d1d5db',borderRadius:10,padding:'0 14px',fontSize:'.84rem',outline:'none'}}/>
-              <select value={catF} onChange={e=>setCatF(e.target.value)}
-                style={{height:40,border:'1.5px solid #d1d5db',borderRadius:10,padding:'0 10px',fontSize:'.82rem',outline:'none',cursor:'pointer'}}>
+            <div style={{display:'flex',gap:10,marginBottom:18,flexWrap:'wrap',alignItems:'center'}}>
+              <input placeholder="🔍 Mahsulot nomi..." value={search} onChange={e=>setSrch(e.target.value)} style={{...S.inp,flex:1,minWidth:180}}/>
+              <select value={catF} onChange={e=>setCatF(e.target.value)} style={{...S.inp,width:160,cursor:'pointer'}}>
                 <option value="all">Barchasi ({menu.length})</option>
                 {CATS.map(c=><option key={c} value={c}>{c} ({menu.filter(i=>i.cat===c).length})</option>)}
               </select>
-              <button onClick={()=>{setTab('add');setEdit(null);setForm(emptyForm());}}
-                style={{height:40,background:'#e31e24',color:'#fff',border:'none',borderRadius:10,padding:'0 18px',fontWeight:700,fontSize:'.84rem',cursor:'pointer'}}>
-                + Qo'shish
-              </button>
+              <button onClick={()=>{setTab('add');setEdit(null);setForm(emptyForm());}} style={S.btn('#e31e24')}>+ Qo'shish</button>
             </div>
-             <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))',gap:16}}>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(230px,1fr))',gap:18}}>
               {filtMenu.map(item=>(
-                 <div key={item.id} style={{background:'#fff',borderRadius:18,overflow:'hidden',boxShadow:'0 10px 24px rgba(15,23,42,.08)',display:'flex',flexDirection:'column',transition:'transform .2s,box-shadow .2s',border:'1px solid #eef0f3'}}
-                  onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,.12)'}}
-                  onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='0 1px 4px rgba(0,0,0,.07)'}}>
-                  {/* Image */}
-                  <div style={{position:'relative',paddingTop:'65%',background:'#f4f5f7',overflow:'hidden'}}>
-                    {item.img
-                      ? <img src={item.img} alt="" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} onError={e=>e.target.style.display='none'}/>
-                      : <span style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'2.5rem'}}>{item.e}</span>}
-                    {item.hit && <span style={{position:'absolute',top:7,left:7,background:'#e31e24',color:'#fff',fontSize:'.55rem',fontWeight:900,padding:'2px 7px',borderRadius:5,textTransform:'uppercase'}}>HIT</span>}
+                <div key={item.id} style={{...S.card,overflow:'hidden',display:'flex',flexDirection:'column',transition:'transform .2s,box-shadow .2s'}}
+                  onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,.12)'}}
+                  onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='0 1px 8px rgba(0,0,0,.07)'}}>
+                  <div style={{position:'relative',paddingTop:'65%',background:'#f8fafc',overflow:'hidden'}}>
+                    {item.img?<img src={item.img} alt="" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} onError={e=>e.target.style.display='none'}/>
+                      :<span style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'2.8rem'}}>{item.e}</span>}
+                    {item.hit&&<span style={{position:'absolute',top:8,left:8,background:'#e31e24',color:'#fff',fontSize:'.55rem',fontWeight:900,padding:'3px 8px',borderRadius:6,textTransform:'uppercase'}}>HIT</span>}
                   </div>
-                  {/* Info */}
-                  <div style={{padding:'10px 12px',flex:1}}>
-                    <div style={{fontSize:'.82rem',fontWeight:700,marginBottom:3,lineHeight:1.3}}>{item.name?.lv||item.name?.ru}</div>
-                    <div style={{fontSize:'.7rem',color:'#9ca3af',marginBottom:6}}>{item.cat}</div>
-                    <div style={{fontSize:'.92rem',fontWeight:900,color:'#e31e24'}}>€{item.price?.toFixed(2)}</div>
+                  <div style={{padding:'12px 14px',flex:1}}>
+                    <div style={{fontSize:'.85rem',fontWeight:700,marginBottom:4}}>{item.name?.lv||item.name?.ru}</div>
+                    <div style={{fontSize:'.72rem',color:'#94a3b8',marginBottom:6}}>{item.cat}</div>
+                    <div style={{fontSize:'.95rem',fontWeight:900,color:'#e31e24'}}>€{item.price?.toFixed(2)}</div>
                   </div>
-                  {/* Actions */}
-                  <div style={{display:'flex',gap:4,padding:'6px 10px 10px'}}>
-                    <button onClick={()=>toggleHit(item.id)} title={item.hit?'Hit o\'chirish':'Hit qilish'}
-                      style={{flex:1,height:30,borderRadius:7,border:'none',cursor:'pointer',background:item.hit?'#fef9c3':'#f4f5f7',fontSize:'.8rem',fontWeight:700}}>
-                      {item.hit?'⭐':'☆'}
-                    </button>
-                    <button onClick={()=>startEdit(item)}
-                      style={{flex:2,height:30,borderRadius:7,border:'none',cursor:'pointer',background:'#eff6ff',fontSize:'.78rem',fontWeight:700,color:'#2563eb'}}>
-                      ✏️ Tahrir
-                    </button>
-                    <button onClick={()=>delItem(item.id)}
-                      style={{flex:1,height:30,borderRadius:7,border:'none',cursor:'pointer',background:'#fff0f0',fontSize:'.8rem'}}>
-                      🗑
-                    </button>
+                  <div style={{display:'flex',gap:4,padding:'8px 12px 12px'}}>
+                    <button onClick={()=>toggleHit(item.id)} style={{...S.btn(item.hit?'#fef3c7':'#f1f5f9',item.hit?'#92400e':'#475569','0 10px'),height:32,fontSize:'.85rem'}}>{item.hit?'⭐':'☆'}</button>
+                    <button onClick={()=>startEdit(item)} style={{...S.btn('#eff6ff','#2563eb'),flex:1,height:32,fontSize:'.78rem',justifyContent:'center'}}>✏️ Tahrir</button>
+                    <button onClick={()=>delItem(item.id)} style={{...S.btn('#fff5f5','#e31e24','0 10px'),height:32,fontSize:'.85rem'}}>🗑</button>
                   </div>
                 </div>
               ))}
@@ -369,90 +380,124 @@ export default function Admin() {
           </div>
         )}
 
-        {/* ═══ ADD/EDIT ═══ */}
-        {tab==='add' && (
-          <div style={{background:'#fff',borderRadius:16,padding:'24px',boxShadow:'0 1px 4px rgba(0,0,0,.08)',maxWidth:800}}>
-            <h2 style={{fontSize:'1.05rem',fontWeight:800,marginBottom:20,color:'#111'}}>
-              {editItem ? `✏️ Tahrirlash: ${editItem.name?.lv||editItem.name?.ru}` : '➕ Yangi mahsulot qo\'shish'}
+        {tab==='reviews'&&(
+          <div>
+            <div style={{...S.card,padding:'20px',marginBottom:20,display:'flex',gap:20,flexWrap:'wrap',alignItems:'center'}}>
+              {[1,2,3,4,5].map(star=>{
+                const cnt=reviews.filter(r=>r.rating===star).length;
+                return(<div key={star} style={{display:'flex',alignItems:'center',gap:6}}>
+                  <Stars n={star} size={18}/><span style={{fontSize:'.85rem',fontWeight:700}}>{cnt}</span>
+                </div>);
+              })}
+              <div style={{marginLeft:'auto',fontSize:'.85rem',color:'#64748b'}}>
+                Jami: <b>{reviews.length}</b> | O'rtacha: <b>{reviews.length?(reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1):'—'}</b> ⭐
+              </div>
+            </div>
+            {reviews.length===0&&<div style={{...S.card,padding:'48px',textAlign:'center',color:'#94a3b8'}}>Hali izoh yo'q</div>}
+            <div style={{display:'flex',flexDirection:'column',gap:12}}>
+              {reviews.map(r=>{
+                const mi=menu.find(m=>m.id==r.menuId);
+                return(
+                  <div key={r.id} style={{...S.card,padding:'16px 20px',display:'flex',gap:16,alignItems:'flex-start'}}>
+                    <div style={{fontSize:'2rem',lineHeight:1}}>{mi?.e||'🍣'}</div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',marginBottom:6}}>
+                        <span style={{fontWeight:700,fontSize:'.88rem'}}>{mi?.name?.lv||mi?.name?.ru||`#${r.menuId}`}</span>
+                        <Stars n={r.rating} size={16}/>
+                        <span style={{fontSize:'.72rem',color:'#94a3b8'}}>{fmtT(r.createdAt)}</span>
+                        <span style={{fontSize:'.72rem',color:'#94a3b8'}}>Buyurtma #{r.orderId}</span>
+                      </div>
+                      {r.comment&&<div style={{fontSize:'.84rem',color:'#374151',background:'#f8fafc',borderRadius:8,padding:'8px 12px',border:'1px solid #e2e8f0'}}>{r.comment}</div>}
+                    </div>
+                    <button onClick={()=>deleteReview(r.id)} style={{...S.btn('#fff5f5','#e31e24','0 10px'),height:32,flexShrink:0,fontSize:'.85rem'}}>🗑</button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {tab==='add'&&(
+          <div style={{...S.card,padding:'28px',maxWidth:860}}>
+            <h2 style={{fontSize:'1.1rem',fontWeight:900,marginBottom:24,color:'#0f172a'}}>
+              {editItem?`✏️ ${editItem.name?.lv||editItem.name?.ru}`:'➕ Yangi mahsulot'}
             </h2>
             <form onSubmit={saveItem}>
-
-              {/* Row 1 */}
-              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:16}}>
-                <div className="form-group">
-                  <label className="form-label">Kategoriya *</label>
-                  <select className="form-input" value={form.cat} onChange={e=>setForm(f=>({...f,cat:e.target.value}))}>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:14,marginBottom:20}}>
+                <div><label style={S.lbl}>Kategoriya *</label>
+                  <select style={{...S.inp,cursor:'pointer'}} value={form.cat} onChange={e=>setForm(f=>({...f,cat:e.target.value}))}>
                     {CATS.map(c=><option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Emoji</label>
-                  <select className="form-input" value={form.e} onChange={e=>setForm(f=>({...f,e:e.target.value}))}>
+                  </select></div>
+                <div><label style={S.lbl}>Emoji</label>
+                  <select style={{...S.inp,cursor:'pointer'}} value={form.e} onChange={e=>setForm(f=>({...f,e:e.target.value}))}>
                     {EMOJIS.map(em=><option key={em} value={em}>{em} {em}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Hit</label>
-                  <select className="form-input" value={form.hit?'yes':'no'} onChange={e=>setForm(f=>({...f,hit:e.target.value==='yes'}))}>
-                    <option value="no">Yo'q</option>
-                    <option value="yes">⭐ Ha</option>
-                  </select>
-                </div>
+                  </select></div>
+                <div><label style={S.lbl}>Hit</label>
+                  <select style={{...S.inp,cursor:'pointer'}} value={form.hit?'yes':'no'} onChange={e=>setForm(f=>({...f,hit:e.target.value==='yes'}))}>
+                    <option value="no">Yo'q</option><option value="yes">⭐ Ha</option>
+                  </select></div>
               </div>
-
-              {/* Row 2 */}
-              <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:12,marginBottom:16}}>
-                <div className="form-group">
-                  <label className="form-label">Rasm URL</label>
-                  <input className="form-input" type="url" placeholder="https://..."
-                    value={form.img} onChange={e=>setForm(f=>({...f,img:e.target.value}))}/>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Narx € *</label>
-                  <input className="form-input" type="number" step="0.1" min="0" placeholder="8.90"
-                    value={form.price} onChange={e=>setForm(f=>({...f,price:e.target.value}))} required/>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Eski narx €</label>
-                  <input className="form-input" type="number" step="0.1" min="0" placeholder="11.00"
-                    value={form.old} onChange={e=>setForm(f=>({...f,old:e.target.value}))}/>
-                </div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:20}}>
+                <div><label style={S.lbl}>Narx € *</label>
+                  <input style={S.inp} type="number" step="0.1" min="0" placeholder="8.90" value={form.price} onChange={e=>setForm(f=>({...f,price:e.target.value}))} required/></div>
+                <div><label style={S.lbl}>Eski narx €</label>
+                  <input style={S.inp} type="number" step="0.1" min="0" placeholder="11.00" value={form.old} onChange={e=>setForm(f=>({...f,old:e.target.value}))}/></div>
               </div>
-
-              {form.img && <img src={form.img} alt="" style={{width:100,height:68,objectFit:'cover',borderRadius:8,marginBottom:14}} onError={e=>e.target.style.display='none'}/>}
-
-              {/* Names */}
-              <div style={{fontWeight:800,fontSize:'.76rem',textTransform:'uppercase',letterSpacing:'.7px',color:'#9ca3af',marginBottom:10,paddingBottom:6,borderBottom:'1px solid #f0f0f0'}}>Nomi</div>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:16}}>
-                {[['name_lv','🇱🇻 Latviešu'],['name_ru','🇷🇺 Русский'],['name_en','🇬🇧 English']].map(([k,lbl])=>(
-                  <div key={k} className="form-group">
-                    <label className="form-label">{lbl}</label>
-                    <input className="form-input" placeholder={`Nom (${k.slice(-2)})`}
-                      value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} required={k==='name_lv'||k==='name_ru'}/>
+              <div style={{marginBottom:20}}>
+                <label style={S.lbl}>Rasm</label>
+                <div style={{display:'flex',gap:6,marginBottom:10}}>
+                  {['url','file'].map(m=>(
+                    <button key={m} type="button" onClick={()=>setImgMode(m)}
+                      style={{...S.btn(imgMode===m?'#e31e24':'#f1f5f9',imgMode===m?'#fff':'#475569'),height:34,fontSize:'.78rem'}}>
+                      {m==='url'?'🔗 URL havolasi':'📁 Fayl yuklash'}
+                    </button>
+                  ))}
+                </div>
+                {imgMode==='url'
+                  ?<input style={S.inp} type="url" placeholder="https://..." value={form.img} onChange={e=>setForm(f=>({...f,img:e.target.value}))}/>
+                  :<div style={{border:'2px dashed #e2e8f0',borderRadius:12,padding:'24px',textAlign:'center',background:'#f8fafc',cursor:'pointer'}}
+                    onClick={()=>fileRef.current?.click()}
+                    onDragOver={e=>{e.preventDefault();e.currentTarget.style.borderColor='#e31e24';}}
+                    onDragLeave={e=>{e.currentTarget.style.borderColor='#e2e8f0';}}
+                    onDrop={e=>{e.preventDefault();e.currentTarget.style.borderColor='#e2e8f0';handleFile(e.dataTransfer.files[0]);}}>
+                    <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={e=>handleFile(e.target.files[0])}/>
+                    {imgLoad?<div style={{color:'#64748b'}}>⏳ Yuklanmoqda...</div>
+                      :<div><div style={{fontSize:'2.5rem',marginBottom:8}}>📸</div>
+                        <div style={{fontSize:'.84rem',color:'#64748b'}}>Rasm tanlang yoki bu yerga tashlang</div>
+                        <div style={{fontSize:'.74rem',color:'#94a3b8',marginTop:4}}>JPG, PNG, WEBP — max 5MB</div></div>}
+                  </div>}
+                {form.img&&(
+                  <div style={{marginTop:10,display:'flex',alignItems:'center',gap:10}}>
+                    <img src={form.img} alt="" style={{width:80,height:56,objectFit:'cover',borderRadius:8,border:'1.5px solid #e2e8f0'}} onError={e=>e.target.style.display='none'}/>
+                    <div style={{flex:1,fontSize:'.78rem',color:'#64748b',wordBreak:'break-all'}}>{form.img}</div>
+                    <button type="button" onClick={()=>setForm(f=>({...f,img:''}))} style={{...S.btn('#fff5f5','#e31e24','0 10px'),height:30}}>✕</button>
                   </div>
-                ))}
+                )}
               </div>
-
-              {/* Descriptions */}
-              <div style={{fontWeight:800,fontSize:'.76rem',textTransform:'uppercase',letterSpacing:'.7px',color:'#9ca3af',marginBottom:10,paddingBottom:6,borderBottom:'1px solid #f0f0f0'}}>Tavsif</div>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:24}}>
-                {[['desc_lv','🇱🇻 Latviešu'],['desc_ru','🇷🇺 Русский'],['desc_en','🇬🇧 English']].map(([k,lbl])=>(
-                  <div key={k} className="form-group">
-                    <label className="form-label">{lbl}</label>
-                    <input className="form-input" placeholder={`Tavsif (${k.slice(-2)})`}
-                      value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))}/>
-                  </div>
-                ))}
+              <div style={{borderTop:'1px solid #f1f5f9',paddingTop:20,marginBottom:20}}>
+                <div style={{fontWeight:800,fontSize:'.74rem',textTransform:'uppercase',letterSpacing:'.7px',color:'#94a3b8',marginBottom:14}}>Nomi</div>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:14}}>
+                  {[['name_lv','🇱🇻 Latviešu'],['name_ru','🇷🇺 Русский'],['name_en','🇬🇧 English']].map(([k,l])=>(
+                    <div key={k}><label style={S.lbl}>{l}</label>
+                      <input style={S.inp} placeholder="Nom..." value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} required={k==='name_lv'||k==='name_ru'}/></div>
+                  ))}
+                </div>
               </div>
-
-              <div style={{display:'flex',gap:10}}>
-                <button className="btn-primary" type="submit" disabled={saving} style={{flex:1}}>
-                  {saving ? '⏳ Saqlanmoqda...' : editItem ? '💾 Saqlash' : '➕ Qo\'shish'}
+              <div style={{marginBottom:28}}>
+                <div style={{fontWeight:800,fontSize:'.74rem',textTransform:'uppercase',letterSpacing:'.7px',color:'#94a3b8',marginBottom:14}}>Tavsif</div>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:14}}>
+                  {[['desc_lv','🇱🇻 Latviešu'],['desc_ru','🇷🇺 Русский'],['desc_en','🇬🇧 English']].map(([k,l])=>(
+                    <div key={k}><label style={S.lbl}>{l}</label>
+                      <input style={S.inp} placeholder="Tavsif..." value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))}/></div>
+                  ))}
+                </div>
+              </div>
+              <div style={{display:'flex',gap:12}}>
+                <button style={{...S.btn('#e31e24'),flex:1,height:46,fontSize:'.92rem',justifyContent:'center'}} type="submit" disabled={saving}>
+                  {saving?'⏳...':editItem?'💾 Saqlash':'➕ Qo\'shish'}
                 </button>
-                <button type="button" className="btn-secondary"
-                  onClick={()=>{setTab('menu');setEdit(null);setForm(emptyForm());}}>
-                  Bekor qilish
-                </button>
+                <button type="button" style={{...S.btn('#f1f5f9','#475569'),height:46,padding:'0 24px'}}
+                  onClick={()=>{setTab('menu');setEdit(null);setForm(emptyForm());}}>Bekor</button>
               </div>
             </form>
           </div>
@@ -460,5 +505,4 @@ export default function Admin() {
       </div>
     </div>
   );
-}
-
+      }
