@@ -28,7 +28,7 @@ export default function CategoryNav() {
     <nav className="cnav">
       <div className="cnav-inner">
         {CATS.map(c => (
-          <button key={c.id} className={'catbtn'+(active===c.id?' on':'')} onClick={() => go(c.id)}>
+          <button key={c.id} type="button" className={'catbtn'+(active===c.id?' on':'')} onClick={(e) => { e.preventDefault(); go(c.id); }}>
             {c.e} {t[c.k]}
           </button>
         ))}
