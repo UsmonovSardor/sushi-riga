@@ -451,7 +451,7 @@ button{user-select:none;-webkit-user-select:none}
 
 @media(max-width:768px){.admin-wrap{padding:14px!important}.admin-topbar{padding:10px 14px!important;height:auto!important}.admin-tabs{padding:0 12px!important}.admin-filters{grid-template-columns:1fr!important}.admin-order-meta{grid-template-columns:1fr!important}.admin-stats-grid{grid-template-columns:1fr!important}.admin-two-col{grid-template-columns:1fr!important}}
 
-.orders-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:250;display:flex;justify-content:flex-end}
+.orders-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:190;display:flex;justify-content:flex-end}
 /* ===== BUTTON ===== */
 .primary-btn {
   width: 100%;
