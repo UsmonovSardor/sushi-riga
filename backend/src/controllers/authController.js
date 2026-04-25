@@ -24,7 +24,7 @@ exports.register = async (req, res) => {
     const user = { id: Date.now(), name, surname, address, phone: phone.trim(), role: 'user', createdAt: new Date().toISOString() };
     users.push(user);
     saveUsers(users);
-    const token = jwt.sign({ id: user.id, phone: user.phone, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: user.id, phone: user.phone, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, user: { id: user.id, name: user.name, surname: user.surname, address: user.address, phone: user.phone, role: user.role } });
   } catch(e) { res.status(500).json({ error: 'Server error' }); }
 };
