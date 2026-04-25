@@ -18,11 +18,19 @@ exports.register = async (req, res) => {
   try {
     const { name, surname, address, phone } = req.body;
     if (!name || !surname || !address || !phone) return res.status(400).json({ error: 'Name, surname, address and phone required' });
+    const normalizePhone = v => String(v || '').replace(/[^\d]/g, '');
     const users = loadUsers();
-    if (users.find(u => u.phone === phone.trim())) return res.status(409).json({ error: 'Phone already exists' });
-
-    const user = { id: Date.now(), name, surname, address, phone: phone.trim(), role: 'user', createdAt: new Date().toISOString() };
-    users.push(user);
+    const p = normalizePhone(phone);
+    let user = users.find(u => normalizePhone(u.phone) === p);
+    if (user) {
+      user.name = name;
+      user.surname = surname;
+      user.address = address;
+      user.phone = phone.trim();
+    } else {
+      user = { id: Date.now(), name, surname, address, phone: phone.trim(), role: 'user', createdAt: new Date().toISOString() };
+      users.push(user);
+    }
     saveUsers(users);
     const token = jwt.sign({ id: user.id, phone: user.phone, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, user: { id: user.id, name: user.name, surname: user.surname, address: user.address, phone: user.phone, role: user.role } });
