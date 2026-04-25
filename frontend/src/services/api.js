@@ -31,8 +31,8 @@ export const ordersApi = {
 };
 
 export const reviewsApi = {
-  getSummary:   ()                          => req(`${BASE}/reviews/summary`),
-  getMyPending: ()                          => req(`${BASE}/reviews/my-pending`, { headers: authHeaders() }),
-  getItem:      (menuId)                    => req(`${BASE}/reviews/menu/${menuId}`),
-  add:          (data)                      => req(`${BASE}/reviews`, { method:'POST', headers: authHeaders(), body: JSON.stringify(data) }),
+  getSummary:  ()                       => req(`${BASE}/reviews/summary`),
+  getMyPending:()                       => req(`${BASE}/reviews/my-pending`, { headers: authHeaders() }),
+  add:         (body)                   => req(`${BASE}/reviews`, { method:'POST', headers: authHeaders(), body: JSON.stringify(body) }),
+  getForItem:  (menuId)                 => req(`${BASE}/reviews/menu/${menuId}`),
 };
