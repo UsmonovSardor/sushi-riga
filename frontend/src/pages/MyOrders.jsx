@@ -86,6 +86,7 @@ function ReviewModal({ item, onClose, onDone }) {
         rating,
         comment,
       });
+
       onDone();
     } catch (e) {
       setErr(e.message || 'Error');
@@ -101,7 +102,7 @@ function ReviewModal({ item, onClose, onDone }) {
         position: 'fixed',
         inset: 0,
         background: 'rgba(0,0,0,.55)',
-        zIndex: 9999,
+        zIndex: 20000,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -272,25 +273,30 @@ export default function MyOrdersPage({ isOpen, onClose }) {
       setPending(Array.isArray(pend) ? pend : []);
     } catch {
       setOrders([]);
+      setPending([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-  if (!isOpen) return;
+    if (!isOpen) return;
 
-  loadAll();
+    const old = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    loadAll();
     window.addEventListener('sr_order_created', loadAll);
 
-   return () => {
-    window.removeEventListener('sr_order_created', loadAll);
-  };
-}, [isOpen]);
+    return () => {
+      document.body.style.overflow = old;
+      window.removeEventListener('sr_order_created', loadAll);
+    };
+  }, [isOpen]);
 
-if (!isOpen) return null;
+  if (!isOpen) return null;
 
-return (
+  return (
     <>
       {reviewItem && (
         <ReviewModal
@@ -305,8 +311,8 @@ return (
               p.filter(
                 x =>
                   !(
-                    x.menuId === reviewItem.menuId &&
-                    x.orderId === reviewItem.orderId
+                    String(x.menuId) === String(reviewItem.menuId) &&
+                    String(x.orderId) === String(reviewItem.orderId)
                   )
               )
             );
@@ -316,24 +322,33 @@ return (
         />
       )}
 
-      <div className="orders-overlay" onClick={(e)=>{if(e.target===e.currentTarget){onClose();}}}>
-         <div className="orders-panel" onMouseDown={e => e.stopPropagation()}>
+      <div
+        className="orders-overlay"
+        onClick={e => {
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}
+      >
+        <div className="orders-panel" onClick={e => e.stopPropagation()}>
           <div className="orders-head">
-             <h2>📦 {t('title')}</h2>
+            <h2>📦 {t('title')}</h2>
 
-                 <button onClick={loadAll} className="orders-refresh">↻</button>
+            <button onClick={loadAll} className="orders-refresh">
+              ↻
+            </button>
 
-                <button
-                  type="button"
-                 onClick={(e) => {
-                 e.stopPropagation();
+            <button
+              type="button"
+              onClick={e => {
+                e.stopPropagation();
                 onClose();
-             }}
-           >
-            ×
-          </button>
-        </div>
-  
+              }}
+            >
+              ×
+            </button>
+          </div>
+
           {pending.length > 0 && (
             <div
               style={{
@@ -374,6 +389,7 @@ return (
           )}
 
           {loading && <p className="orders-empty">{t('load')}</p>}
+
           {!loading && orders.length === 0 && (
             <p className="orders-empty">{t('empty')}</p>
           )}
@@ -383,7 +399,12 @@ return (
               const info = STATUS_INFO[order.status] || STATUS_INFO.new;
               const stepIdx = STEPS.indexOf(order.status);
               const isCancelled = order.status === 'cancelled';
-              const orderPending = pending.filter(p => p.orderId === order.id);
+              const orderPending = pending.filter(
+                p => String(p.orderId) === String(order.id)
+              );
+              const pendMap = new Map(
+                orderPending.map(p => [String(p.menuId), p])
+              );
 
               return (
                 <div className="order-card" key={order.id}>
@@ -468,7 +489,7 @@ return (
 
                   <div className="order-items" style={{ marginTop: 10 }}>
                     {(order.items || []).map(item => {
-                      const pend = orderPending.find(p => String(p.menuId) === String(item.id));
+                      const pend = pendMap.get(String(item.id));
                       const alreadyDone = reviewed.has(item.id + '_' + order.id);
 
                       return (
