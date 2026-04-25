@@ -281,11 +281,9 @@ export default function MyOrdersPage({ isOpen, onClose }) {
   if (!isOpen) return;
 
   loadAll();
-  const id = setInterval(loadAll, 10000);
-  window.addEventListener('sr_order_created', loadAll);
+    window.addEventListener('sr_order_created', loadAll);
 
-  return () => {
-    clearInterval(id);
+   return () => {
     window.removeEventListener('sr_order_created', loadAll);
   };
 }, [isOpen]);
@@ -470,7 +468,7 @@ return (
 
                   <div className="order-items" style={{ marginTop: 10 }}>
                     {(order.items || []).map(item => {
-                      const pend = orderPending.find(p => p.menuId === item.id);
+                      const pend = orderPending.find(p => String(p.menuId) === String(item.id));
                       const alreadyDone = reviewed.has(item.id + '_' + order.id);
 
                       return (
