@@ -34,6 +34,11 @@ export const menuApi = {
 
 export const ordersApi = {
   getMine: () => req(`${BASE}/orders/my`, { headers: authHeaders() }),
+  create: body => req(`${BASE}/orders`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(body),
+  }),
 };
 
 export const reviewsApi = {
