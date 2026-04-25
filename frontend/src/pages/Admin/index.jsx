@@ -338,9 +338,9 @@ export default function Admin() {
         const d = await r.json();
 
         if (d.url) {
-          setForm(f => ({ ...f, img: API + d.url }));
-          flash('✅ Rasm yuklandi');
-        } else {
+          setForm(f => ({ ...f, img: d.url }));
+         flash('✅ Rasm yuklandi');
+       }else {
           flash('❌ ' + (d.error || 'Xato'));
         }
       } catch (e) {
