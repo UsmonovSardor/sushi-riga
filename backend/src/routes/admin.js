@@ -10,4 +10,7 @@ router.delete('/menu/:id',    ctrl.deleteItem);
 router.patch('/menu/:id/hit', ctrl.toggleHit);
 router.get('/orders',         ctrl.getOrders);
 router.patch('/orders/:id',   ctrl.updateOrder);
+router.delete('/orders/:id',  ctrl.deleteOrder);
+router.delete('/orders',      ctrl.deleteOrders);
+router.post('/upload-image',  ctrl.uploadImage);
 module.exports = router;

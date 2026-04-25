@@ -1,61 +1,85 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import ProductCard from '../ProductCard';
 import { menuApi, reviewsApi } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 import T from '../../i18n/translations';
 
-export default function MenuSection({ category, onCount }) {
+export default function MenuSection({ sectionId, emoji, titleKey, cats = [], category, onCount }) {
   const { lang } = useLanguage();
   const t = T[lang];
-  const [items,   setItems]   = useState([]);
+  const [items, setItems] = useState([]);
   const [summary, setSummary] = useState({});
   const [loading, setLoading] = useState(true);
+
+  const sectionCats = useMemo(() => {
+    if (Array.isArray(cats) && cats.length) return cats;
+    if (category) return [category];
+    return [];
+  }, [cats, category]);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+
+    const loadMenu = async () => {
+      if (sectionId === 'hit' || sectionCats.includes('hit')) return menuApi.getHits();
+      const results = await Promise.all(
+        sectionCats.map(cat => menuApi.getByCategory(cat).catch(() => []))
+      );
+      return results.flat();
+    };
+
     Promise.all([
-      category === 'hit'
-        ? menuApi.getHits()
-        : menuApi.getByCategory(category),
+      loadMenu(),
       reviewsApi.getSummary().catch(() => ({})),
-    ]).then(([data, sum]) => {
-      if (cancelled) return;
-      const arr = Array.isArray(data) ? data : [];
-      setItems(arr);
-      setSummary(sum || {});
-      onCount?.(arr.length);
-    }).catch(() => {
-      if (!cancelled) setItems([]);
-    }).finally(() => {
-      if (!cancelled) setLoading(false);
-    });
+    ])
+      .then(([data, sum]) => {
+        if (cancelled) return;
+        const arr = Array.isArray(data) ? data : [];
+        setItems(arr);
+        setSummary(sum || {});
+        onCount?.(arr.length);
+      })
+      .catch(() => {
+        if (!cancelled) setItems([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
     return () => { cancelled = true; };
-  }, [category, lang]);
+  }, [sectionId, sectionCats, onCount]);
 
-  if (loading) return (
-    <div className="menu-loading">
-      {[1,2,3,4,5,6].map(i => <div key={i} className="card-skeleton"/>)}
-    </div>
-  );
+  if (loading) {
+    return (
+      <section id={sectionId} className="menu-section">
+        <div className="menu-section-head">
+          <h2>{emoji} {t[titleKey] || titleKey}</h2>
+        </div>
+        <div className="menu-loading">
+          {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="card-skeleton" />)}
+        </div>
+      </section>
+    );
+  }
 
-  if (!items.length) return (
-    <div className="menu-empty">
-      <span>🍱</span>
-      <p>{t.empty_t || 'Mahsulotlar topilmadi'}</p>
-    </div>
-  );
+  if (!items.length) return null;
 
   return (
-    <div className="menu-grid">
-      {items.map((item, i) => (
-        <ProductCard
-          key={item.id}
-          item={item}
-          delay={i * 40}
-          reviewSummary={summary[item.id]}
-        />
-      ))}
-    </div>
+    <section id={sectionId} className="menu-section">
+      <div className="menu-section-head">
+        <h2>{emoji} {t[titleKey] || titleKey}</h2>
+      </div>
+      <div className="menu-grid">
+        {items.map((item, i) => (
+          <ProductCard
+            key={item.id}
+            item={item}
+            delay={i * 40}
+            reviewSummary={summary[item.id]}
+          />
+        ))}
+      </div>
+    </section>
   );
 }
