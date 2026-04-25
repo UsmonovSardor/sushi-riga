@@ -1,18 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useCart }     from '../../context/CartContext';
+import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { useAuth }     from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 const LANGS = [
-  { code:'lv', flag:'🇱🇻', label:'Latviešu' },
-  { code:'ru', flag:'🇷🇺', label:'Русский'  },
-  { code:'en', flag:'🇬🇧', label:'English'  },
+  { code: 'lv', flag: '🇱🇻', label: 'Latviešu' },
+  { code: 'ru', flag: '🇷🇺', label: 'Русский' },
+  { code: 'en', flag: '🇬🇧', label: 'English' },
 ];
 
+const menuBtn = {
+  width: '100%',
+  border: 'none',
+  background: 'transparent',
+  padding: '10px 12px',
+  borderRadius: 10,
+  textAlign: 'left',
+  cursor: 'pointer',
+  fontSize: '.86rem',
+  fontWeight: 700,
+  color: '#334155',
+};
+
 export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpen, onMyOrdersOpen }) {
-  const { count }         = useCart();
+  const { count } = useCart();
   const { lang, setLang } = useLanguage();
-  const { user, logout }  = useAuth();
+  const { user, logout } = useAuth();
 
   const [langOpen, setLO] = useState(false);
   const [userOpen, setUO] = useState(false);
@@ -23,7 +36,7 @@ export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpe
 
   useEffect(() => {
     const fn = () => setSc(window.scrollY > 4);
-    window.addEventListener('scroll', fn, { passive:true });
+    window.addEventListener('scroll', fn, { passive: true });
     return () => window.removeEventListener('scroll', fn);
   }, []);
 
@@ -38,34 +51,56 @@ export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpe
 
   const cur = LANGS.find(l => l.code === lang) || LANGS[0];
 
+  const myOrdersText =
+    lang === 'lv' ? 'Mani pasūtījumi' :
+    lang === 'en' ? 'My Orders' :
+    'Мои заказы';
+
   return (
     <header className={'header' + (scrolled ? ' scrolled' : '')}>
       <div className="header-in">
-
-        {/* LEFT */}
         <div className="h-left">
-          <button className="h-burger" onClick={onMenuOpen}>
-            <span/><span/><span/>
+          <button className="h-burger" onClick={onMenuOpen} aria-label="Menu">
+            <span />
+            <span />
+            <span />
           </button>
 
-          <div className="logo-wrap" onClick={() => window.scrollTo({top:0,behavior:'smooth'})}>
-            🍒 CHERRY SUSHI
+          <div
+            className="logo-wrap"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            style={{ cursor: 'pointer' }}
+          >
+            <span className="logo-emoji">🍒</span>
+            <span className="logo-txt">
+              CHERRY <em>SUSHI</em>
+            </span>
           </div>
         </div>
 
-        {/* RIGHT */}
         <div className="h-right">
-
-          {/* Language */}
           <div className="lang-wrap" ref={langRef}>
-            <button className="hbtn" onClick={() => { setLO(o=>!o); setUO(false); }}>
-              {cur.flag} {cur.code.toUpperCase()}
+            <button
+              className="hbtn lang-btn"
+              onClick={() => {
+                setLO(o => !o);
+                setUO(false);
+              }}
+            >
+              {cur.flag} <span className="lang-code">{cur.code.toUpperCase()}</span>
             </button>
 
             {langOpen && (
               <div className="lang-dd">
                 {LANGS.map(l => (
-                  <div key={l.code} onClick={() => { setLang(l.code); setLO(false); }}>
+                  <div
+                    key={l.code}
+                    className={'lang-row' + (lang === l.code ? ' on' : '')}
+                    onClick={() => {
+                      setLang(l.code);
+                      setLO(false);
+                    }}
+                  >
                     {l.flag} {l.label}
                   </div>
                 ))}
@@ -73,54 +108,127 @@ export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpe
             )}
           </div>
 
-          {/* Search */}
-          <button className="hbtn" onClick={onSearchOpen}>🔍</button>
-
-          {/* Cart */}
-          <button className="hbtn" onClick={onCartOpen}>
-            🛒 {count > 0 && <span>{count}</span>}
+          <button className="hbtn" onClick={onSearchOpen} aria-label="Search">
+            🔍
           </button>
 
-          {/* User */}
-          <div ref={userRef}>
-            <button className="hbtn" onClick={() => { setUO(o=>!o); setLO(false); }}>
-              {user ? user.name?.slice(0,2).toUpperCase() : '👤'}
+          <button
+            className="hbtn"
+            onClick={() => (user ? onMyOrdersOpen() : onAuthOpen())}
+            title={myOrdersText}
+            aria-label={myOrdersText}
+            style={{ position: 'relative' }}
+          >
+            📦
+          </button>
+
+          <button
+            className="hbtn h-cart-btn"
+            onClick={onCartOpen}
+            aria-label="Cart"
+            style={{ position: 'relative' }}
+          >
+            🛒
+            {count > 0 && <span className="h-cart-n">{count > 9 ? '9+' : count}</span>}
+          </button>
+
+          <div className="lang-wrap" ref={userRef}>
+            <button
+              className={'hbtn' + (user ? '' : ' h-avatar--guest')}
+              onClick={() => {
+                setUO(o => !o);
+                setLO(false);
+              }}
+              style={{ position: 'relative' }}
+              aria-label="Account"
+            >
+              {user ? (
+                <span style={{ fontSize: '.72rem', fontWeight: 900 }}>
+                  {(user.name || 'U').slice(0, 2).toUpperCase()}
+                </span>
+              ) : (
+                '👤'
+              )}
             </button>
 
             {userOpen && (
-              <div className="lang-dd">
-
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: '46px',
+                  width: 230,
+                  background: '#fff',
+                  borderRadius: 16,
+                  boxShadow: '0 18px 50px rgba(0,0,0,.18)',
+                  border: '1px solid #f1f5f9',
+                  padding: 10,
+                  zIndex: 9999,
+                }}
+              >
                 {user ? (
                   <>
-                    <div>
-                      <b>{user.name}</b><br/>
-                      <small>{user.email || user.phone || ''}</small>
+                    <div
+                      style={{
+                        padding: '10px 12px',
+                        borderBottom: '1px solid #f1f5f9',
+                        marginBottom: 6,
+                      }}
+                    >
+                      <div style={{ fontWeight: 900, fontSize: '.9rem', color: '#111827' }}>
+                        {user.name}
+                      </div>
+                      <div style={{ fontSize: '.75rem', color: '#64748b', marginTop: 3 }}>
+                        {user.email || user.phone || ''}
+                      </div>
                     </div>
 
-                    <div onClick={() => { onMyOrdersOpen(); setUO(false); }}>
-                      📦 {lang==='lv' ? 'Mani pasūtījumi' : lang==='en' ? 'My Orders' : 'Мои заказы'}
-                    </div>
+                    <button
+                      onClick={() => {
+                        onMyOrdersOpen();
+                        setUO(false);
+                      }}
+                      style={menuBtn}
+                    >
+                      📦 {myOrdersText}
+                    </button>
 
-                    <div onClick={() => { logout(); setUO(false); }}>
-                      🚪 {lang==='lv'?'Iziet':lang==='en'?'Sign out':'Выйти'}
-                    </div>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setUO(false);
+                      }}
+                      style={menuBtn}
+                    >
+                      🚪 {lang === 'lv' ? 'Iziet' : lang === 'en' ? 'Sign out' : 'Выйти'}
+                    </button>
                   </>
                 ) : (
                   <>
-                    <div onClick={() => { onAuthOpen(); setUO(false); }}>
-                      👤 {lang==='lv'?'Pieteikties':lang==='en'?'Sign in':'Войти'}
-                    </div>
+                    <button
+                      onClick={() => {
+                        onAuthOpen();
+                        setUO(false);
+                      }}
+                      style={menuBtn}
+                    >
+                      👤 {lang === 'lv' ? 'Pieteikties' : lang === 'en' ? 'Sign in' : 'Войти'}
+                    </button>
 
-                    <div onClick={() => { onAuthOpen(); setUO(false); }}>
-                      🎁 {lang==='lv'?'Reģistrēties':lang==='en'?'Register':'Регистрация'}
-                    </div>
+                    <button
+                      onClick={() => {
+                        onAuthOpen();
+                        setUO(false);
+                      }}
+                      style={menuBtn}
+                    >
+                      🎁 {lang === 'lv' ? 'Reģistrēties' : lang === 'en' ? 'Register' : 'Регистрация'}
+                    </button>
                   </>
                 )}
-
               </div>
             )}
           </div>
-
         </div>
       </div>
     </header>
