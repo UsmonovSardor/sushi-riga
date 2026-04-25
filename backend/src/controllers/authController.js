@@ -1,64 +1,141 @@
 'use strict';
-const jwt      = require('jsonwebtoken');
-const bcrypt   = require('bcryptjs');
-const fs       = require('fs');
-const path     = require('path');
 
-const USERS_FILE = require('path').join(require('../config').DATA_PATH, 'users.json');
+const jwt = require('jsonwebtoken');
+const { query } = require('../db');
+
 const JWT_SECRET = process.env.JWT_SECRET || 'sushi-riga-secret-2026';
 
-function loadUsers() {
-  try { return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8')); } catch { return []; }
+const normalizePhone = v => String(v || '').replace(/[^\d]/g, '');
+
+function publicUser(user) {
+  return {
+    id: user.id,
+    name: user.name || '',
+    surname: user.surname || '',
+    address: user.address || '',
+    phone: user.phone || '',
+    role: user.role || 'user',
+  };
 }
-function saveUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+
+async function ensureUsersTable() {
+  await query(`
+    CREATE TABLE IF NOT EXISTS users_data (
+      id TEXT PRIMARY KEY,
+      phone_norm TEXT UNIQUE NOT NULL,
+      data JSONB NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    );
+  `);
 }
 
 exports.register = async (req, res) => {
   try {
-    const { name, surname, phone } = req.body;
-    if (!name || !surname || !phone) return res.status(400).json({ error: 'Name, surname and phone required' });
-    const normalizePhone = v => String(v || '').replace(/[^\d]/g, '');
-    const users = loadUsers();
-    const p = normalizePhone(phone);
-    let user = users.find(u => normalizePhone(u.phone) === p);
-    if (user) {
-      user.name = name;
-      user.surname = surname;
-      user.address = '';
-      user.phone = phone.trim();
-    } else {
-      user = { id: Date.now(), name, surname, address: '', phone: phone.trim(), role: 'user', createdAt: new Date().toISOString() };
-      users.push(user);
+    await ensureUsersTable();
+
+    const { name, surname, address = '', phone } = req.body;
+    if (!name || !surname || !phone) {
+      return res.status(400).json({ error: 'Name, surname and phone required' });
     }
-    saveUsers(users);
-    const token = jwt.sign({ id: user.id, phone: user.phone, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id: user.id, name: user.name, surname: user.surname, address: user.address, phone: user.phone, role: user.role } });
-  } catch(e) { res.status(500).json({ error: 'Server error' }); }
+
+    const phoneNorm = normalizePhone(phone);
+    if (!phoneNorm) return res.status(400).json({ error: 'Phone required' });
+
+    const exists = await query('SELECT * FROM users_data WHERE phone_norm=$1', [phoneNorm]);
+
+    if (exists.rows.length > 0) {
+      return res.status(409).json({
+        error: 'Bu nomer oldin ro‘yxatdan o‘tgan. Iltimos, kirish bo‘limidan kiring.',
+      });
+    }
+
+    const user = {
+      id: String(Date.now()),
+      name: name.trim(),
+      surname: surname.trim(),
+      address: address || '',
+      phone: phone.trim(),
+      phoneNorm,
+      role: 'user',
+      createdAt: new Date().toISOString(),
+    };
+
+    await query(
+      `INSERT INTO users_data (id, phone_norm, data)
+       VALUES ($1, $2, $3)`,
+      [user.id, phoneNorm, JSON.stringify(user)]
+    );
+
+    const token = jwt.sign(
+      { id: user.id, phone: user.phone, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+
+    res.json({ token, user: publicUser(user) });
+  } catch (e) {
+    console.error('register:', e.message);
+    res.status(500).json({ error: 'Server error' });
+  }
 };
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
-    const users = loadUsers();
-    const user = users.find(u => u.email === email.toLowerCase());
-    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-    const ok = await bcrypt.compare(password, user.hash);
-    if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
-    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role } });
-  } catch(e) { res.status(500).json({ error: 'Server error' }); }
+    await ensureUsersTable();
+
+    const { name, surname, phone } = req.body;
+    if (!name || !surname || !phone) {
+      return res.status(400).json({ error: 'Name, surname and phone required' });
+    }
+
+    const phoneNorm = normalizePhone(phone);
+
+    const r = await query('SELECT * FROM users_data WHERE phone_norm=$1', [phoneNorm]);
+    if (r.rows.length === 0) {
+      return res.status(404).json({ error: 'Bu nomer ro‘yxatdan o‘tmagan' });
+    }
+
+    const user = r.rows[0].data;
+
+    const sameName = String(user.name || '').trim().toLowerCase() === String(name).trim().toLowerCase();
+    const sameSurname = String(user.surname || '').trim().toLowerCase() === String(surname).trim().toLowerCase();
+
+    if (!sameName || !sameSurname) {
+      return res.status(401).json({ error: 'Ism yoki familiya noto‘g‘ri' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, phone: user.phone, role: user.role || 'user' },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+
+    res.json({ token, user: publicUser(user) });
+  } catch (e) {
+    console.error('login:', e.message);
+    res.status(500).json({ error: 'Server error' });
+  }
 };
 
-exports.me = (req, res) => {
-  const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'No token' });
+exports.me = async (req, res) => {
   try {
+    await ensureUsersTable();
+
+    const auth = req.headers.authorization;
+    if (!auth || !auth.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token' });
+    }
+
     const payload = jwt.verify(auth.slice(7), JWT_SECRET);
-    const users = loadUsers();
-    const user = users.find(u => u.id === payload.id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json({ id: user.id, name: user.name, surname: user.surname, address: user.address, phone: user.phone, role: user.role });
-  } catch { res.status(401).json({ error: 'Invalid token' }); }
+
+    const r = await query('SELECT * FROM users_data WHERE id=$1', [String(payload.id)]);
+    if (r.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(publicUser(r.rows[0].data));
+  } catch (e) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
 };
