@@ -61,7 +61,7 @@ exports.createOrder = async (req, res) => {
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
 
     const user = getUserFromReq(req);
-    const { name, surname='', address='', phone, note='', items, lang='lv', payMethod='cash' } = req.body;
+    const { name, surname='', phone, note='', items, lang='lv' } = req.body;
 
     const menu = loadMenu();
     const enriched = items.map(({ id, qty }) => {
@@ -77,10 +77,10 @@ exports.createOrder = async (req, res) => {
     const order = {
       id: num,
       createdAt: now,
-      name, surname, address, phone, note,
+      name, surname, address: '', phone, note,
       items: enriched,
       total,
-      payMethod,
+      payMethod: 'cash',
       lang,
       customerId: user?.id || null,
       customerPhone: user?.phone || phone,
