@@ -471,3 +471,4 @@ button{user-select:none;-webkit-user-select:none}
   box-shadow: 0 8px 20px rgba(227,30,36,0.3);
 }
 .orders-refresh{margin-left:auto;background:#f3f4f6;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-weight:700;transition:.2s}.orders-refresh:hover{background:#e5e7eb}.orders-head{display:flex;align-items:center;gap:10px}
+.hbtn{position:relative}.h-cart-n{position:absolute;top:-5px;right:-5px;background:#fff;color:#e31e24;border-radius:999px;min-width:16px;height:16px;padding:0 4px;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.18)}
