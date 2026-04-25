@@ -290,7 +290,9 @@ export default function MyOrdersPage({ isOpen, onClose }) {
   };
 }, [isOpen]);
 
-  return (
+if (!isOpen) return null;
+
+return (
     <>
       {reviewItem && (
         <ReviewModal
@@ -316,11 +318,11 @@ export default function MyOrdersPage({ isOpen, onClose }) {
         />
       )}
 
-      <div className="orders-overlay" onMouseDown={onClose}>
+      <div className="orders-overlay" onClick={(e)=>{if(e.target===e.currentTarget){onClose();}}}>
          <div className="orders-panel" onMouseDown={e => e.stopPropagation()}>
           <div className="orders-head">
             <h2>📦 {t('title')}</h2>
-          <button type="button" onMouseDown={e => e.stopPropagation()} onClick={onClose}>×</button>
+          <button type="button" onClick={(e)=>{e.stopPropagation();onClose();}}>×</button>
       </div>
   
           {pending.length > 0 && (
