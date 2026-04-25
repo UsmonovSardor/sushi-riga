@@ -110,11 +110,18 @@ exports.getMyOrders = (req, res) => {
   const user = requireUser(req, res);
   if (!user) return;
 
-  const phone = String(user.phone || '').replace(/\s+/g,'');
-  const orders = loadOrders()
-    .filter(o => o.customerId === user.id || String(o.phone || o.customerPhone || '').replace(/\s+/g,'') === phone)
-    .sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
-    .map(publicOrder);
+const normalizePhone = v => String(v || '').replace(/[^\d]/g, '');
+
+const phone = normalizePhone(user.phone);
+
+const orders = loadOrders()
+  .filter(o =>
+    String(o.customerId || '') === String(user.id || '') ||
+    normalizePhone(o.phone) === phone ||
+    normalizePhone(o.customerPhone) === phone
+  )
+  .sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+  .map(publicOrder);
 
   res.set('Cache-Control','no-store');
   res.json(orders);
