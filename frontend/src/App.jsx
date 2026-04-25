@@ -11,8 +11,8 @@ import MenuSection   from './components/MenuSection';
 import Cart          from './components/Cart';
 import CartBar       from './components/CartBar';
 import SearchOverlay from './components/SearchOverlay';
-import Notification from './components/Notification';
-import MyOrdersPage from './pages/MyOrders';
+import Notification  from './components/Notification';
+import MyOrdersPage  from './pages/MyOrders';
 import SideMenu      from './components/SideMenu';
 import AuthModal     from './components/AuthModal';
 import OrderModal    from './components/OrderModal';
@@ -22,8 +22,6 @@ import AdminPage     from './pages/Admin';
 import { ordersApi } from './services/api';
 import { useAuth } from './context/AuthContext';
 import { useLanguage } from './context/LanguageContext';
-
-
 
 const SECTIONS = [
   { id:'hit',     e:'⭐', k:'c_hit',     cats:['hit'] },
@@ -40,64 +38,94 @@ const SECTIONS = [
 ];
 
 function MainApp() {
-  const [cartOpen,   setCartOpen]   = useState(false);
-  const [menuOpen,   setMenuOpen]   = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [authOpen,   setAuthOpen]   = useState(false);
-  const [orderOpen,  setOrderOpen]  = useState(false);
-  
+  const [authOpen, setAuthOpen] = useState(false);
+  const [orderOpen, setOrderOpen] = useState(false);
   const [myOrdersOpen, setMyOrdersOpen] = useState(false);
+
   const [readyNote, setReadyNote] = useState('');
+  const [readyCount, setReadyCount] = useState(0);
+
   const { user } = useAuth();
   const { lang } = useLanguage();
 
-React.useEffect(() => {
-  if (!user) return;
+  React.useEffect(() => {
+    if (!user) {
+      setReadyCount(0);
+      return;
+    }
 
-  const seenKey = 'sr_ready_seen';
+    const seenKey = 'sr_ready_seen';
 
-  const check = async () => {
-    try {
-      const seen = JSON.parse(localStorage.getItem(seenKey) || '[]');
-      const list = await ordersApi.getMine();
-      const ready = list.find(o => o.status === 'ready' && !seen.includes(o.id));
+    const check = async () => {
+      try {
+        const seen = JSON.parse(localStorage.getItem(seenKey) || '[]');
+        const list = await ordersApi.getMine();
 
-      if (ready) {
-        localStorage.setItem(seenKey, JSON.stringify([...seen, ready.id].slice(-50)));
-        setReadyNote(
-          lang === 'lv'
-            ? `Pasūtījums #${ready.id} ir gatavs!`
-            : lang === 'ru'
+        const readyList = list.filter(
+          o => o.status === 'ready' && !seen.includes(o.id)
+        );
+
+        setReadyCount(readyList.length);
+
+        const ready = readyList[0];
+
+        if (ready) {
+          localStorage.setItem(
+            seenKey,
+            JSON.stringify([...seen, ready.id].slice(-50))
+          );
+
+          setReadyNote(
+            lang === 'lv'
+              ? `Pasūtījums #${ready.id} ir gatavs!`
+              : lang === 'ru'
               ? `Заказ #${ready.id} готов!`
               : `Order #${ready.id} is ready!`
-        );
-      }
-    } catch {}
-  };
+          );
+        }
+      } catch {}
+    };
 
-  check();
-  const id = setInterval(check, 20000);
-  return () => clearInterval(id);
-}, [user, lang]);
-  
-  const openCart  = useCallback(() => setCartOpen(true),  []);
+    check();
+    
+
+    window.addEventListener('sr_order_created', check);
+
+    return () => {
+      
+      window.removeEventListener('sr_order_created', check);
+    };
+  }, [user, lang]);
+
+  const openCart = useCallback(() => setCartOpen(true), []);
   const closeCart = useCallback(() => setCartOpen(false), []);
+
   const openOrder = useCallback(() => {
     setCartOpen(false);
     setTimeout(() => setOrderOpen(true), 80);
   }, []);
 
-  if (window.location.pathname.startsWith('/admin')) return <AdminPage />;
+  if (window.location.pathname.startsWith('/admin')) {
+    return <AdminPage />;
+  }
 
   return (
     <>
       <Header
-        onCartOpen  ={openCart}
-        onMenuOpen  ={() => setMenuOpen(true)}
+        onCartOpen={openCart}
+        onMenuOpen={() => setMenuOpen(true)}
         onSearchOpen={() => setSearchOpen(true)}
-        onAuthOpen  ={() => setAuthOpen(true)}
-        onMyOrdersOpen={() => setMyOrdersOpen(true)}
+        onAuthOpen={() => setAuthOpen(true)}
+        onMyOrdersOpen={() => {
+          setMyOrdersOpen(true);
+          setReadyCount(0);
+        }}
+        readyOrdersCount={readyCount}
       />
+
       <PromoBar />
       <CategoryNav />
 
@@ -116,25 +144,57 @@ React.useEffect(() => {
 
       <Footer />
 
-      {/* Floating cart bar */}
       <CartBar
-  onOpen={openCart}
-  onCheckout={openOrder}
-  hidden={cartOpen || orderOpen || authOpen}
-/>
+        onOpen={openCart}
+        onCheckout={openOrder}
+        hidden={cartOpen || orderOpen || authOpen}
+      />
 
-      {/* Drawers & Modals */}
       <Cart
-        isOpen    ={cartOpen}
-        onClose   ={closeCart}
+        isOpen={cartOpen}
+        onClose={closeCart}
         onCheckout={openOrder}
       />
-      <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-      <SideMenu      isOpen={menuOpen}   onClose={() => setMenuOpen(false)} />
-      {authOpen && <AuthModal onClose={() => setAuthOpen(false)} onSuccess={() => setOrderOpen(true)} />}
-      <MyOrdersPage isOpen={myOrdersOpen} onClose={() => setMyOrdersOpen(false)} />
-        {readyNote && <Notification message={readyNote} onDone={() => setReadyNote('')} />}
-      {orderOpen && <OrderModal isOpen={orderOpen} onClose={() => setOrderOpen(false)} onOpenAuth={() => { setOrderOpen(false); setAuthOpen(true); }} />}
+
+      <SearchOverlay
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+      />
+
+      <SideMenu
+        isOpen={menuOpen}
+        onClose={() => setMenuOpen(false)}
+      />
+
+      {authOpen && (
+        <AuthModal
+          onClose={() => setAuthOpen(false)}
+          onSuccess={() => setOrderOpen(true)}
+        />
+      )}
+
+      <MyOrdersPage
+        isOpen={myOrdersOpen}
+        onClose={() => setMyOrdersOpen(false)}
+      />
+
+      {readyNote && (
+        <Notification
+          message={readyNote}
+          onDone={() => setReadyNote('')}
+        />
+      )}
+
+      {orderOpen && (
+        <OrderModal
+          isOpen={orderOpen}
+          onClose={() => setOrderOpen(false)}
+          onOpenAuth={() => {
+            setOrderOpen(false);
+            setAuthOpen(true);
+          }}
+        />
+      )}
     </>
   );
 }
