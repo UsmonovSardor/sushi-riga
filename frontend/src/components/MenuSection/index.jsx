@@ -22,10 +22,14 @@ export default function MenuSection({ sectionId, emoji, titleKey, cats = [], cat
     setLoading(true);
 
     const loadMenu = async () => {
-      if (sectionId === 'hit' || sectionCats.includes('hit')) return menuApi.getHits();
+      if (sectionId === 'hit' || sectionCats.includes('hit')) {
+        return menuApi.getHits();
+      }
+
       const results = await Promise.all(
         sectionCats.map(cat => menuApi.getByCategory(cat).catch(() => []))
       );
+
       return results.flat();
     };
 
@@ -35,6 +39,7 @@ export default function MenuSection({ sectionId, emoji, titleKey, cats = [], cat
     ])
       .then(([data, sum]) => {
         if (cancelled) return;
+
         const arr = Array.isArray(data) ? data : [];
         setItems(arr);
         setSummary(sum || {});
@@ -47,17 +52,25 @@ export default function MenuSection({ sectionId, emoji, titleKey, cats = [], cat
         if (!cancelled) setLoading(false);
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [sectionId, sectionCats, onCount]);
 
+  // 🔄 LOADING STATE
   if (loading) {
     return (
-      <section id={sectionId} className="sec">
+      <section id={`sec-${sectionId}`} className="sec">
         <div className="sec-h">
-          <h2 className="sec-name">{emoji} {t[titleKey] || titleKey}</h2>
+          <h2 className="sec-name">
+            {emoji} {t[titleKey] || titleKey}
+          </h2>
         </div>
+
         <div className="grid">
-          {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="card-skeleton" />)}
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="card-skeleton" />
+          ))}
         </div>
       </section>
     );
@@ -65,10 +78,14 @@ export default function MenuSection({ sectionId, emoji, titleKey, cats = [], cat
 
   if (!items.length) return null;
 
+  // ✅ NORMAL STATE
   return (
-    <section id={sectionId} className="sec">
+    <section id={`sec-${sectionId}`} className="sec">
       <div className="sec-h">
-        <h2 className="sec-name">{emoji} {t[titleKey] || titleKey}</h2>
+        <h2 className="sec-name">
+          {emoji} {t[titleKey] || titleKey}
+        </h2>
+
         <span className="sec-cnt">{items.length}</span>
       </div>
 
