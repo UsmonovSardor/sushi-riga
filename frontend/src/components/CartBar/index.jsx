@@ -3,7 +3,7 @@ import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import T from '../../i18n/translations';
 
-export default function CartBar({ onOpen, hidden = false }) {
+export default function CartBar({ onOpen, onCheckout, hidden = false }) {
   const { cart, total } = useCart();
   const { lang } = useLanguage();
   const t = T[lang];
@@ -26,7 +26,7 @@ export default function CartBar({ onOpen, hidden = false }) {
 
   return (
     <div className={'cartbar' + (bump ? ' cartbar--bump' : '') + (count > 0 ? ' cartbar--active' : '')}>
-      <button className="cartbar-btn" onClick={onOpen} aria-label={t.cart_title}>
+      <button className="cartbar-btn" onClick={onCheckout || onOpen} aria-label={t.cart_title}>
         <div className="cartbar-left">
           <span className="cartbar-badge">{count}</span>
           <span className="cartbar-lbl">{t.cart_title}</span>
