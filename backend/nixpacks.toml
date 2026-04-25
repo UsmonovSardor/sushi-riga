@@ -1,5 +1,5 @@
 [phases.install]
-cmds = ["npm ci --production=false"]
+cmds = ["npm install --production=false"]
 
 [phases.build]
 cmds = []
