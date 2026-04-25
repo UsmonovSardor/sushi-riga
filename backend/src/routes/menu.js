@@ -1,43 +1,91 @@
 'use strict';
+
 const express = require('express');
-const router  = express.Router();
-const fs      = require('fs');
-const path    = require('path');
+const router = express.Router();
+const { query } = require('../db');
 
-const MENU_FILE = require('path').join(require('../config').DATA_PATH, 'menu.json');
-const load = () => { try { return JSON.parse(fs.readFileSync(MENU_FILE,'utf8')); } catch { return []; } };
+function mapItem(row) {
+  return {
+    id: row.id,
+    cat: row.cat,
+    e: row.e,
+    name: row.name,
+    desc: row.description,
+    price: parseFloat(row.price),
+    old: row.old_price != null ? parseFloat(row.old_price) : null,
+    img: row.img,
+    hit: row.hit,
+  };
+}
 
-// No-cache headers for all menu routes
-const noCache = (_, res, next) => {
-  res.set('Cache-Control','no-store');
+const noCache = (_req, res, next) => {
+  res.set('Cache-Control', 'no-store');
   next();
 };
 
 router.use(noCache);
 
-router.get('/', (_, res) => res.json(load()));
-
-router.get('/hits', (_, res) => {
-  const menu = load();
-  res.json(menu.filter(i => i.hit));
+router.get('/', async (_req, res) => {
+  try {
+    const r = await query('SELECT * FROM menu_items ORDER BY created_at ASC');
+    res.json(r.rows.map(mapItem));
+  } catch (e) {
+    console.error('menu all:', e.message);
+    res.status(500).json({ error: 'Menu yuklanmadi' });
+  }
 });
 
-router.get('/category/:cat', (req, res) => {
-  const menu = load();
-  const cat = req.params.cat.toLowerCase();
-  res.json(menu.filter(i => i.cat?.toLowerCase() === cat));
+router.get('/hits', async (_req, res) => {
+  try {
+    const r = await query('SELECT * FROM menu_items WHERE hit = true ORDER BY created_at ASC');
+    res.json(r.rows.map(mapItem));
+  } catch (e) {
+    console.error('menu hits:', e.message);
+    res.status(500).json({ error: 'Hits yuklanmadi' });
+  }
 });
 
-router.get('/search', (req, res) => {
-  const q = (req.query.q || '').toLowerCase();
-  if (!q) return res.json(load());
-  const menu = load();
-  res.json(menu.filter(i =>
-    i.name?.ru?.toLowerCase().includes(q) ||
-    i.name?.lv?.toLowerCase().includes(q) ||
-    i.name?.en?.toLowerCase().includes(q) ||
-    i.desc?.ru?.toLowerCase().includes(q)
-  ));
+router.get('/category/:cat', async (req, res) => {
+  try {
+    const cat = String(req.params.cat || '').toLowerCase();
+
+    const r = await query(
+      'SELECT * FROM menu_items WHERE LOWER(cat) = $1 ORDER BY created_at ASC',
+      [cat]
+    );
+
+    res.json(r.rows.map(mapItem));
+  } catch (e) {
+    console.error('menu category:', e.message);
+    res.status(500).json({ error: 'Category yuklanmadi' });
+  }
+});
+
+router.get('/search', async (req, res) => {
+  try {
+    const q = `%${String(req.query.q || '').toLowerCase()}%`;
+
+    if (q === '%%') {
+      const r = await query('SELECT * FROM menu_items ORDER BY created_at ASC');
+      return res.json(r.rows.map(mapItem));
+    }
+
+    const r = await query(
+      `
+      SELECT * FROM menu_items
+      WHERE
+        LOWER(name::text) LIKE $1
+        OR LOWER(description::text) LIKE $1
+      ORDER BY created_at ASC
+      `,
+      [q]
+    );
+
+    res.json(r.rows.map(mapItem));
+  } catch (e) {
+    console.error('menu search:', e.message);
+    res.status(500).json({ error: 'Search xatosi' });
+  }
 });
 
 module.exports = router;
