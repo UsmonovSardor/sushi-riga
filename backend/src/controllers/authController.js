@@ -16,8 +16,8 @@ function saveUsers(users) {
 
 exports.register = async (req, res) => {
   try {
-    const { name, surname, address, phone } = req.body;
-    if (!name || !surname || !address || !phone) return res.status(400).json({ error: 'Name, surname, address and phone required' });
+    const { name, surname, phone } = req.body;
+    if (!name || !surname || !phone) return res.status(400).json({ error: 'Name, surname and phone required' });
     const normalizePhone = v => String(v || '').replace(/[^\d]/g, '');
     const users = loadUsers();
     const p = normalizePhone(phone);
@@ -25,10 +25,10 @@ exports.register = async (req, res) => {
     if (user) {
       user.name = name;
       user.surname = surname;
-      user.address = address;
+      user.address = '';
       user.phone = phone.trim();
     } else {
-      user = { id: Date.now(), name, surname, address, phone: phone.trim(), role: 'user', createdAt: new Date().toISOString() };
+      user = { id: Date.now(), name, surname, address: '', phone: phone.trim(), role: 'user', createdAt: new Date().toISOString() };
       users.push(user);
     }
     saveUsers(users);
