@@ -22,7 +22,7 @@ const menuBtn = {
   color: '#334155',
 };
 
-export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpen, onMyOrdersOpen }) {
+ export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpen, onMyOrdersOpen, readyOrdersCount = 0 }) {
   const { count } = useCart();
   const { lang, setLang } = useLanguage();
   const { user, logout } = useAuth();
@@ -112,15 +112,10 @@ export default function Header({ onCartOpen, onMenuOpen, onSearchOpen, onAuthOpe
             🔍
           </button>
 
-          <button
-            className="hbtn"
-            onClick={() => (user ? onMyOrdersOpen() : onAuthOpen())}
-            title={myOrdersText}
-            aria-label={myOrdersText}
-            style={{ position: 'relative' }}
-          >
-            📦
-          </button>
+         <button className="hbtn" onClick={() => (user ? onMyOrdersOpen() : onAuthOpen())} title={myOrdersText} aria-label={myOrdersText} style={{ position: 'relative' }}>
+           📦
+             {readyOrdersCount > 0 && <span className="h-cart-n">{readyOrdersCount > 9 ? '9+' : readyOrdersCount}</span>}
+         </button>
 
           <button
             className="hbtn h-cart-btn"
