@@ -115,11 +115,8 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
                 detail: od.order,
       }));
       setOid(od.orderId);
-      if (payM==='cash'||!stripeP){ clear(); setStep('done'); return; }
-      const pr = await fetch(`${BASE}/api/payment/create-intent`,{
-        method:'POST', headers,
-        body:JSON.stringify({amount:total,orderId:od.orderId}),
-      });
+      if(payM==='cash'||!stripeP){clear();setStep('done');window.dispatchEvent(new CustomEvent('sr_order_created',{detail:od.order||od}));return;}
+      const pr=await fetch(`${BASE}/api/payment/create-intent`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${localStorage.getItem('sr_token')||''}`},body:JSON.stringify({amount:total,orderId:od.orderId})});
       const pd = await pr.json();
       if (!pr.ok) throw new Error(pd.error||'Payment error');
       setSec(pd.clientSecret); setStep('pay');
