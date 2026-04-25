@@ -47,6 +47,7 @@ function MainApp() {
 
   const [readyNote, setReadyNote] = useState('');
   const [readyCount, setReadyCount] = useState(0);
+  const [readyIds, setReadyIds] = useState([]);
 
   const { user } = useAuth();
   const { lang } = useLanguage();
@@ -58,36 +59,21 @@ function MainApp() {
     }
 
     const seenKey = 'sr_ready_seen';
-
     const check = async () => {
-      try {
-        const seen = JSON.parse(localStorage.getItem(seenKey) || '[]');
-        const list = await ordersApi.getMine();
+  try {
+    const seen = JSON.parse(localStorage.getItem(seenKey) || '[]');
+    const list = await ordersApi.getMine();
+    const readyList = list.filter(o => o.status === 'ready' && !seen.includes(o.id));
+    setReadyIds(readyList.map(o => o.id));
+    setReadyCount(readyList.length);
+    const ready = readyList[0];
+    if (ready) {
+      setReadyNote(lang === 'lv' ? `Pasūtījums #${ready.id} ir gatavs!` : lang === 'ru' ? `Заказ #${ready.id} готов!` : `Order #${ready.id} is ready!`);
+    }
+  } catch {}
+};
 
-        const readyList = list.filter(
-          o => o.status === 'ready' && !seen.includes(o.id)
-        );
-
-        setReadyCount(readyList.length);
-
-        const ready = readyList[0];
-
-        if (ready) {
-          localStorage.setItem(
-            seenKey,
-            JSON.stringify([...seen, ready.id].slice(-50))
-          );
-
-          setReadyNote(
-            lang === 'lv'
-              ? `Pasūtījums #${ready.id} ir gatavs!`
-              : lang === 'ru'
-              ? `Заказ #${ready.id} готов!`
-              : `Order #${ready.id} is ready!`
-          );
-        }
-      } catch {}
-    };
+    
 
     check();
     
@@ -120,9 +106,13 @@ function MainApp() {
         onSearchOpen={() => setSearchOpen(true)}
         onAuthOpen={() => setAuthOpen(true)}
         onMyOrdersOpen={() => {
-          setMyOrdersOpen(true);
-          setReadyCount(0);
-        }}
+        const seen = JSON.parse(localStorage.getItem('sr_ready_seen') || '[]');
+        localStorage.setItem('sr_ready_seen', JSON.stringify([...new Set([...seen, ...readyIds])].slice(-50)));
+        setReadyCount(0);
+       setReadyIds([]);
+       setMyOrdersOpen(true);
+      }}
+        
         readyOrdersCount={readyCount}
       />
 
