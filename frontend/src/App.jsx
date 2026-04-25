@@ -120,7 +120,7 @@ function MainApp() {
       <CategoryNav />
 
       <main className="main">
-        <HeroSlider />
+        <HeroSlider onOrderNow={openCart} />
         {SECTIONS.map(s => (
           <MenuSection
             key={s.id}
