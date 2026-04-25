@@ -1,25 +1,74 @@
 'use strict';
-const menu = require('../data/menu.json');
 
-exports.getAll = (_req, res) => res.json(menu);
+const { query } = require('../db');
 
-exports.getHits = (_req, res) => res.json(menu.filter(i => i.hit));
+// DB → frontend format
+function mapItem(row) {
+  return {
+    id: row.id,
+    cat: row.cat,
+    e: row.e,
+    name: row.name,
+    desc: row.description,
+    price: parseFloat(row.price),
+    old: row.old_price ? parseFloat(row.old_price) : null,
+    img: row.img,
+    hit: row.hit,
+  };
+}
 
-exports.getByCategory = (req, res) => {
-  const { cat } = req.params;
-  const items = menu.filter(i => i.cat === cat);
-  if (!items.length) return res.status(404).json({ error: `Category '${cat}' not found` });
-  res.json(items);
+// 🔥 GET ALL
+exports.getAll = async (_req, res) => {
+  try {
+    const { rows } = await query(`SELECT * FROM menu_items ORDER BY id DESC`);
+    res.json(rows.map(mapItem));
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'DB error' });
+  }
 };
 
-exports.search = (req, res) => {
-  const q = (req.query.q || '').toLowerCase().trim();
-  if (!q) return res.json(menu);
-  const results = menu.filter(i =>
-    i.name.en.toLowerCase().includes(q) ||
-    i.name.ru.toLowerCase().includes(q) ||
-    i.name.lv.toLowerCase().includes(q) ||
-    i.desc.en.toLowerCase().includes(q)
-  );
-  res.json(results);
+// 🔥 GET HITS
+exports.getHits = async (_req, res) => {
+  try {
+    const { rows } = await query(`SELECT * FROM menu_items WHERE hit = true`);
+    res.json(rows.map(mapItem));
+  } catch (e) {
+    res.status(500).json({ error: 'DB error' });
+  }
+};
+
+// 🔥 GET BY CATEGORY
+exports.getByCategory = async (req, res) => {
+  try {
+    const { cat } = req.params;
+
+    const { rows } = await query(
+      `SELECT * FROM menu_items WHERE cat = $1`,
+      [cat]
+    );
+
+    res.json(rows.map(mapItem));
+  } catch (e) {
+    res.status(500).json({ error: 'DB error' });
+  }
+};
+
+// 🔥 SEARCH
+exports.search = async (req, res) => {
+  try {
+    const q = (req.query.q || '').toLowerCase();
+
+    const { rows } = await query(`SELECT * FROM menu_items`);
+
+    const filtered = rows.filter(r => {
+      const name = JSON.stringify(r.name).toLowerCase();
+      const desc = JSON.stringify(r.description).toLowerCase();
+      return name.includes(q) || desc.includes(q);
+    });
+
+    res.json(filtered.map(mapItem));
+  } catch (e) {
+    res.status(500).json({ error: 'DB error' });
+  }
 };
