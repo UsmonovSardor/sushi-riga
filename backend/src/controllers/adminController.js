@@ -2,6 +2,7 @@
 const jwt  = require('jsonwebtoken');
 const fs   = require('fs');
 const path = require('path');
+const cloudinary = require('cloudinary').v2;
 
 const cfg         = require('../config');
 const MENU_FILE   = path.join(cfg.DATA_PATH, 'menu.json');
@@ -71,17 +72,32 @@ exports.getStats = [authAdmin, (req, res) => {
 }];
 
 // Image upload — base64 in, saves to disk, returns URL
-exports.uploadImage = [authAdmin, (req, res) => {
+ exports.uploadImage = [authAdmin, async (req, res) => {
   try {
-    const { base64, ext } = req.body;
-    if (!base64) return res.status(400).json({ error:'No image data' });
-    const allowed = ['jpg','jpeg','png','webp','gif'];
-    const safeExt = allowed.includes((ext||'jpg').toLowerCase()) ? ext.toLowerCase() : 'jpg';
-    const filename = `img_${Date.now()}.${safeExt}`;
-    const data = base64.replace(/^data:image\/\w+;base64,/,'');
-    fs.writeFileSync(path.join(UPLOAD_DIR, filename), Buffer.from(data,'base64'));
-    res.json({ url:`/uploads/${filename}` });
-  } catch(e) { res.status(500).json({ error:'Upload failed' }); }
+    const { base64 } = req.body;
+
+    if (!base64) {
+      return res.status(400).json({ error: 'No image data' });
+    }
+
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+
+    const result = await cloudinary.uploader.upload(base64, {
+      folder: 'cherry-sushi',
+    });
+
+    res.json({
+      url: result.secure_url,
+    });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Upload failed' });
+  }
 }];
 
 exports.getMenu    = [authAdmin, (_,res) => res.json(load(MENU_FILE))];
