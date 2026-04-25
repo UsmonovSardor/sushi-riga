@@ -52,11 +52,11 @@ export default function MenuSection({ sectionId, emoji, titleKey, cats = [], cat
 
   if (loading) {
     return (
-      <section id={sectionId} className="menu-section">
-        <div className="menu-section-head">
-          <h2>{emoji} {t[titleKey] || titleKey}</h2>
+      <section id={sectionId} className="sec">
+        <div className="sec-h">
+          <h2 className="sec-name">{emoji} {t[titleKey] || titleKey}</h2>
         </div>
-        <div className="menu-loading">
+        <div className="grid">
           {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="card-skeleton" />)}
         </div>
       </section>
@@ -66,11 +66,13 @@ export default function MenuSection({ sectionId, emoji, titleKey, cats = [], cat
   if (!items.length) return null;
 
   return (
-    <section id={sectionId} className="menu-section">
-      <div className="menu-section-head">
-        <h2>{emoji} {t[titleKey] || titleKey}</h2>
+    <section id={sectionId} className="sec">
+      <div className="sec-h">
+        <h2 className="sec-name">{emoji} {t[titleKey] || titleKey}</h2>
+        <span className="sec-cnt">{items.length}</span>
       </div>
-      <div className="menu-grid">
+
+      <div className="grid">
         {items.map((item, i) => (
           <ProductCard
             key={item.id}
