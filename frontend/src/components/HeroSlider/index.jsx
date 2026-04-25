@@ -29,7 +29,7 @@ const SLIDES = [
   },
 ];
 
-export default function HeroSlider() {
+export default function HeroSlider({ onOrderNow }) {
   const [idx, setIdx]         = useState(0);
   const [animKey, setAnimKey] = useState(0);
   const { lang } = useLanguage();
@@ -43,11 +43,7 @@ export default function HeroSlider() {
     return () => clearInterval(id);
   }, []);
 
-  const go = target => {
-    const el = document.getElementById('sec-' + target);
-    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth' });
-  };
-
+  const go = target => { if (onOrderNow) return onOrderNow(); const el = document.getElementById('sec-' + target); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth' }); };
   const s = SLIDES[idx];
 
   return (
