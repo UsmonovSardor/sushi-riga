@@ -316,13 +316,13 @@ export default function MyOrdersPage({ isOpen, onClose }) {
         />
       )}
 
-      <div className="orders-overlay" onClick={onClose}>
-        <div className="orders-panel" onClick={e => e.stopPropagation()}>
+      <div className="orders-overlay" onMouseDown={onClose}>
+         <div className="orders-panel" onMouseDown={e => e.stopPropagation()}>
           <div className="orders-head">
             <h2>📦 {t('title')}</h2>
-            <button onClick={onClose}>×</button>
-          </div>
-
+          <button type="button" onMouseDown={e => e.stopPropagation()} onClick={onClose}>×</button>
+      </div>
+  
           {pending.length > 0 && (
             <div
               style={{
