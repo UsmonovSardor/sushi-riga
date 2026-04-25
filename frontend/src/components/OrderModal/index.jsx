@@ -5,6 +5,7 @@ import { useCart }     from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth }     from '../../context/AuthContext';
 import T from '../../i18n/translations';
+import { ordersApi } from '../../services/api';
 
 const BASE    = import.meta.env.VITE_API_URL || 'https://sushi-riga-api-production-7b54.up.railway.app';
 const PK      = import.meta.env.VITE_STRIPE_PK || '';
@@ -103,16 +104,16 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
     if (!form.phone.trim()) return setErr(L('Ievadiet tālruni','Введите телефон','Enter phone'));
     setBusy(true);
     try {
-      const token = localStorage.getItem('sr_token');
-      const headers = {'Content-Type':'application/json'};
-      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const od = await ordersApi.create({
+                ...form,
+                  lang,
+                  payMethod: payM,
+                  items: cart.map(i => ({ id: i.id, qty: i.qty })),
+            });
 
-      const or = await fetch(`${BASE}/api/orders`,{
-        method:'POST', headers,
-        body:JSON.stringify({...form,lang,payMethod:payM,items:cart.map(i=>({id:i.id,qty:i.qty}))}),
-      });
-      const od = await or.json();
-      if (!or.ok) throw new Error(od.errors?.[0]?.msg||od.error||'Error');
+               window.dispatchEvent(new CustomEvent('sr_order_created', {
+                detail: od.order,
+      }));
       setOid(od.orderId);
       if (payM==='cash'||!stripeP){ clear(); setStep('done'); return; }
       const pr = await fetch(`${BASE}/api/payment/create-intent`,{
