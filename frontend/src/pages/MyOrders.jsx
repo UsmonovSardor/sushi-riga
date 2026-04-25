@@ -268,7 +268,7 @@ export default function MyOrdersPage({ isOpen, onClose }) {
         reviewsApi.getMyPending().catch(() => []),
       ]);
 
-      setOrders(Array.isArray(data) ? data.slice().reverse() : []);
+      setOrders(Array.isArray(data) ? data : []);
       setPending(Array.isArray(pend) ? pend : []);
     } catch {
       setOrders([]);
@@ -278,15 +278,17 @@ export default function MyOrdersPage({ isOpen, onClose }) {
   };
 
   useEffect(() => {
-    if (!isOpen) return;
+  if (!isOpen) return;
 
-    loadAll();
-    const id = setInterval(loadAll, 20000);
+  loadAll();
+  const id = setInterval(loadAll, 10000);
+  window.addEventListener('sr_order_created', loadAll);
 
-    return () => clearInterval(id);
-  }, [isOpen]);
-
-  if (!isOpen) return null;
+  return () => {
+    clearInterval(id);
+    window.removeEventListener('sr_order_created', loadAll);
+  };
+}, [isOpen]);
 
   return (
     <>
