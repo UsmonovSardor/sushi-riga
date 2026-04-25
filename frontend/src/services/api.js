@@ -20,6 +20,7 @@ export const menuApi = {
   getHits:       ()    => req(`${BASE}/menu/hits`),
   search:        (q)   => req(`${BASE}/menu/search?q=${encodeURIComponent(q)}`),
 };
+
 const authHeaders = () => {
   const token = localStorage.getItem('sr_token');
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -27,4 +28,11 @@ const authHeaders = () => {
 
 export const ordersApi = {
   getMine: () => req(`${BASE}/orders/my`, { headers: authHeaders() }),
+};
+
+export const reviewsApi = {
+  getSummary:   ()                          => req(`${BASE}/reviews/summary`),
+  getMyPending: ()                          => req(`${BASE}/reviews/my-pending`, { headers: authHeaders() }),
+  getItem:      (menuId)                    => req(`${BASE}/reviews/menu/${menuId}`),
+  add:          (data)                      => req(`${BASE}/reviews`, { method:'POST', headers: authHeaders(), body: JSON.stringify(data) }),
 };
