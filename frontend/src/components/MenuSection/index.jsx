@@ -4,7 +4,7 @@ import { menuApi, reviewsApi } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 import T from '../../i18n/translations';
 
-export default function MenuSection({ category }) {
+export default function MenuSection({ category, onCount }) {
   const { lang } = useLanguage();
   const t = T[lang];
   const [items,   setItems]   = useState([]);
@@ -12,39 +12,50 @@ export default function MenuSection({ category }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
-    const fetchData = async () => {
-      try {
-        const [menuData, sumData] = await Promise.all([
-          category === 'hit' ? menuApi.getHits() : menuApi.getByCategory(category),
-          reviewsApi.getSummary().catch(() => ({})),
-        ]);
-        setItems(Array.isArray(menuData) ? menuData : []);
-        setSummary(sumData || {});
-      } catch {
-        setItems([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [category]);
+    Promise.all([
+      category === 'hit'
+        ? menuApi.getHits()
+        : menuApi.getByCategory(category),
+      reviewsApi.getSummary().catch(() => ({})),
+    ]).then(([data, sum]) => {
+      if (cancelled) return;
+      const arr = Array.isArray(data) ? data : [];
+      setItems(arr);
+      setSummary(sum || {});
+      onCount?.(arr.length);
+    }).catch(() => {
+      if (!cancelled) setItems([]);
+    }).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [category, lang]);
 
-  if (loading) return <div className="menu-loading"><span className="spinner"/></div>;
-  if (!items.length) return null;
+  if (loading) return (
+    <div className="menu-loading">
+      {[1,2,3,4,5,6].map(i => <div key={i} className="card-skeleton"/>)}
+    </div>
+  );
+
+  if (!items.length) return (
+    <div className="menu-empty">
+      <span>🍱</span>
+      <p>{t.empty_t || 'Mahsulotlar topilmadi'}</p>
+    </div>
+  );
 
   return (
-    <section className="menu-section" id={`cat-${category}`}>
-      <div className="cards-grid">
-        {items.map((item, i) => (
-          <ProductCard
-            key={item.id}
-            item={item}
-            delay={i * 40}
-            reviewSummary={summary[item.id] || null}
-          />
-        ))}
-      </div>
-    </section>
+    <div className="menu-grid">
+      {items.map((item, i) => (
+        <ProductCard
+          key={item.id}
+          item={item}
+          delay={i * 40}
+          reviewSummary={summary[item.id]}
+        />
+      ))}
+    </div>
   );
 }
