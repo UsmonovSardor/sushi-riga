@@ -4,22 +4,34 @@ const BASE = import.meta.env.VITE_API_URL || 'https://sushi-riga-api-production-
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user,    setUser]   = useState(null);
-  const [loading, setLoad]   = useState(true);
+  const [user, setUser] = useState(null);
+  const [loading, setLoad] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('sr_token');
-    if (!token) { setLoad(false); return; }
+    const saved = localStorage.getItem('sr_user');
+
+    if (saved) {
+      try { setUser(JSON.parse(saved)); } catch {}
+    }
+
+    if (!token) {
+      setLoad(false);
+      return;
+    }
+
     fetch(`${BASE}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
-      signal: AbortSignal.timeout(8000),
     })
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then(u => { if (u?.id) setUser(u); else localStorage.removeItem('sr_token'); })
+      .then(u => {
+        localStorage.setItem('sr_user', JSON.stringify(u));
+        setUser(u);
+      })
       .catch(() => {
-        // Keep user logged in on network error - don't clear token
-        const saved = localStorage.getItem('sr_user');
-        if (saved) try { setUser(JSON.parse(saved)); } catch {}
+        localStorage.removeItem('sr_token');
+        localStorage.removeItem('sr_user');
+        setUser(null);
       })
       .finally(() => setLoad(false));
   }, []);
@@ -30,22 +42,26 @@ export function AuthProvider({ children }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, surname, address, phone }),
     });
+
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Registration error');
+
     localStorage.setItem('sr_token', d.token);
     localStorage.setItem('sr_user', JSON.stringify(d.user));
     setUser(d.user);
     return d.user;
   };
 
-  const login = async (email, password) => {
+  const login = async (name, surname, phone) => {
     const r = await fetch(`${BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ name, surname, phone }),
     });
+
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Login error');
+
     localStorage.setItem('sr_token', d.token);
     localStorage.setItem('sr_user', JSON.stringify(d.user));
     setUser(d.user);
