@@ -5,8 +5,7 @@ import { useLanguage } from '../../context/LanguageContext';
 export default function AuthModal({ onClose, onSuccess }) {
   const { register } = useAuth();
   const { lang } = useLanguage();
-  
-  const [form, setForm] = useState({ name:'', surname:'', address:'', phone:'' });
+  const [form, setForm] = useState({ name:'', surname:'', phone:'' });
   const [err,  setErr]  = useState('');
   const [busy, setBusy] = useState(false);
   const [ok,   setOk]   = useState(false);
@@ -20,7 +19,7 @@ export default function AuthModal({ onClose, onSuccess }) {
     if (busy) return;
     setErr(''); setBusy(true);
     try {
-      await register(form.name, form.surname, form.address, form.phone);
+      await register(form.name, form.surname, '', form.phone);
 setOk(true);
 setTimeout(() => {
   onClose();
@@ -79,19 +78,7 @@ setTimeout(() => {
                      />
                   </div>
               </div>
-                <div className="afield">
-                <label>{L('Adrese','Адрес','Address')} <span className="req">*</span></label>
-                 <div className="ainput-w">
-                 <input
-                 type="text"
-                 placeholder={L('Piegādes adrese','Адрес доставки','Delivery address')}
-                 autoComplete="street-address"
-                 value={form.address}
-                 onChange={e => s('address', e.target.value)}
-                 required
-                   />
-               </div>
-             </div>
+                
                 <div className="afield">
                   <label>{L('Tālrunis','Телефон','Phone')} <span className="req">*</span></label>
                   <div className="ainput-w">
