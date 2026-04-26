@@ -2,15 +2,50 @@
 <html lang="lv">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍒</text></svg>" />
+
+    <!-- 🔥 LOGO (favicon) -->
+    <link rel="icon" type="image/jpeg" href="/logo.jpg" />
+    <link rel="apple-touch-icon" href="/logo.jpg" />
+
+    <!-- 📱 RESPONSIVE -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <!-- 🧠 SEO -->
     <title>Cherry Sushi — Suši Rīgā</title>
     <meta name="description" content="Cherry Sushi — svaigi suši Rīgā. Katru dienu 11:00–22:00. Lokomotīves iela 100." />
+
+    <!-- 📸 OPEN GRAPH (Google + Telegram + Instagram preview) -->
     <meta property="og:title" content="Cherry Sushi — Suši Rīgā" />
     <meta property="og:description" content="Svaigi suši katru dienu. Lokomotīves iela 100, Rīga." />
     <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://cherrysushi.eu/logo.jpg" />
+    <meta property="og:url" content="https://cherrysushi.eu" />
+
+    <!-- 🎨 COLOR -->
     <meta name="theme-color" content="#e31e24" />
+
+    <!-- 🔥 GOOGLE LOGO (ENG MUHIM) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Restaurant",
+      "name": "Cherry Sushi",
+      "url": "https://cherrysushi.eu",
+      "logo": "https://cherrysushi.eu/logo.jpg",
+      "image": "https://cherrysushi.eu/logo.jpg",
+      "telephone": "+37120918484",
+      "servesCuisine": "Sushi",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Lokomotīves iela 100",
+        "addressLocality": "Riga",
+        "addressCountry": "LV"
+      }
+    }
+    </script>
+
   </head>
+
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
