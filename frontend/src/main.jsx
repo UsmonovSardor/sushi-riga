@@ -1,4 +1,7 @@
-import React from 'react'
+ if (import.meta.env.VITE_MAINTENANCE === 'true') {
+  window.location.href = '/maintenance.html';
+}  
+import React from 'react' 
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
