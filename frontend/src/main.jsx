@@ -1,10 +1,9 @@
+// 🔥 MAINTENANCE MODE (FINAL, BUG-FREE)
 const isMaintenance = import.meta.env.VITE_MAINTENANCE === 'true';
 const isMaintenancePage = window.location.pathname === '/maintenance.html';
-// 🔥 MAINTENANCE MODE CHECK (ENG MUHIM QISM)
-if (
-  import.meta.env.VITE_MAINTENANCE === 'true' &&
-  window.location.pathname !== '/maintenance.html'
-) {
+
+// ❗ Agar maintenance ON va biz maintenance sahifada EMAS bo‘lsak → redirect
+if (isMaintenance && !isMaintenancePage) {
   window.location.replace('/maintenance.html');
 }
 
