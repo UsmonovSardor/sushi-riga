@@ -67,11 +67,68 @@ exports.adminLogin = (req, res) => {
 
 exports.getStats = [authAdmin, async (_req, res) => {
   try {
-    const [menuR, usersR, ordersR] = await Promise.all([
-      query('SELECT COUNT(*)::int AS n FROM menu_items'),
-      query('SELECT COUNT(*)::int AS n FROM users_data'),
-      query('SELECT * FROM orders ORDER BY created_at DESC'),
+    const [totalR, todayR, menuR, usersR, statusR, payR, catR] = await Promise.all([
+      query(`
+        SELECT 
+          COUNT(*)::int AS total_orders,
+          COALESCE(SUM(CASE WHEN status != 'cancelled' THEN total ELSE 0 END), 0)::float AS total_revenue
+        FROM orders
+      `),
+
+      query(`
+        SELECT 
+          COUNT(*)::int AS today_orders,
+          COALESCE(SUM(CASE WHEN status != 'cancelled' THEN total ELSE 0 END), 0)::float AS today_revenue
+        FROM orders
+        WHERE DATE(created_at AT TIME ZONE 'Europe/Riga') = DATE(NOW() AT TIME ZONE 'Europe/Riga')
+      `),
+
+      query(`SELECT COUNT(*)::int AS n FROM menu_items`),
+      query(`SELECT COUNT(*)::int AS n FROM users_data`),
+
+      query(`
+        SELECT status, COUNT(*)::int AS n
+        FROM orders
+        GROUP BY status
+      `),
+
+      query(`
+        SELECT pay_method, COUNT(*)::int AS n
+        FROM orders
+        GROUP BY pay_method
+      `),
+
+      query(`SELECT COUNT(DISTINCT cat)::int AS n FROM menu_items`)
     ]);
+
+    const byStatus = {};
+    statusR.rows.forEach(r => {
+      byStatus[r.status || 'new'] = Number(r.n) || 0;
+    });
+
+    const byPay = {};
+    payR.rows.forEach(r => {
+      byPay[r.pay_method || 'cash'] = Number(r.n) || 0;
+    });
+
+    res.json({
+      totalOrders: Number(totalR.rows[0].total_orders) || 0,
+      totalRevenue: Number(totalR.rows[0].total_revenue) || 0,
+      todayOrders: Number(todayR.rows[0].today_orders) || 0,
+      todayRevenue: Number(todayR.rows[0].today_revenue) || 0,
+      totalItems: Number(menuR.rows[0].n) || 0,
+      totalUsers: Number(usersR.rows[0].n) || 0,
+      categories: Number(catR.rows[0].n) || 0,
+      byStatus,
+      byPay,
+      last7: {},
+      topItems: []
+    });
+  } catch (err) {
+    console.error('getStats:', err.message);
+    res.status(500).json({ error: 'Stats yuklanmadi' });
+  }
+}];
     const orders = ordersR.rows.map(rowToOrder);
     const now    = new Date(), today = now.toISOString().slice(0, 10);
     const todayOrders = orders.filter(o => (o.createdAt || '').slice(0, 10) === today);
