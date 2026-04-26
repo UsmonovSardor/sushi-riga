@@ -80,117 +80,48 @@ exports.adminLogin = (req, res) => {
 
 exports.getStats = [authAdmin, async (_req, res) => {
   try {
-    const [
-      totalR,
-      todayR,
-      menuR,
-      usersR,
-      statusR,
-      payR,
-      catR,
-      last7R,
-      topItemsR,
-    ] = await Promise.all([
-      query(`
-        SELECT 
-          COUNT(*)::int AS total_orders,
-          COALESCE(SUM(CASE WHEN status != 'cancelled' THEN total ELSE 0 END), 0)::float AS total_revenue
-        FROM orders
-      `),
-
-      query(`
-        SELECT 
-          COUNT(*)::int AS today_orders,
-          COALESCE(SUM(CASE WHEN status != 'cancelled' THEN total ELSE 0 END), 0)::float AS today_revenue
-        FROM orders
-        WHERE DATE(created_at AT TIME ZONE 'Europe/Riga') = DATE(NOW() AT TIME ZONE 'Europe/Riga')
-      `),
-
-      query(`SELECT COUNT(*)::int AS n FROM menu_items`),
-      query(`SELECT COUNT(*)::int AS n FROM users_data`),
-
-      query(`
-        SELECT status, COUNT(*)::int AS n
-        FROM orders
-        GROUP BY status
-      `),
-
-      query(`
-        SELECT pay_method, COUNT(*)::int AS n
-        FROM orders
-        GROUP BY pay_method
-      `),
-
-      query(`SELECT COUNT(DISTINCT cat)::int AS n FROM menu_items`),
-
-      query(`
-        SELECT 
-          TO_CHAR(d.day, 'YYYY-MM-DD') AS day,
-          COUNT(o.id)::int AS orders,
-          COALESCE(SUM(CASE WHEN o.status != 'cancelled' THEN o.total ELSE 0 END), 0)::float AS revenue
-        FROM generate_series(
-          DATE(NOW() AT TIME ZONE 'Europe/Riga') - INTERVAL '6 days',
-          DATE(NOW() AT TIME ZONE 'Europe/Riga'),
-          INTERVAL '1 day'
-        ) d(day)
-        LEFT JOIN orders o 
-          ON DATE(o.created_at AT TIME ZONE 'Europe/Riga') = d.day
-        GROUP BY d.day
-        ORDER BY d.day
-      `),
-
-      query(`
-        SELECT 
-          COALESCE(item->'name'->>'ru', item->>'name', item->>'id', 'Product') AS name,
-          SUM(COALESCE((item->>'qty')::int, 1))::int AS qty
-        FROM orders,
-        LATERAL jsonb_array_elements(items::jsonb) AS item
-        WHERE status != 'cancelled'
-        GROUP BY name
-        ORDER BY qty DESC
-        LIMIT 5
-      `),
+    const [ordersR, menuR, usersR] = await Promise.all([
+      query('SELECT * FROM orders ORDER BY created_at DESC LIMIT 1000'),
+      query('SELECT COUNT(*)::int AS n FROM menu_items'),
+      query('SELECT COUNT(*)::int AS n FROM users_data')
     ]);
 
+    const orders = ordersR.rows.map(rowToOrder);
+
+    const today = new Date().toISOString().slice(0, 10);
+
+    const getDateKey = (value) => {
+      if (!value) return '';
+      return new Date(value).toISOString().slice(0, 10);
+    };
+
+    const validOrders = orders.filter(o => o.status !== 'cancelled');
+    const todayOrders = validOrders.filter(o => getDateKey(o.createdAt) === today);
+
     const byStatus = {};
-    statusR.rows.forEach(r => {
-      byStatus[r.status || 'new'] = Number(r.n) || 0;
-    });
-
     const byPay = {};
-    payR.rows.forEach(r => {
-      byPay[r.pay_method || 'cash'] = Number(r.n) || 0;
-    });
 
-    const last7 = {};
-    last7R.rows.forEach(r => {
-      last7[r.day] = {
-        orders: Number(r.orders) || 0,
-        revenue: Number(r.revenue) || 0,
-      };
+    orders.forEach(o => {
+      byStatus[o.status || 'new'] = (byStatus[o.status || 'new'] || 0) + 1;
+      byPay[o.payMethod || 'cash'] = (byPay[o.payMethod || 'cash'] || 0) + 1;
     });
-
-    const topItems = topItemsR.rows.map(r => ({
-      name: r.name,
-      qty: Number(r.qty) || 0,
-    }));
 
     res.json({
-      totalOrders: Number(totalR.rows[0].total_orders) || 0,
-      totalRevenue: Number(totalR.rows[0].total_revenue) || 0,
-      todayOrders: Number(todayR.rows[0].today_orders) || 0,
-      todayRevenue: Number(todayR.rows[0].today_revenue) || 0,
+      totalOrders: orders.length,
+      totalRevenue: validOrders.reduce((s, o) => s + (Number(o.total) || 0), 0),
+      todayOrders: todayOrders.length,
+      todayRevenue: todayOrders.reduce((s, o) => s + (Number(o.total) || 0), 0),
       totalItems: Number(menuR.rows[0].n) || 0,
       totalUsers: Number(usersR.rows[0].n) || 0,
-      categories: Number(catR.rows[0].n) || 0,
+      categories: 0,
       byStatus,
       byPay,
-      last7,
-      topItems,
+      last7: {},
+      topItems: []
     });
   } catch (err) {
-    console.error('getStats:', err.message);
-    res.status(500).json({ error: 'Stats yuklanmadi' });
+    console.error('getStats:', err);
+    res.status(500).json({ error: err.message || 'Stats yuklanmadi' });
   }
 }];
 
