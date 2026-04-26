@@ -67,6 +67,23 @@ async function initDB() {
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
     `);
+        await client.query(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id TEXT PRIMARY KEY,
+        menu_id TEXT NOT NULL,
+        order_id TEXT NOT NULL,
+        user_id TEXT,
+        rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        comment TEXT DEFAULT '',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        UNIQUE(order_id, menu_id)
+      );
+    `);
+
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_reviews_menu ON reviews(menu_id);`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_reviews_created ON reviews(created_at DESC);`);
+
+    
 
     await client.query(`CREATE INDEX IF NOT EXISTS idx_menu_cat ON menu_items(cat);`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);`);
