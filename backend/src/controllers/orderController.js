@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const tg = require('../services/telegramService');
 const { query } = require('../db');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'sushi-riga-secret-2026';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 function normalizeName(name, fallback = 'Product') {
   if (name && typeof name === 'object') {
