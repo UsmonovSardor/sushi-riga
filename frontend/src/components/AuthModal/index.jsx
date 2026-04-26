@@ -68,6 +68,7 @@ export default function AuthModal({ onClose, onSuccess }) {
       }
 
       setOk(true);
+      sss
 
       setTimeout(() => {
         onClose();
