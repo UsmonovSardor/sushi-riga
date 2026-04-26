@@ -4,8 +4,8 @@ const jwt        = require('jsonwebtoken');
 const cloudinary = require('cloudinary').v2;
 const { query }  = require('../db');
 
-const JWT_SECRET = process.env.JWT_SECRET  || 'sushi-riga-secret-2026';
-const ADMIN_KEY  = process.env.ADMIN_SECRET || 'admin2026';
+const JWT_SECRET = process.env.JWT_SECRET;
+const ADMIN_KEY  = process.env.ADMIN_SECRET;
 
 function authAdmin(req, res, next) {
   const auth = req.headers.authorization;
