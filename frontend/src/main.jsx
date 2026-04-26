@@ -1,3 +1,5 @@
+const isMaintenance = import.meta.env.VITE_MAINTENANCE === 'true';
+const isMaintenancePage = window.location.pathname === '/maintenance.html';
 // 🔥 MAINTENANCE MODE CHECK (ENG MUHIM QISM)
 if (
   import.meta.env.VITE_MAINTENANCE === 'true' &&
