@@ -3,7 +3,7 @@
 const jwt = require('jsonwebtoken');
 const { query } = require('../db');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'sushi-riga-secret-2026';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const normalizePhone = v => String(v || '').replace(/[^\d]/g, '');
 
