@@ -1,25 +1,19 @@
 'use strict';
-const fs = require('fs');
-const path = require('path');
+
 const jwt = require('jsonwebtoken');
-const cfg = require('../config');
+const { query } = require('../db');
 
-const REVIEWS_FILE = path.join(cfg.DATA_PATH, 'reviews.json');
-const ORDERS_FILE = path.join(cfg.DATA_PATH, 'orders.json');
-const MENU_FILE = path.join(cfg.DATA_PATH, 'menu.json');
-const USERS_FILE = path.join(cfg.DATA_PATH, 'users.json');
-const JWT_SECRET = process.env.JWT_SECRET || 'sushi-riga-secret-2026';
-const ADMIN_KEY = process.env.ADMIN_SECRET || 'admin2026';
+const JWT_SECRET = process.env.JWT_SECRET;
+const ADMIN_KEY = process.env.ADMIN_SECRET;
 
-const load = file => { try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return []; } };
-const save = (file, data) => fs.writeFileSync(file, JSON.stringify(data, null, 2));
-
-function getUser(req) {
+async function getUser(req) {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Bearer ')) return null;
+
   try {
     const payload = jwt.verify(auth.slice(7), JWT_SECRET);
-    return load(USERS_FILE).find(u => u.id === payload.id) || null;
+    const r = await query('SELECT * FROM users_data WHERE id=$1', [String(payload.id)]);
+    return r.rows[0] || null;
   } catch {
     return null;
   }
@@ -27,7 +21,9 @@ function getUser(req) {
 
 function isAdmin(req) {
   const auth = req.headers.authorization || '';
-  if (auth === `Bearer ${ADMIN_KEY}`) return true;
+
+  if (ADMIN_KEY && auth === `Bearer ${ADMIN_KEY}`) return true;
+
   try {
     const payload = jwt.verify(auth.slice(7), JWT_SECRET);
     return payload.role === 'admin';
@@ -36,107 +32,206 @@ function isAdmin(req) {
   }
 }
 
-function publicReview(r) {
+function publicReview(row) {
   return {
-    id: r.id,
-    menuId: r.menuId,
-    orderId: r.orderId,
-    rating: r.rating,
-    comment: r.comment || '',
-    createdAt: r.createdAt,
+    id: row.id,
+    menuId: row.menu_id,
+    orderId: row.order_id,
+    userId: row.user_id,
+    rating: Number(row.rating),
+    comment: row.comment || '',
+    createdAt: row.created_at,
   };
 }
 
-exports.summary = (_req, res) => {
-  const reviews = load(REVIEWS_FILE);
-  const summary = {};
-  reviews.forEach(r => {
-    if (!summary[r.menuId]) summary[r.menuId] = { count: 0, avg: 0, sum: 0 };
-    summary[r.menuId].count += 1;
-    summary[r.menuId].sum += Number(r.rating) || 0;
-    summary[r.menuId].avg = Number((summary[r.menuId].sum / summary[r.menuId].count).toFixed(1));
-  });
-  Object.values(summary).forEach(x => delete x.sum);
-  res.json(summary);
+exports.summary = async (_req, res) => {
+  try {
+    const r = await query(`
+      SELECT menu_id, COUNT(*)::int AS count, ROUND(AVG(rating)::numeric, 1) AS avg
+      FROM reviews
+      GROUP BY menu_id
+    `);
+
+    const summary = {};
+    r.rows.forEach(row => {
+      summary[row.menu_id] = {
+        count: Number(row.count) || 0,
+        avg: Number(row.avg) || 0,
+      };
+    });
+
+    res.json(summary);
+  } catch (err) {
+    console.error('reviews summary:', err.message);
+    res.status(500).json({ error: 'Reviews summary error' });
+  }
 };
 
-exports.forMenu = (req, res) => {
-  const reviews = load(REVIEWS_FILE)
-    .filter(r => String(r.menuId) === String(req.params.menuId))
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .map(publicReview);
-  res.json(reviews);
+exports.forMenu = async (req, res) => {
+  try {
+    const r = await query(
+      `SELECT * FROM reviews
+       WHERE menu_id=$1
+       ORDER BY created_at DESC
+       LIMIT 100`,
+      [String(req.params.menuId)]
+    );
+
+    res.json(r.rows.map(publicReview));
+  } catch (err) {
+    console.error('reviews forMenu:', err.message);
+    res.status(500).json({ error: 'Reviews load error' });
+  }
 };
 
-exports.all = (req, res) => {
-  if (!isAdmin(req)) return res.status(401).json({ error: 'Admin required' });
-  res.json(load(REVIEWS_FILE).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+exports.all = async (req, res) => {
+  try {
+    if (!isAdmin(req)) return res.status(401).json({ error: 'Admin required' });
+
+    const r = await query(`
+      SELECT * FROM reviews
+      ORDER BY created_at DESC
+      LIMIT 1000
+    `);
+
+    res.json(r.rows.map(publicReview));
+  } catch (err) {
+    console.error('reviews all:', err.message);
+    res.status(500).json({ error: 'Reviews admin load error' });
+  }
 };
 
-exports.myPending = (req, res) => {
-  const user = getUser(req);
-  if (!user) return res.status(401).json({ error: 'Login required' });
+exports.myPending = async (req, res) => {
+  try {
+    const user = await getUser(req);
+    if (!user) return res.status(401).json({ error: 'Login required' });
 
-  const reviews = load(REVIEWS_FILE);
-  const menu = load(MENU_FILE);
-  const phone = String(user.phone || '').replace(/\s+/g, '');
-  const done = new Set(reviews.map(r => `${r.orderId}_${r.menuId}`));
+    const userData = user.data || {};
+    const phone = String(userData.phone || '').replace(/[^\d]/g, '');
 
-  const pending = [];
-  load(ORDERS_FILE)
-    .filter(o => o.customerId === user.id || String(o.phone || o.customerPhone || '').replace(/\s+/g, '') === phone)
-    .filter(o => ['ready', 'delivered'].includes(o.status))
-    .forEach(o => {
-      (o.items || []).forEach(item => {
-        const key = `${o.id}_${item.id}`;
-        if (done.has(key)) return;
-        const mi = menu.find(m => String(m.id) === String(item.id));
+    const r = await query(
+      `
+      SELECT o.id AS order_id, o.items
+      FROM orders o
+      WHERE (
+        o.customer_id=$1
+        OR REGEXP_REPLACE(o.phone,'[^0-9]','','g')=$2
+        OR REGEXP_REPLACE(o.customer_phone,'[^0-9]','','g')=$2
+      )
+      AND o.status IN ('ready', 'delivered')
+      ORDER BY o.created_at DESC
+      LIMIT 50
+      `,
+      [String(user.id), phone]
+    );
+
+    const done = await query(
+      `SELECT order_id, menu_id FROM reviews WHERE user_id=$1`,
+      [String(user.id)]
+    );
+
+    const doneSet = new Set(done.rows.map(x => `${x.order_id}_${x.menu_id}`));
+    const pending = [];
+
+    r.rows.forEach(order => {
+      const items = Array.isArray(order.items) ? order.items : [];
+
+      items.forEach(item => {
+        const menuId = String(item.id || item.menuId || item.productId || '');
+        if (!menuId) return;
+
+        const key = `${order.order_id}_${menuId}`;
+        if (doneSet.has(key)) return;
+
         pending.push({
-          orderId: o.id,
-          menuId: item.id,
-          itemName: item.name || mi?.name,
-          itemEmoji: item.e || mi?.e,
+          orderId: order.order_id,
+          menuId,
+          itemName:
+            typeof item.name === 'object'
+              ? item.name.ru || item.name.lv || item.name.en
+              : item.name || 'Product',
+          itemEmoji: item.e || '🍣',
         });
       });
     });
 
-  res.json(pending.slice(0, 20));
+    res.json(pending.slice(0, 20));
+  } catch (err) {
+    console.error('reviews myPending:', err.message);
+    res.status(500).json({ error: 'Pending reviews error' });
+  }
 };
 
-exports.add = (req, res) => {
-  const user = getUser(req);
-  if (!user) return res.status(401).json({ error: 'Login required' });
+exports.add = async (req, res) => {
+  try {
+    const user = await getUser(req);
+    if (!user) return res.status(401).json({ error: 'Login required' });
 
-  const { menuId, orderId, rating, comment = '' } = req.body;
-  const n = Number(rating);
-  if (!menuId || !orderId || !Number.isInteger(n) || n < 1 || n > 5) {
-    return res.status(400).json({ error: 'Invalid review' });
+    const { menuId, orderId, rating, comment = '' } = req.body;
+    const n = Number(rating);
+
+    if (!menuId || !orderId || !Number.isInteger(n) || n < 1 || n > 5) {
+      return res.status(400).json({ error: 'Invalid review' });
+    }
+
+    const check = await query(
+      `
+      SELECT id FROM orders
+      WHERE id=$1
+        AND customer_id=$2
+        AND status IN ('ready', 'delivered')
+      LIMIT 1
+      `,
+      [String(orderId), String(user.id)]
+    );
+
+    if (check.rows.length === 0) {
+      return res.status(403).json({ error: 'You can review only completed own orders' });
+    }
+
+    const id = String(Date.now());
+
+    const r = await query(
+      `
+      INSERT INTO reviews (id, menu_id, order_id, user_id, rating, comment, created_at)
+      VALUES ($1,$2,$3,$4,$5,$6,NOW())
+      RETURNING *
+      `,
+      [
+        id,
+        String(menuId),
+        String(orderId),
+        String(user.id),
+        n,
+        String(comment).slice(0, 400),
+      ]
+    );
+
+    res.status(201).json(publicReview(r.rows[0]));
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'Already reviewed' });
+    }
+
+    console.error('reviews add:', err.message);
+    res.status(500).json({ error: 'Review add error' });
   }
-
-  const reviews = load(REVIEWS_FILE);
-  if (reviews.some(r => String(r.menuId) === String(menuId) && String(r.orderId) === String(orderId))) {
-    return res.status(409).json({ error: 'Already reviewed' });
-  }
-
-  const review = {
-    id: Date.now(),
-    menuId,
-    orderId,
-    rating: n,
-    comment: String(comment).slice(0, 400),
-    userId: user.id,
-    createdAt: new Date().toISOString(),
-  };
-  reviews.unshift(review);
-  save(REVIEWS_FILE, reviews.slice(0, 2000));
-  res.status(201).json(publicReview(review));
 };
 
-exports.remove = (req, res) => {
-  if (!isAdmin(req)) return res.status(401).json({ error: 'Admin required' });
-  const reviews = load(REVIEWS_FILE);
-  const next = reviews.filter(r => String(r.id) !== String(req.params.id));
-  if (next.length === reviews.length) return res.status(404).json({ error: 'Not found' });
-  save(REVIEWS_FILE, next);
-  res.json({ ok: true });
+exports.remove = async (req, res) => {
+  try {
+    if (!isAdmin(req)) return res.status(401).json({ error: 'Admin required' });
+
+    const r = await query(
+      `DELETE FROM reviews WHERE id=$1 RETURNING id`,
+      [String(req.params.id)]
+    );
+
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('reviews remove:', err.message);
+    res.status(500).json({ error: 'Review delete error' });
+  }
 };
