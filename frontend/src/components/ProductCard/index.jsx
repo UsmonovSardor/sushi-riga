@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useCart }     from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import T from '../../i18n/translations';
+const optimizeImage=(url)=>{if(!url||!url.includes("cloudinary.com"))return url;return url.replace("/upload/","/upload/f_auto,q_auto,w_600/")}
 
 export default function ProductCard({ item, delay = 0, reviewSummary }) {
   const { add, cart }   = useCart();
@@ -36,7 +37,7 @@ export default function ProductCard({ item, delay = 0, reviewSummary }) {
         {item.hit && <span className="badge badge-hit">{t.b_hit || 'ХИТ'}</span>}
         {sale > 0  && <span className="badge badge-sale">-{sale}%</span>}
         <span className="card-emoji">{item.e}</span>
-        <img src={item.img} alt={item.name[lang]} loading="lazy" onError={e => e.target.style.display='none'}/>
+        <img src={optimizeImage(item.image)} alt={item.name} loading="lazy" decoding="async" className="product-img" onError={(e)=>{e.currentTarget.src="/placeholder-sushi.png"}} />
         <div className="card-shimmer" />
       </div>
 
