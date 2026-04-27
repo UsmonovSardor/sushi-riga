@@ -125,38 +125,7 @@ exports.getStats = [authAdmin, async (_req, res) => {
   }
 }];
 
-exports.uploadImage = [authAdmin, async (req, res) => {
-  try {
-    const { base64 } = req.body;
-
-    if (!base64) return res.status(400).json({ error: 'No image data' });
-
-    if (
-      !process.env.CLOUDINARY_CLOUD_NAME ||
-      !process.env.CLOUDINARY_API_KEY ||
-      !process.env.CLOUDINARY_API_SECRET
-    ) {
-      return res.status(500).json({ error: 'Cloudinary env missing' });
-    }
-
-    cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
-    });
-
-    const result = await cloudinary.uploader.upload(base64, {
-      folder: 'cherry-sushi/menu',
-      resource_type: 'image',
-      overwrite: false,
-    });
-
-    res.json({ url: result.secure_url, publicId: result.public_id });
-  } catch (e) {
-    console.error('Cloudinary:', e);
-    res.status(500).json({ error: e.message || 'Upload failed' });
-  }
-}];
+exports.uploadImage = [authAdmin, async (req, res) => { try { const { base64 } = req.body; if (!base64) return res.status(400).json({ error: 'No image data' }); if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) { return res.status(500).json({ error: 'Cloudinary env missing' }); } cloudinary.config({ cloud_name: process.env.CLOUDINARY_CLOUD_NAME, api_key: process.env.CLOUDINARY_API_KEY, api_secret: process.env.CLOUDINARY_API_SECRET }); const result = await cloudinary.uploader.upload(base64, { folder: 'cherry-sushi/menu', resource_type: 'image', overwrite: false, transformation: [{ width: 900, height: 700, crop: 'limit' }, { quality: 'auto:good' }, { fetch_format: 'auto' }] }); res.json({ url: result.secure_url, publicId: result.public_id }); } catch (e) { console.error('Cloudinary:', e); res.status(500).json({ error: e.message || 'Upload failed' }); } }];
 
 exports.getMenu = [authAdmin, async (_req, res) => {
   try {
