@@ -1,19 +1,37 @@
 import React, { useState, useRef } from 'react';
-import { useCart }     from '../../context/CartContext';
+import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import T from '../../i18n/translations';
-const optimizeImage=(url)=>{if(!url||!url.includes("cloudinary.com"))return url;return url.replace("/upload/","/upload/f_auto,q_auto,w_600/")}
+
+const optimizeImage = (url) => {
+  if (!url || typeof url !== 'string') return '/placeholder-sushi.png';
+  return url.includes('cloudinary.com')
+    ? url.replace('/upload/', '/upload/f_auto,q_auto,w_600/')
+    : url;
+};
+
+const getText = (value, lang, fallback = '') => {
+  if (!value) return fallback;
+  if (typeof value === 'string') return value;
+  return value[lang] || value.en || value.ru || value.lv || fallback;
+};
 
 export default function ProductCard({ item, delay = 0, reviewSummary }) {
-  const { add, cart }   = useCart();
-  const { lang }        = useLanguage();
-  const t               = T[lang];
+  const { add, cart } = useCart();
+  const { lang } = useLanguage();
+  const t = T[lang];
+
   const [bump, setBump] = useState(false);
   const [ripples, setRipples] = useState([]);
   const cardRef = useRef(null);
+
+  const imageUrl = item.img || item.image || item.photo || item.url;
+  const name = getText(item.name, lang, 'Product');
+  const desc = getText(item.desc, lang, '');
+
   const sale = item.old ? Math.round((1 - item.price / item.old) * 100) : 0;
-  const inCart = cart?.filter(c => c.id === item.id).reduce((s,c) => s + c.qty, 0) || 0;
-  const avg   = reviewSummary?.avg || 0;
+  const inCart = cart?.filter(c => c.id === item.id).reduce((s, c) => s + c.qty, 0) || 0;
+  const avg = reviewSummary?.avg || 0;
   const count = reviewSummary?.count || 0;
 
   const addRipple = (e) => {
@@ -35,32 +53,53 @@ export default function ProductCard({ item, delay = 0, reviewSummary }) {
     <div className="card" style={{ animationDelay: delay + 'ms' }} ref={cardRef} onClick={handleAdd}>
       <div className="card-img">
         {item.hit && <span className="badge badge-hit">{t.b_hit || 'ХИТ'}</span>}
-        {sale > 0  && <span className="badge badge-sale">-{sale}%</span>}
+        {sale > 0 && <span className="badge badge-sale">-{sale}%</span>}
         <span className="card-emoji">{item.e}</span>
-        <img src={optimizeImage(item.image)} alt={item.name} loading="lazy" decoding="async" className="product-img" onError={(e)=>{e.currentTarget.src="/placeholder-sushi.png"}} />
+
+        <img
+          src={optimizeImage(imageUrl)}
+          alt={name}
+          loading="lazy"
+          decoding="async"
+          className="product-img"
+          onError={(e) => {
+            e.currentTarget.src = '/placeholder-sushi.png';
+          }}
+        />
+
         <div className="card-shimmer" />
       </div>
 
       <div className="card-body">
-        <div className="card-name">{item.name[lang]}</div>
+        <div className="card-name">{name}</div>
+
         {avg > 0 && (
-          <div style={{ display:'flex', alignItems:'center', gap:4, margin:'2px 0 4px' }}>
-            <span style={{ color:'#f59e0b', fontSize:'.8rem', lineHeight:1 }}>
-              {'★'.repeat(Math.round(avg))}{'☆'.repeat(5-Math.round(avg))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, margin: '2px 0 4px' }}>
+            <span style={{ color: '#f59e0b', fontSize: '.8rem', lineHeight: 1 }}>
+              {'★'.repeat(Math.round(avg))}{'☆'.repeat(5 - Math.round(avg))}
             </span>
-            <span style={{ fontSize:'.72rem', color:'#9ca3af', fontWeight:600 }}>{avg} ({count})</span>
+            <span style={{ fontSize: '.72rem', color: '#9ca3af', fontWeight: 600 }}>
+              {avg} ({count})
+            </span>
           </div>
         )}
-        <div className="card-desc">{item.desc[lang]}</div>
+
+        <div className="card-desc">{desc}</div>
+
         <div className="card-foot">
           <div className="card-prices">
-            <span className="card-price">€{item.price.toFixed(2)}</span>
-            {item.old && <span className="card-old">€{item.old.toFixed(2)}</span>}
+            <span className="card-price">€{Number(item.price || 0).toFixed(2)}</span>
+            {item.old && <span className="card-old">€{Number(item.old).toFixed(2)}</span>}
           </div>
+
           <button
             className={'card-add' + (inCart > 0 ? ' card-add--active' : '') + (bump ? ' bump' : '')}
-            onClick={handleAdd} aria-label="Add to cart">
-            {ripples.map(r => <span key={r.id} className="ripple" style={{ left: r.x, top: r.y }} />)}
+            onClick={handleAdd}
+            aria-label="Add to cart"
+          >
+            {ripples.map(r => (
+              <span key={r.id} className="ripple" style={{ left: r.x, top: r.y }} />
+            ))}
             {inCart > 0 ? inCart : '+'}
           </button>
         </div>
