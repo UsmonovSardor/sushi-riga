@@ -5,3 +5,8 @@ build/
 .DS_Store
 *.log
 .cache/
+
+# Runtime data that may contain customer PII (never commit to a public repo)
+backend/src/data/orders.json
+backend/src/data/users.json
+backend/src/data/reviews.json

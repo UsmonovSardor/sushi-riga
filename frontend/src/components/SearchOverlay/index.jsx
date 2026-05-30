@@ -1,31 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCart }     from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { menuApi }     from '../../services/api';
+import { useMenu }     from '../../context/MenuContext';
 import T from '../../i18n/translations';
 
 export default function SearchOverlay({ isOpen, onClose }) {
   const [query,   setQuery]   = useState('');
-  const [menu,    setMenu]    = useState([]);
   const [results, setResults] = useState([]);
-  const [loading, setLoad]    = useState(false);
   const { add }  = useCart();
   const { lang } = useLanguage();
+  const { items: menu, loading } = useMenu();
   const t        = T[lang];
   const inputRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
-      setLoad(true);
-      menuApi.getAll()
-        .then(data => { setMenu(data); setResults(data); })
-        .catch(() => {})
-        .finally(() => setLoad(false));
+      setResults(menu);
       setTimeout(() => inputRef.current?.focus(), 100);
     } else {
       setQuery('');
     }
-  }, [isOpen]);
+  }, [isOpen, menu]);
 
   useEffect(() => {
     const q = query.toLowerCase().trim();

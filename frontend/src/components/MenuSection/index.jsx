@@ -1,15 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import ProductCard from '../ProductCard';
-import { menuApi, reviewsApi } from '../../services/api';
+import { useMenu } from '../../context/MenuContext';
 import { useLanguage } from '../../context/LanguageContext';
 import T from '../../i18n/translations';
 
-export default function MenuSection({ sectionId, emoji, titleKey, cats = [], category, onCount }) {
+export default function MenuSection({ sectionId, emoji, titleKey, cats = [], category }) {
   const { lang } = useLanguage();
   const t = T[lang];
-  const [items, setItems] = useState([]);
-  const [summary, setSummary] = useState({});
-  const [loading, setLoading] = useState(true);
+  const { items: all, summary, loading } = useMenu();
 
   const sectionCats = useMemo(() => {
     if (Array.isArray(cats) && cats.length) return cats;
@@ -17,45 +15,13 @@ export default function MenuSection({ sectionId, emoji, titleKey, cats = [], cat
     return [];
   }, [cats, category]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-
-    const loadMenu = async () => {
-      if (sectionId === 'hit' || sectionCats.includes('hit')) {
-        return menuApi.getHits();
-      }
-
-      const results = await Promise.all(
-        sectionCats.map(cat => menuApi.getByCategory(cat).catch(() => []))
-      );
-
-      return results.flat();
-    };
-
-    Promise.all([
-      loadMenu(),
-      reviewsApi.getSummary().catch(() => ({})),
-    ])
-      .then(([data, sum]) => {
-        if (cancelled) return;
-
-        const arr = Array.isArray(data) ? data : [];
-        setItems(arr);
-        setSummary(sum || {});
-        onCount?.(arr.length);
-      })
-      .catch(() => {
-        if (!cancelled) setItems([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [sectionId, sectionCats, onCount]);
+  const items = useMemo(() => {
+    if (!Array.isArray(all)) return [];
+    if (sectionId === 'hit' || sectionCats.includes('hit')) {
+      return all.filter(i => i.hit);
+    }
+    return all.filter(i => sectionCats.includes(i.cat));
+  }, [all, sectionId, sectionCats]);
 
   // 🔄 LOADING STATE
   if (loading) {

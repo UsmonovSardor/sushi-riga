@@ -1,7 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, Suspense } from 'react';
 import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider }     from './context/AuthContext';
 import { CartProvider }     from './context/CartContext';
+import { MenuProvider }     from './context/MenuContext';
 
 import Header        from './components/Header';
 import PromoBar      from './components/PromoBar';
@@ -17,7 +18,8 @@ import SideMenu      from './components/SideMenu';
 import AuthModal     from './components/AuthModal';
 import OrderModal    from './components/OrderModal';
 import Footer        from './components/Footer';
-import AdminPage     from './pages/Admin';
+
+const AdminPage = React.lazy(() => import('./pages/Admin'));
 
 import { ordersApi } from './services/api';
 import { useAuth } from './context/AuthContext';
@@ -95,7 +97,11 @@ function MainApp() {
   }, []);
 
   if (window.location.pathname.startsWith('/admin')) {
-    return <AdminPage />;
+    return (
+      <Suspense fallback={null}>
+        <AdminPage />
+      </Suspense>
+    );
   }
 
   return (
@@ -193,9 +199,11 @@ export default function App() {
   return (
     <LanguageProvider>
       <AuthProvider>
-        <CartProvider>
-          <MainApp />
-        </CartProvider>
+        <MenuProvider>
+          <CartProvider>
+            <MainApp />
+          </CartProvider>
+        </MenuProvider>
       </AuthProvider>
     </LanguageProvider>
   );
