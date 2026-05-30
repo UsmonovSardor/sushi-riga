@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { clImg } from '../../utils/img';
 import T from '../../i18n/translations';
 
 export default function Cart({ isOpen, onClose, onCheckout }) {
@@ -41,8 +42,10 @@ export default function Cart({ isOpen, onClose, onCheckout }) {
                   <div className="cart-item-img">
                     <span className="cart-item-emoji">{item.e}</span>
                     <img
-                      src={item.img}
+                      src={clImg(item.img, 140)}
                       alt={item.name[lang]}
+                      loading="lazy"
+                      decoding="async"
                       onError={(e) => {
                         e.target.style.opacity = 0;
                       }}

@@ -1,14 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { clImg, clSrcSet } from '../../utils/img';
 import T from '../../i18n/translations';
-
-const optimizeImage = (url) => {
-  if (!url || typeof url !== 'string') return '/placeholder-sushi.png';
-  return url.includes('cloudinary.com')
-    ? url.replace('/upload/', '/upload/f_auto,q_auto,w_600/')
-    : url;
-};
 
 const getText = (value, lang, fallback = '') => {
   if (!value) return fallback;
@@ -57,7 +51,9 @@ export default function ProductCard({ item, delay = 0, reviewSummary }) {
         <span className="card-emoji">{item.e}</span>
 
         <img
-          src={optimizeImage(imageUrl)}
+          src={clImg(imageUrl, 600)}
+          srcSet={clSrcSet(imageUrl, [300, 450, 600])}
+          sizes="(max-width:500px) 50vw, (max-width:640px) 33vw, (max-width:900px) 25vw, 20vw"
           alt={name}
           loading="lazy"
           decoding="async"

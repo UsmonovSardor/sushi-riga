@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useCart }     from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useMenu }     from '../../context/MenuContext';
+import { clImg }       from '../../utils/img';
 import T from '../../i18n/translations';
 
 export default function SearchOverlay({ isOpen, onClose }) {
@@ -74,7 +75,7 @@ export default function SearchOverlay({ isOpen, onClose }) {
               onClick={() => { add(item); onClose(); }}>
               <div className="srch-item-img">
                 <span className="srch-item-emoji">{item.e}</span>
-                <img src={item.img} alt="" onError={e => e.target.style.display='none'} />
+                <img src={clImg(item.img, 110)} alt="" loading="lazy" decoding="async" onError={e => e.target.style.display='none'} />
               </div>
               <div className="srch-item-info">
                 <div className="srch-item-name">{item.name[lang]}</div>
