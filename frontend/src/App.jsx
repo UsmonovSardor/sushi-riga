@@ -18,6 +18,7 @@ import SideMenu      from './components/SideMenu';
 import AuthModal     from './components/AuthModal';
 import OrderModal    from './components/OrderModal';
 import Footer        from './components/Footer';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const AdminPage = React.lazy(() => import('./pages/Admin'));
 
@@ -128,13 +129,14 @@ function MainApp() {
       <main className="main">
         <HeroSlider onOrderNow={openCart} />
         {SECTIONS.map(s => (
-          <MenuSection
-            key={s.id}
-            sectionId={s.id}
-            emoji={s.e}
-            titleKey={s.k}
-            cats={s.cats}
-          />
+          <ErrorBoundary key={s.id}>
+            <MenuSection
+              sectionId={s.id}
+              emoji={s.e}
+              titleKey={s.k}
+              cats={s.cats}
+            />
+          </ErrorBoundary>
         ))}
       </main>
 
