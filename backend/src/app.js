@@ -3,6 +3,7 @@ const express    = require('express');
 const helmet     = require('helmet');
 const cors       = require('cors');
 const morgan     = require('morgan');
+const compression = require('compression');
 const rateLimit  = require('express-rate-limit');
 const path       = require('path');
 const config     = require('./config');
@@ -35,6 +36,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(compression()); // gzip/brotli JSON + static responses
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({ origin: (o, cb) => cb(null, isAllowed(o)), credentials: true, optionsSuccessStatus: 200 }));
 app.use(rateLimit({ windowMs: 15*60*1000, max: 500, standardHeaders: true, legacyHeaders: false }));

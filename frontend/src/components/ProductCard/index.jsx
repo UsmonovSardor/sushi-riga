@@ -62,8 +62,6 @@ export default function ProductCard({ item, delay = 0, reviewSummary }) {
             e.currentTarget.src = '/placeholder-sushi.png';
           }}
         />
-
-        <div className="card-shimmer" />
       </div>
 
       <div className="card-body">

@@ -19,6 +19,7 @@ import AuthModal     from './components/AuthModal';
 import OrderModal    from './components/OrderModal';
 import Footer        from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
+import InstallPrompt  from './components/InstallPrompt';
 
 const AdminPage = React.lazy(() => import('./pages/Admin'));
 
@@ -141,6 +142,8 @@ function MainApp() {
       </main>
 
       <Footer />
+
+      <InstallPrompt />
 
       <CartBar
         onOpen={openCart}
