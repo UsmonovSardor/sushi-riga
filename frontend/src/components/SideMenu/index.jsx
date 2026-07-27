@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useOverlay } from '../../utils/useOverlay';
 import T from '../../i18n/translations';
 
 const ITEMS = [
@@ -15,6 +16,8 @@ const MAP_URL = 'https://maps.google.com/?q=Lokomotīves+iela+100+Riga+Latvia';
 export default function SideMenu({ isOpen, onClose }) {
   const { lang } = useLanguage();
   const t = T[lang];
+
+  useOverlay(isOpen, onClose);
 
   const go = id => {
     const el = document.getElementById('sec-' + id);

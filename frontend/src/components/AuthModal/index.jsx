@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useOverlay } from '../../utils/useOverlay';
 
 export default function AuthModal({ onClose, onSuccess }) {
   const { register, login } = useAuth();
   const { lang } = useLanguage();
+
+  useOverlay(true, onClose);
 
   const [mode, setMode] = useState('register');
   const [form, setForm] = useState({ name: '', surname: '', phone: '' });

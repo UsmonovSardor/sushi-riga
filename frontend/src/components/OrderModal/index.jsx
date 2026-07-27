@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
+import { useOverlay } from '../../utils/useOverlay';
 import T from '../../i18n/translations';
 import { ordersApi } from '../../services/api';
 
@@ -30,6 +31,8 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [oid, setOid] = useState(null);
+
+  useOverlay(isOpen, onClose);
 
   useEffect(() => {
     if (user) {

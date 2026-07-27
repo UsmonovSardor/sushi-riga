@@ -2,6 +2,7 @@ import React from 'react';
 import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { clImg } from '../../utils/img';
+import { useOverlay } from '../../utils/useOverlay';
 import T from '../../i18n/translations';
 
 export default function Cart({ isOpen, onClose, onCheckout }) {
@@ -10,6 +11,8 @@ export default function Cart({ isOpen, onClose, onCheckout }) {
   const t = T[lang];
   const lbl = (lv, ru, en) => (lang === 'lv' ? lv : lang === 'ru' ? ru : en);
   const count = cart.reduce((s, i) => s + i.qty, 0);
+
+  useOverlay(isOpen, onClose);
 
   if (!isOpen) return null;
 

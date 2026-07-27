@@ -1,68 +1,59 @@
 # 🍣 Sushi Rīga — Full-Stack Delivery App
 
-Professional full-stack sushi delivery application built with **Node.js + Express** backend and **React + Vite** frontend.
+Professional full-stack sushi delivery platform for **[cherrysushi.eu](https://cherrysushi.eu)**, built with **Node.js + Express** (PostgreSQL) backend and an installable **React + Vite PWA** frontend.
+
+## Highlights
+
+- 📲 **Installable PWA** — standalone display, offline menu/images via a Workbox service worker, Add-to-Home-Screen prompt
+- 🛒 Cart, checkout, and **Stripe** card payments (cash / card)
+- 👤 Phone-based auth (JWT), customer order history & live status
+- ⭐ Product reviews & rating summaries
+- 🛠️ Admin panel (menu CRUD, orders, Cloudinary image uploads)
+- 🔔 Telegram notifications on new orders
+- 🌐 Trilingual: Russian 🇷🇺 · Latvian 🇱🇻 · English 🇬🇧
 
 ## Architecture
 
 ```
 sushi-riga/
-├── backend/                    # Node.js + Express REST API
+├── backend/                       # Node.js + Express REST API (PostgreSQL)
 │   ├── src/
-│   │   ├── config/             # Environment config
-│   │   ├── controllers/        # Route controllers
-│   │   │   ├── menuController.js
-│   │   │   └── orderController.js
-│   │   ├── data/
-│   │   │   └── menu.json       # Menu data
-│   │   ├── middleware/
-│   │   │   ├── errorHandler.js
-│   │   │   └── validate.js
-│   │   ├── routes/
-│   │   │   ├── index.js
-│   │   │   ├── menu.js         # GET /api/menu
-│   │   │   └── orders.js       # POST /api/orders
-│   │   ├── services/
-│   │   │   └── telegramService.js  # Telegram bot notifications
-│   │   └── app.js
-│   ├── server.js
-│   ├── .env.example
-│   └── package.json
+│   │   ├── config/                # Environment config
+│   │   ├── controllers/           # menu, order, auth, admin, payment, review
+│   │   ├── data-init/             # Seed JSON for first-run bootstrap
+│   │   ├── middleware/            # errorHandler, validate
+│   │   ├── routes/                # menu, orders, auth, admin, payment, reviews
+│   │   ├── services/             # telegramService
+│   │   ├── db.js                  # pg Pool + schema (CREATE TABLE IF NOT EXISTS)
+│   │   └── app.js                 # helmet, cors, compression, rate-limit
+│   └── server.js
 │
-└── frontend/                   # React + Vite SPA
+└── frontend/                      # React 18 + Vite PWA
+    ├── public/                    # icons, manifest assets, sitemap
     ├── src/
-    │   ├── components/
-    │   │   ├── Header/
-    │   │   ├── CategoryNav/
-    │   │   ├── HeroSlider/
-    │   │   ├── MenuSection/
-    │   │   ├── ProductCard/
-    │   │   ├── Cart/
-    │   │   ├── OrderModal/
-    │   │   ├── SearchOverlay/
-    │   │   ├── SideMenu/
-    │   │   ├── Footer/
-    │   │   └── Notification/
-    │   ├── context/
-    │   │   ├── CartContext.jsx
-    │   │   └── LanguageContext.jsx
-    │   ├── hooks/
-    │   ├── i18n/
-    │   │   └── translations.js  # RU / LV / EN
-    │   ├── services/
-    │   │   └── api.js           # Fetch wrapper
-    │   └── App.jsx
-    ├── index.html
-    └── package.json
+    │   ├── components/            # Header, Cart, OrderModal, AuthModal, InstallPrompt, …
+    │   ├── context/              # Cart, Auth, Language, Menu providers
+    │   ├── pages/                 # Admin, MyOrders
+    │   ├── i18n/translations.js   # RU / LV / EN
+    │   ├── utils/                 # img (Cloudinary), useOverlay, keepAlive
+    │   └── services/api.js        # fetch wrapper
+    ├── vite.config.js             # React + vite-plugin-pwa (Workbox)
+    └── index.html
 ```
 
-## API Endpoints
+## API Endpoints (main)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/menu` | All menu items |
-| GET | `/api/menu/hits` | Hit products |
-| GET | `/api/menu/category/:cat` | By category |
+| GET | `/api/menu/hits` | Featured products |
+| GET | `/api/menu/category/:cat` | Filter by category |
+| GET | `/api/reviews/summary` | Rating summaries |
 | POST | `/api/orders` | Create order → Telegram |
+| GET | `/api/orders/my` | Customer's orders (JWT) |
+| POST | `/api/auth/*` | Register / login |
+| POST | `/api/payment/*` | Stripe payment intent |
+| `*` | `/api/admin/*` | Admin CRUD (protected) |
 
 ## Quick Start
 
@@ -70,7 +61,8 @@ sushi-riga/
 ```bash
 cd backend
 cp .env.example .env
-# Fill in TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID
+# DATABASE_URL, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, JWT_SECRET,
+# STRIPE_SECRET_KEY, CLOUDINARY_URL
 npm install
 npm run dev
 ```
@@ -79,14 +71,12 @@ npm run dev
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev        # http://localhost:5173
+npm run build      # production build + service worker
 ```
-
-Open [http://localhost:5173](http://localhost:5173)
 
 ## Tech Stack
 
-**Backend:** Node.js, Express, Helmet, CORS, Rate Limiting, Express Validator  
-**Frontend:** React 18, Vite, Context API  
-**Notifications:** Telegram Bot API  
-**Languages:** Russian 🇷🇺, Latvian 🇱🇻, English 🇬🇧
+**Backend:** Node.js, Express, PostgreSQL (pg), Helmet, CORS, compression, rate-limit, express-validator, JWT (jsonwebtoken + bcryptjs), Stripe, Cloudinary, Telegram Bot API
+**Frontend:** React 18, Vite, vite-plugin-pwa (Workbox), Context API, Stripe.js
+**Deploy:** Railway (API + static frontend + PostgreSQL) · cherrysushi.eu

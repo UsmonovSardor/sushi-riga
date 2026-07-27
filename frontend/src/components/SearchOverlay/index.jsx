@@ -3,6 +3,7 @@ import { useCart }     from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useMenu }     from '../../context/MenuContext';
 import { clImg }       from '../../utils/img';
+import { useOverlay }  from '../../utils/useOverlay';
 import T from '../../i18n/translations';
 
 export default function SearchOverlay({ isOpen, onClose }) {
@@ -31,6 +32,8 @@ export default function SearchOverlay({ isOpen, onClose }) {
       i.cat?.toLowerCase().includes(q)
     ));
   }, [query, menu, lang]);
+
+  useOverlay(isOpen, onClose);
 
   if (!isOpen) return null;
 
