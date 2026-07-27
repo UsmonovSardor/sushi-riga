@@ -46,10 +46,10 @@ export default function MenuSection({ sectionId, emoji, titleKey, cats = [], cat
 
   // ✅ NORMAL STATE
   return (
-    <section id={`sec-${sectionId}`} className="sec">
+    <section id={`sec-${sectionId}`} className="sec sec-in">
       <div className="sec-h">
         <h2 className="sec-name">
-          {emoji} {t[titleKey] || titleKey}
+          <span className="sec-emoji">{emoji}</span> {t[titleKey] || titleKey}
         </h2>
 
         <span className="sec-cnt">{items.length}</span>

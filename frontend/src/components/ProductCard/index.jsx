@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { clImg, clSrcSet } from '../../utils/img';
+import { useTilt } from '../../utils/useTilt';
 import T from '../../i18n/translations';
 
 const getText = (value, lang, fallback = '') => {
@@ -17,7 +18,7 @@ export default function ProductCard({ item, delay = 0, reviewSummary }) {
 
   const [bump, setBump] = useState(false);
   const [ripples, setRipples] = useState([]);
-  const cardRef = useRef(null);
+  const cardRef = useTilt(9);
 
   const imageUrl = item.img || item.image || item.photo || item.url;
   const name = getText(item.name, lang, 'Product');
@@ -45,6 +46,7 @@ export default function ProductCard({ item, delay = 0, reviewSummary }) {
 
   return (
     <div className="card" style={{ animationDelay: delay + 'ms' }} ref={cardRef} onClick={handleAdd}>
+      <span className="card-glare" aria-hidden="true" />
       <div className="card-img">
         {item.hit && <span className="badge badge-hit">{t.b_hit || 'ХИТ'}</span>}
         {sale > 0 && <span className="badge badge-sale">-{sale}%</span>}
@@ -62,6 +64,7 @@ export default function ProductCard({ item, delay = 0, reviewSummary }) {
             e.currentTarget.src = '/placeholder-sushi.png';
           }}
         />
+        <span className="card-img-grad" aria-hidden="true" />
       </div>
 
       <div className="card-body">
