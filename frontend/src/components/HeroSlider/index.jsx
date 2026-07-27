@@ -4,7 +4,7 @@ import T from '../../i18n/translations';
 
 const SLIDES = [
   {
-    bg: 'https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=1400&h=600&fit=crop&q=85',
+    bg: 'https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=1200&h=600&fit=crop&auto=format&q=70',
     gradient: 'linear-gradient(110deg, rgba(180,18,22,.95) 0%, rgba(180,18,22,.7) 50%, rgba(0,0,0,.1) 100%)',
     title: { lv:'Svaigi rolli\nkatru dienu', ru:'Свежие роллы\nкаждый день', en:'Fresh rolls\nevery day' },
     sub:   { lv:'Gatavoti no svaigiem produktiem', ru:'Готовим из свежих продуктов', en:'Made from fresh ingredients' },
@@ -12,7 +12,7 @@ const SLIDES = [
     target: 'cold',
   },
   {
-    bg: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=1400&h=600&fit=crop&q=85',
+    bg: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=1200&h=600&fit=crop&auto=format&q=70',
     gradient: 'linear-gradient(110deg, rgba(10,20,80,.95) 0%, rgba(10,20,80,.7) 50%, rgba(0,0,0,.1) 100%)',
     title: { lv:'Dubultie sēti\nlielāka garša', ru:'Дабл сеты\nбольше вкуса', en:'Double sets\nmore flavor' },
     sub:   { lv:'Labākā izvēle kompānijai', ru:'Лучший выбор для компании', en:'Best choice for the company' },
@@ -20,7 +20,7 @@ const SLIDES = [
     target: 'double',
   },
   {
-    bg: 'https://images.unsplash.com/photo-1559410545-0bdcd187e0a6?w=1400&h=600&fit=crop&q=85',
+    bg: 'https://images.unsplash.com/photo-1559410545-0bdcd187e0a6?w=1200&h=600&fit=crop&auto=format&q=70',
     gradient: 'linear-gradient(110deg, rgba(100,45,0,.95) 0%, rgba(100,45,0,.7) 50%, rgba(0,0,0,.1) 100%)',
     title: { lv:'Sēti ar atlaidi\nlīdz 30%', ru:'Сеты со скидкой\nдо 30%', en:'Sets on sale\nup to 30%' },
     sub:   { lv:'Pieredzējušu šefpavāru receptes', ru:'Рецепты опытных поваров', en:'Expert chef recipes' },
