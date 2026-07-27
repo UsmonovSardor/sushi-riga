@@ -4,9 +4,9 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 
 const LANGS = [
-  { code: 'lv', flag: '🇱🇻', label: 'Latviešu' },
-  { code: 'ru', flag: '🇷🇺', label: 'Русский' },
-  { code: 'en', flag: '🇬🇧', label: 'English' },
+  { code: 'lv', label: 'Latviešu' },
+  { code: 'ru', label: 'Русский' },
+  { code: 'en', label: 'English' },
 ];
 
 const menuBtn = {
@@ -87,7 +87,7 @@ const menuBtn = {
                 setUO(false);
               }}
             >
-              {cur.flag} <span className="lang-code">{cur.code.toUpperCase()}</span>
+              <span className="lang-badge">{cur.code.toUpperCase()}</span>
             </button>
 
             {langOpen && (
@@ -101,7 +101,8 @@ const menuBtn = {
                       setLO(false);
                     }}
                   >
-                    {l.flag} {l.label}
+                    <span className="lang-badge">{l.code.toUpperCase()}</span>
+                    {l.label}
                   </div>
                 ))}
               </div>
