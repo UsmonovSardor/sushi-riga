@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Cherry Sushi — Design tokens (premium dark, brand-forward)
+   Adapts to Telegram safe areas; committed dark look with
+   a refined light fallback for light-theme Telegram clients.
+   ============================================================ */
+:root {
+  --bg: #0e0f13;
+  --surface: #16171d;
+  --surface-2: #1d1f27;
+  --elevated: #23252f;
+  --line: rgba(255, 255, 255, 0.08);
+  --ink: #f5f6f8;
+  --ink-dim: #a9adba;
+  --ink-faint: #6b7080;
+  --accent: #e11d2a;
+
+  /* Telegram-provided safe areas (filled by JS) */
+  --tg-top: 0px;
+  --tg-bottom: 0px;
+}
+
+:root[data-theme='light'] {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface-2: #f0f1f4;
+  --elevated: #ffffff;
+  --line: rgba(0, 0, 0, 0.08);
+  --ink: #14151a;
+  --ink-dim: #55596a;
+  --ink-faint: #9096a6;
+  --accent: #e11d2a;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+}
+
+/* Deep ambient gradient behind everything */
+#root {
+  position: relative;
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(225, 29, 42, 0.14), transparent 60%),
+    radial-gradient(90% 50% at 100% 0%, rgba(245, 179, 1, 0.06), transparent 55%),
+    var(--bg);
+}
+
+/* Hide scrollbars but keep scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Glass panel */
+.glass {
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid var(--line);
+}
+
+/* Skeleton shimmer */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--ink) 8%, transparent),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Line clamp helper */
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
