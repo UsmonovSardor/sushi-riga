@@ -3,6 +3,7 @@
 const jwt = require('jsonwebtoken');
 const cloudinary = require('cloudinary').v2;
 const { query } = require('../db');
+const bot = require('../services/botService');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const ADMIN_KEY = process.env.ADMIN_SECRET;
@@ -289,12 +290,17 @@ exports.updateOrder = [authAdmin, async (req, res) => {
     const deliveredAt = nextStatus === 'delivered' && c.status !== 'delivered' ? now : c.delivered_at;
 
     const r = await query(
-      `UPDATE orders 
+      `UPDATE orders
        SET status=$1, status_history=$2, ready_at=$3, delivered_at=$4, updated_at=NOW()
        WHERE id=$5
        RETURNING *`,
       [nextStatus, JSON.stringify(history), readyAt, deliveredAt, id]
     );
+
+    // Push status update to the customer's Telegram (Mini App orders)
+    if (c.status !== nextStatus) {
+      bot.sendStatusUpdate(r.rows[0], nextStatus).catch(() => {});
+    }
 
     res.json(rowToOrder(r.rows[0]));
   } catch (err) {

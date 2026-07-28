@@ -19,7 +19,9 @@ const ORIGINS = [
 function isAllowed(origin) {
   if (!origin) return true;
   if (ORIGINS.includes(origin)) return true;
+  if (/\.cherrysushi\.eu$/.test(origin)) return true; // app.cherrysushi.eu (Mini App)
   if (/\.railway\.app$/.test(origin)) return true;
+  if (/\.vercel\.app$/.test(origin)) return true;     // Mini App preview deploys
   if (/localhost/.test(origin)) return true;
   return false;
 }

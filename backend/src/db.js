@@ -83,6 +83,17 @@ async function initDB() {
         await client.query(`CREATE INDEX IF NOT EXISTS idx_reviews_menu ON reviews(menu_id);`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_reviews_created ON reviews(created_at DESC);`);
 
+    // ---- Telegram Mini App migrations (idempotent) ----
+    await client.query(`ALTER TABLE users_data ADD COLUMN IF NOT EXISTS telegram_id BIGINT;`);
+    await client.query(`ALTER TABLE users_data ADD COLUMN IF NOT EXISTS lang TEXT DEFAULT 'ru';`);
+    await client.query(`ALTER TABLE users_data ADD COLUMN IF NOT EXISTS points INTEGER NOT NULL DEFAULT 0;`);
+    await client.query(`ALTER TABLE users_data ADD COLUMN IF NOT EXISTS referred_by BIGINT;`);
+    await client.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_telegram_id ON users_data(telegram_id) WHERE telegram_id IS NOT NULL;`);
+
+    await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS paid BOOLEAN NOT NULL DEFAULT false;`);
+    await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS provider_charge_id TEXT;`);
+    await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS telegram_id BIGINT;`);
+
     
 
     await client.query(`CREATE INDEX IF NOT EXISTS idx_menu_cat ON menu_items(cat);`);
