@@ -4,24 +4,28 @@ import { Trash2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCart } from '@/store/cart';
 import { useLang } from '@/hooks/useLang';
+import { useMainButton } from '@/hooks/useMainButton';
 import { loc, eur } from '@/lib/format';
-import { haptic } from '@/lib/telegram';
+import { haptic, isTelegram } from '@/lib/telegram';
 import Page from '@/components/Page';
 import QtyStepper from '@/components/QtyStepper';
-
-const FREE_DELIVERY_FROM = 20;
-const DELIVERY_FEE = 2.5;
 
 export default function Cart() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const lang = useLang();
   const { lines, inc, dec, remove, subtotal } = useCart();
-  const sub = subtotal();
-  const delivery = sub >= FREE_DELIVERY_FROM || sub === 0 ? 0 : DELIVERY_FEE;
-  const total = sub + delivery;
+  const total = subtotal();
+  const inTG = isTelegram();
+  const empty = lines.length === 0;
 
-  if (lines.length === 0) {
+  useMainButton({
+    text: `${t('cart.checkout')} · ${eur(total)}`,
+    visible: inTG && !empty,
+    onClick: () => navigate('/checkout'),
+  });
+
+  if (empty) {
     return (
       <Page>
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-8 text-center">
@@ -91,48 +95,30 @@ export default function Cart() {
       </div>
 
       {/* Summary */}
-      <div className="mx-4 mt-5 space-y-2 rounded-2xl bg-surface p-4 shadow-card">
-        <Row label={t('cart.subtotal')} value={eur(sub)} />
-        <Row
-          label={t('cart.delivery')}
-          value={delivery === 0 ? '✓' : eur(delivery)}
-          hint={delivery === 0 ? undefined : `${eur(FREE_DELIVERY_FROM)}+`}
-        />
-        <div className="my-1 h-px bg-line" />
+      <div className="mx-4 mt-5 rounded-2xl bg-surface p-4 shadow-card">
         <div className="flex items-center justify-between">
           <span className="text-base font-bold text-ink">{t('cart.total')}</span>
-          <span className="text-xl font-extrabold text-ink">{eur(total)}</span>
+          <span className="text-2xl font-extrabold text-ink">{eur(total)}</span>
         </div>
+        <p className="mt-1 text-xs text-ink-faint">{t('cart.deliveryNote')}</p>
       </div>
 
-      {/* Checkout button (fixed) */}
-      <div
-        className="fixed inset-x-0 bottom-[76px] z-30 mx-auto max-w-[520px] px-4"
-      >
-        <button
-          onClick={() => {
-            haptic.medium();
-            navigate('/checkout');
-          }}
-          className="flex w-full items-center justify-between rounded-2xl bg-gradient-to-r from-cherry-500 to-cherry-600 px-5 py-4 text-white shadow-glow active:scale-[0.99]"
-        >
-          <span className="text-base font-bold">{t('cart.checkout')}</span>
-          <span className="text-lg font-extrabold">{eur(total)}</span>
-        </button>
-      </div>
-      <div className="h-24" />
+      {/* Browser fallback button (Telegram uses the native MainButton) */}
+      {!inTG && (
+        <div className="fixed inset-x-0 bottom-[76px] z-30 mx-auto max-w-[520px] px-4">
+          <button
+            onClick={() => {
+              haptic.medium();
+              navigate('/checkout');
+            }}
+            className="flex w-full items-center justify-between rounded-2xl bg-gradient-to-r from-cherry-500 to-cherry-600 px-5 py-4 text-white shadow-glow active:scale-[0.99]"
+          >
+            <span className="text-base font-bold">{t('cart.checkout')}</span>
+            <span className="text-lg font-extrabold">{eur(total)}</span>
+          </button>
+        </div>
+      )}
+      <div className="h-20" />
     </Page>
-  );
-}
-
-function Row({ label, value, hint }: { label: string; value: string; hint?: string }) {
-  return (
-    <div className="flex items-center justify-between text-sm">
-      <span className="text-ink-dim">
-        {label}
-        {hint && <span className="ml-1 text-xs text-ink-faint">· {hint}</span>}
-      </span>
-      <span className="font-semibold text-ink">{value}</span>
-    </div>
   );
 }

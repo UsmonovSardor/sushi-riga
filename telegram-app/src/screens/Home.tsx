@@ -8,7 +8,7 @@ import Header from '@/components/Header';
 import HeroBanner from '@/components/HeroBanner';
 import CategoryStrip from '@/components/CategoryStrip';
 import MenuItemCard from '@/components/MenuItemCard';
-import CartBar from '@/components/CartBar';
+import CartCTA from '@/components/CartCTA';
 import { GridSkeleton } from '@/components/Skeletons';
 
 export default function Home() {
@@ -56,7 +56,7 @@ export default function Home() {
         )}
       </section>
 
-      <CartBar />
+      <CartCTA />
     </Page>
   );
 }

@@ -11,11 +11,8 @@ import { useLang } from '@/hooks/useLang';
 import { useMainButton } from '@/hooks/useMainButton';
 import { ordersApi, tmaApi } from '@/lib/api';
 import { eur, cn } from '@/lib/format';
-import { haptic, tg, getTgUser } from '@/lib/telegram';
+import { haptic, tg, getTgUser, isTelegram } from '@/lib/telegram';
 import Page from '@/components/Page';
-
-const FREE_DELIVERY_FROM = 20;
-const DELIVERY_FEE = 2.5;
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -37,9 +34,8 @@ export default function Checkout() {
   const config = useQuery({ queryKey: ['tma-config'], queryFn: tmaApi.config });
   const cardEnabled = Boolean(config.data?.payments);
 
-  const sub = subtotal();
-  const delivery = sub >= FREE_DELIVERY_FROM ? 0 : DELIVERY_FEE;
-  const total = sub + delivery;
+  const total = subtotal();
+  const inTG = isTelegram();
 
   const phoneDigits = phone.replace(/\D/g, '');
   const valid = name.trim().length >= 2 && phoneDigits.length >= 7 && address.trim().length >= 4;
@@ -213,20 +209,12 @@ export default function Checkout() {
         </div>
 
         {/* Totals */}
-        <div className="mt-2 space-y-1.5 rounded-2xl bg-surface p-4 shadow-card">
-          <div className="flex justify-between text-sm text-ink-dim">
-            <span>{t('cart.subtotal')}</span>
-            <span className="font-semibold text-ink">{eur(sub)}</span>
-          </div>
-          <div className="flex justify-between text-sm text-ink-dim">
-            <span>{t('cart.delivery')}</span>
-            <span className="font-semibold text-ink">{delivery === 0 ? '✓' : eur(delivery)}</span>
-          </div>
-          <div className="my-1 h-px bg-line" />
+        <div className="mt-2 rounded-2xl bg-surface p-4 shadow-card">
           <div className="flex justify-between">
             <span className="text-base font-bold text-ink">{t('cart.total')}</span>
             <span className="text-xl font-extrabold text-ink">{eur(total)}</span>
           </div>
+          <p className="mt-1 text-xs text-ink-faint">{t('cart.deliveryNote')}</p>
         </div>
 
         {error && (
@@ -236,25 +224,27 @@ export default function Checkout() {
         )}
       </div>
 
-      {/* In-page fallback button (for browser / no MainButton) */}
-      <div className="mx-4 mt-4">
-        <motion.button
-          whileTap={{ scale: 0.99 }}
-          disabled={!valid || submitting}
-          onClick={placeOrder}
-          className={cn(
-            'flex w-full items-center justify-between rounded-2xl px-5 py-4 text-white transition',
-            valid && !submitting
-              ? 'bg-gradient-to-r from-cherry-500 to-cherry-600 shadow-glow'
-              : 'bg-surface-2 text-ink-faint'
-          )}
-        >
-          <span className="text-base font-bold">
-            {submitting ? '…' : t('checkout.place')}
-          </span>
-          <span className="text-lg font-extrabold">{eur(total)}</span>
-        </motion.button>
-      </div>
+      {/* Browser fallback button (Telegram uses the native MainButton) */}
+      {!inTG && (
+        <div className="mx-4 mt-4">
+          <motion.button
+            whileTap={{ scale: 0.99 }}
+            disabled={!valid || submitting}
+            onClick={placeOrder}
+            className={cn(
+              'flex w-full items-center justify-between rounded-2xl px-5 py-4 text-white transition',
+              valid && !submitting
+                ? 'bg-gradient-to-r from-cherry-500 to-cherry-600 shadow-glow'
+                : 'bg-surface-2 text-ink-faint'
+            )}
+          >
+            <span className="text-base font-bold">
+              {submitting ? '…' : pay === 'card' ? t('checkout.pay_place') : t('checkout.place')}
+            </span>
+            <span className="text-lg font-extrabold">{eur(total)}</span>
+          </motion.button>
+        </div>
+      )}
       <div className="h-8" />
 
       <style>{`

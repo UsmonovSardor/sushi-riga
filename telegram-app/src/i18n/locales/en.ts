@@ -48,12 +48,27 @@ export default {
     toMenu: 'Browse menu',
     subtotal: 'Subtotal',
     delivery: 'Delivery',
+    deliveryNote: '🛵 Delivery — coming soon. Pickup for now, or ask the operator.',
     total: 'Total',
     checkout: 'Checkout',
     promo: 'Promo code',
     apply: 'Apply',
     yourCart: 'Your cart',
   },
+
+  notif: {
+    title: 'Notifications',
+    empty: 'No notifications yet',
+    yourOrder: 'Your order',
+    track: 'Track',
+    newsTitle: 'News',
+  },
+
+  news: [
+    { emoji: '🔥', title: 'Up to 30% off', body: 'Sets by our chef’s signature recipes' },
+    { emoji: '🍣', title: 'Welcome to Cherry Sushi!', body: 'Fresh rolls delivered daily in Riga' },
+    { emoji: '⭐', title: 'Earn points', body: 'Bonuses on every order for future purchases' },
+  ],
 
   checkout: {
     title: 'Checkout',

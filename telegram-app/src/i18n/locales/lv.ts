@@ -48,12 +48,27 @@ export default {
     toMenu: 'Uz ēdienkarti',
     subtotal: 'Summa',
     delivery: 'Piegāde',
+    deliveryNote: '🛵 Piegāde — drīzumā. Pagaidām pašizvešana vai jautājiet operatoram.',
     total: 'Kopā',
     checkout: 'Noformēt',
     promo: 'Promo kods',
     apply: 'Pielietot',
     yourCart: 'Jūsu grozs',
   },
+
+  notif: {
+    title: 'Paziņojumi',
+    empty: 'Pagaidām nav paziņojumu',
+    yourOrder: 'Jūsu pasūtījums',
+    track: 'Sekot līdzi',
+    newsTitle: 'Jaunumi',
+  },
+
+  news: [
+    { emoji: '🔥', title: 'Atlaides līdz 30%', body: 'Seti pēc šefpavāra receptēm' },
+    { emoji: '🍣', title: 'Laipni lūdzam Cherry Sushi!', body: 'Svaigi rullīši katru dienu Rīgā' },
+    { emoji: '⭐', title: 'Krājiet punktus', body: 'Bonusi par katru pasūtījumu' },
+  ],
 
   checkout: {
     title: 'Noformēšana',

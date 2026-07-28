@@ -11,7 +11,7 @@ import { useLang } from '@/hooks/useLang';
 import { haptic } from '@/lib/telegram';
 import Page from '@/components/Page';
 import MenuItemCard from '@/components/MenuItemCard';
-import CartBar from '@/components/CartBar';
+import CartCTA from '@/components/CartCTA';
 import { GridSkeleton } from '@/components/Skeletons';
 
 export default function Menu() {
@@ -113,7 +113,7 @@ export default function Menu() {
         )}
       </section>
 
-      <CartBar />
+      <CartCTA />
     </Page>
   );
 }

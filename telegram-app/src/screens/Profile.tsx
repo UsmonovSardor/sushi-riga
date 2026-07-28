@@ -1,22 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Trophy, Globe, MessageCircle, Gift, ChevronRight, Star, ClipboardList } from 'lucide-react';
+import { Trophy, MessageCircle, Gift, ChevronRight, Star, ClipboardList } from 'lucide-react';
 import { useAuth } from '@/store/auth';
 import { useLang } from '@/hooks/useLang';
-import { setLang } from '@/i18n';
 import { reviewsApi, getToken } from '@/lib/api';
 import type { PendingReview } from '@/lib/types';
 import { getTgUser, haptic, tg } from '@/lib/telegram';
-import type { Lang } from '@/lib/types';
 import Page from '@/components/Page';
-import { cn, loc } from '@/lib/format';
-
-const LANGS: { id: Lang; label: string }[] = [
-  { id: 'lv', label: 'LV' },
-  { id: 'ru', label: 'RU' },
-  { id: 'en', label: 'EN' },
-];
+import { loc } from '@/lib/format';
 
 export default function Profile() {
   const { t } = useTranslation();
@@ -59,30 +51,6 @@ export default function Profile() {
             <Trophy size={15} className="text-gold" />
             {points} {t('home.points')}
           </div>
-        </div>
-      </div>
-
-      {/* Language */}
-      <div className="mx-4 mt-5">
-        <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-ink-dim">
-          <Globe size={16} /> {t('profile.language')}
-        </div>
-        <div className="flex gap-2">
-          {LANGS.map((l) => (
-            <button
-              key={l.id}
-              onClick={() => {
-                haptic.select();
-                setLang(l.id);
-              }}
-              className={cn(
-                'flex-1 rounded-xl py-2.5 text-sm font-bold transition',
-                lang === l.id ? 'bg-cherry-500 text-white shadow-glow' : 'bg-surface text-ink-dim'
-              )}
-            >
-              {l.label}
-            </button>
-          ))}
         </div>
       </div>
 

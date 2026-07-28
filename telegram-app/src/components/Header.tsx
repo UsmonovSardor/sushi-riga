@@ -2,8 +2,10 @@ import { Trophy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/store/auth';
 import { getTgUser } from '@/lib/telegram';
+import LanguageButton from './LanguageButton';
+import NotificationsBell from './NotificationsBell';
 
-/** Top header — avatar, greeting, loyalty badge (Oson-Prava style). */
+/** Top header — avatar, greeting, notifications, language, loyalty. */
 export default function Header() {
   const { t } = useTranslation();
   const user = useAuth((s) => s.user);
@@ -14,11 +16,11 @@ export default function Header() {
 
   return (
     <header
-      className="flex items-center justify-between px-4 pt-3"
+      className="flex items-center justify-between gap-2 px-4 pt-3"
       style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
     >
-      <div className="flex items-center gap-3">
-        <div className="relative">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="relative shrink-0">
           {tgUser?.photo_url ? (
             <img
               src={tgUser.photo_url}
@@ -32,16 +34,18 @@ export default function Header() {
           )}
           <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-bg bg-green-500" />
         </div>
-        <div className="leading-tight">
-          <div className="text-[15px] font-extrabold text-ink">{name}</div>
-          <div className="text-xs text-ink-dim">{t('home.hello')} 👋</div>
+        <div className="min-w-0 leading-tight">
+          <div className="truncate text-[15px] font-extrabold text-ink">{name}</div>
+          <div className="flex items-center gap-1 text-xs text-ink-dim">
+            <Trophy size={12} className="text-gold" />
+            {points} {t('home.points')}
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 rounded-full bg-surface px-3 py-1.5 shadow-card">
-        <Trophy size={16} className="text-gold" />
-        <span className="text-sm font-bold text-ink">{points}</span>
-        <span className="text-xs text-ink-faint">{t('home.points')}</span>
+      <div className="flex shrink-0 items-center gap-2">
+        <NotificationsBell />
+        <LanguageButton />
       </div>
     </header>
   );
