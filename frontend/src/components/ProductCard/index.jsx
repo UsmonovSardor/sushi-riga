@@ -36,9 +36,48 @@ export default function ProductCard({ item, delay = 0, reviewSummary }) {
     setTimeout(() => setRipples(r => r.filter(rp => rp.id !== id)), 600);
   };
 
+  // Fly-to-cart: a clone of the product image arcs into the header cart button.
+  const flyToCart = () => {
+    try {
+      if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+      const img = cardRef.current?.querySelector('.card-img img');
+      const target = document.querySelector('.h-cart-btn');
+      if (!img || !target || typeof img.animate !== 'function') return;
+      const s = img.getBoundingClientRect();
+      const tr = target.getBoundingClientRect();
+      if (!s.width || !tr.width) return;
+      const clone = img.cloneNode(true);
+      clone.removeAttribute('loading');
+      Object.assign(clone.style, {
+        position: 'fixed', left: `${s.left}px`, top: `${s.top}px`,
+        width: `${s.width}px`, height: `${s.height}px`, objectFit: 'cover',
+        borderRadius: '16px', zIndex: 99999, pointerEvents: 'none', margin: 0,
+        boxShadow: '0 12px 30px rgba(0,0,0,.28)', willChange: 'transform, opacity',
+      });
+      document.body.appendChild(clone);
+      const dx = (tr.left + tr.width / 2) - (s.left + s.width / 2);
+      const dy = (tr.top + tr.height / 2) - (s.top + s.height / 2);
+      const anim = clone.animate([
+        { transform: 'translate(0,0) scale(1)', opacity: 1, borderRadius: '16px' },
+        { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - 44}px) scale(.6)`, opacity: .95, offset: .6 },
+        { transform: `translate(${dx}px, ${dy}px) scale(.12)`, opacity: .2, borderRadius: '50%' },
+      ], { duration: 650, easing: 'cubic-bezier(.5,0,.6,1)' });
+      anim.onfinish = () => {
+        clone.remove();
+        target.classList.add('h-cart-pop');
+        setTimeout(() => target.classList.remove('h-cart-pop'), 360);
+      };
+      anim.oncancel = () => clone.remove();
+      // Guaranteed cleanup — never leave a clone behind if the tab is backgrounded
+      // (animations throttle when hidden, so onfinish may not fire).
+      setTimeout(() => clone.remove(), 1200);
+    } catch {}
+  };
+
   const handleAdd = (e) => {
     e.stopPropagation();
     addRipple(e);
+    flyToCart();
     add(item);
     setBump(true);
     setTimeout(() => setBump(false), 400);
