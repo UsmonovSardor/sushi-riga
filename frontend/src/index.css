@@ -70,10 +70,10 @@ img{display:block;max-width:100%}
 .hbtn:hover{background:rgba(15,15,15,.09)}
 .hbtn:active{transform:scale(.9)}
 .hbtn svg{width:17px;height:17px;stroke:var(--text)}
-/* Cart = the single red call-to-action */
-.h-cart-btn{background:var(--red-grad);box-shadow:var(--sh-red)}
+/* Cart CTA — neutral when empty, turns red once it holds items */
+.h-cart-btn--active{background:var(--red-grad);box-shadow:var(--sh-red)}
 .h-cart-pop{animation:bump .36s var(--spring)}
-.h-cart-btn:hover{background:var(--red-grad);box-shadow:var(--sh-red-lg);transform:translateY(-1px)}
+.h-cart-btn--active:hover{background:var(--red-grad);box-shadow:var(--sh-red-lg);transform:translateY(-1px)}
 .h-cart-btn:active{transform:scale(.9)}
 .lang-wrap{position:relative}
 .lang-btn{padding:0 10px;gap:4px;font-size:.72rem;font-weight:700;letter-spacing:.3px}
@@ -415,7 +415,13 @@ img{display:block;max-width:100%}
 .oitem-e{font-size:1.1rem;width:22px;flex-shrink:0}
 .oitem-name{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .oitem-qty{color:var(--muted);font-size:.76rem;flex-shrink:0}
-.oitem-sum{font-weight:800;flex-shrink:0;font-size:.86rem}
+.oitem-sum{font-weight:800;flex-shrink:0;font-size:.86rem;min-width:54px;text-align:right}
+/* Editable qty stepper inside checkout */
+.oitem-step{display:inline-flex;align-items:center;gap:1px;background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:2px;flex-shrink:0}
+.oitem-step-btn{width:26px;height:26px;border:none;background:none;color:var(--red);font-size:1.15rem;font-weight:800;line-height:1;display:grid;place-items:center;cursor:pointer;border-radius:50%;transition:background .12s,transform .1s;touch-action:manipulation}
+.oitem-step-btn:hover{background:var(--red-lt)}
+.oitem-step-btn:active{transform:scale(.82)}
+.oitem-step-n{min-width:20px;text-align:center;font-size:.85rem;font-weight:800;font-variant-numeric:tabular-nums}
 .order-total-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 0 14px;font-size:.88rem;font-weight:600;color:var(--muted)}
 .order-total-price{font-size:1.4rem;font-weight:900;color:var(--text)}
 .order-fields{padding:12px 20px 0}
@@ -448,6 +454,22 @@ img{display:block;max-width:100%}
 .order-submit-btn svg{stroke:#fff}
 .order-submit-btn:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(227,30,36,.45)}
 .order-submit-btn:active{transform:scale(.96)}
+.order-submit-btn svg{stroke:#fff;flex-shrink:0}
+
+/* ══ Mobile: Auth + Checkout become native bottom-sheets ══ */
+@media(max-width:600px){
+  .auth-modal,.order-modal{
+    left:0;right:0;bottom:0;top:auto;
+    transform:none;
+    width:100%;max-width:100%;
+    border-radius:22px 22px 0 0;
+    max-height:94vh;
+    box-shadow:0 -12px 40px rgba(0,0,0,.22);
+    animation:sheetUp .34s cubic-bezier(.22,1,.36,1);
+  }
+  .auth-modal-handle,.order-modal-handle{width:44px;height:5px}
+}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 
 /* ── Order Gate ── */
 .order-gate{padding:24px;display:flex;flex-direction:column;gap:16px}

@@ -119,7 +119,7 @@ const menuBtn = {
          </button>
 
           <button
-            className="hbtn h-cart-btn"
+            className={'hbtn h-cart-btn' + (count > 0 ? ' h-cart-btn--active' : '')}
             onClick={onCartOpen}
             aria-label="Cart"
             style={{ position: 'relative' }}
