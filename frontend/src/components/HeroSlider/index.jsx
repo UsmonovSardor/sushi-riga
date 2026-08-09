@@ -5,6 +5,7 @@ import T from '../../i18n/translations';
 const SLIDES = [
   {
     bg: 'https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=1200&h=600&fit=crop&auto=format&q=70',
+    video: '/hero/cherry-sushi-1.mp4',
     gradient: 'linear-gradient(110deg, rgba(180,18,22,.95) 0%, rgba(180,18,22,.7) 50%, rgba(0,0,0,.1) 100%)',
     title: { lv:'Svaigi rolli\nkatru dienu', ru:'Свежие роллы\nкаждый день', en:'Fresh rolls\nevery day' },
     sub:   { lv:'Gatavoti no svaigiem produktiem', ru:'Готовим из свежих продуктов', en:'Made from fresh ingredients' },
@@ -50,7 +51,9 @@ export default function HeroSlider({ onOrderNow }) {
     <div className="hero">
       {SLIDES.map((sl, i) => (
         <div key={i} className={'hero-slide' + (i === idx ? ' on' : '')}>
-          <div className="hero-bg" style={{ backgroundImage: `url(${sl.bg})` }} />
+          {sl.video
+            ? <video className="hero-video" src={sl.video} autoPlay muted loop playsInline preload="auto" poster={sl.bg} />
+            : <div className="hero-bg" style={{ backgroundImage: `url(${sl.bg})` }} />}
           <div className="hero-overlay" style={{ background: sl.gradient }} />
         </div>
       ))}
