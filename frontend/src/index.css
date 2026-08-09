@@ -114,7 +114,7 @@ img{display:block;max-width:100%}
 @media(min-width:940px){.cnav-inner{flex-wrap:wrap;justify-content:center;row-gap:8px;overflow:visible}}
 
 /* ══ HERO ══ */
-.hero{margin:12px var(--px);border-radius:var(--r-xl);overflow:hidden;position:relative;height:clamp(180px,42vw,300px)}
+.hero{margin:12px 0;border-radius:var(--r-xl);overflow:hidden;position:relative;height:clamp(180px,42vw,300px)}
 /* Always-on left scrim → text stays readable on any slide, even mid-crossfade */
 .hero::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(100deg,rgba(0,0,0,.36) 0%,rgba(0,0,0,.14) 42%,rgba(0,0,0,0) 66%)}
 .hero-slide{position:absolute;inset:0;opacity:0;transition:opacity .7s ease;pointer-events:none}
@@ -140,7 +140,7 @@ img{display:block;max-width:100%}
 .hero-progress-bar{height:100%;background:rgba(255,255,255,.7);animation:heroProg 5s linear forwards}
 /* Desktop: a taller, more cinematic banner with room for larger type */
 @media(min-width:900px){
-  .hero{height:clamp(300px,30vw,400px);margin:18px var(--px)}
+  .hero{height:clamp(300px,30vw,400px);margin:18px 0}
   .hero-body{max-width:560px;padding:44px}
   .hero-title{font-size:clamp(2rem,3.2vw,2.7rem);line-height:1.1}
   .hero-sub{font-size:1rem;margin-bottom:22px}
@@ -505,7 +505,7 @@ img{display:block;max-width:100%}
 }
 @media(max-width:600px){
   .card-add{width:32px;height:32px}
-  .hero{margin:8px var(--px)}
+  .hero{margin:8px 0}
 }
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
