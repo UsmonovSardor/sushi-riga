@@ -175,6 +175,9 @@ img{display:block;max-width:100%}
   .card-price{font-size:1.15rem}
   .card-old{font-size:.74rem}
   .card-add{width:40px;height:40px;border-radius:14px;font-size:1.5rem}
+  .qty-stepper{height:40px;border-radius:14px}
+  .qty-btn{width:34px}
+  .qty-num{min-width:22px;font-size:.98rem}
 }
 
 /* ══ CARD ══ */
@@ -208,6 +211,13 @@ img{display:block;max-width:100%}
 }
 .card-add:active{transform:scale(.86)}
 .ripple{position:absolute;border-radius:50%;width:36px;height:36px;margin:-18px 0 0 -18px;background:rgba(255,255,255,.5);pointer-events:none;animation:ripple .6s ease-out forwards}
+/* Inline qty stepper — morphs in place of the + once the item is in the cart */
+.qty-stepper{display:flex;align-items:center;height:36px;background:var(--red-grad);border-radius:13px;box-shadow:var(--sh-red);flex-shrink:0;overflow:hidden;transform-origin:right center;animation:stepperIn .22s var(--spring)}
+.qty-btn{width:30px;height:100%;border:none;background:none;color:#fff;font-size:1.35rem;font-weight:700;line-height:1;display:grid;place-items:center;cursor:pointer;touch-action:manipulation;transition:transform .12s var(--spring),background .15s}
+.qty-btn:active{transform:scale(.8)}
+@media(hover:hover){.qty-btn:hover{background:rgba(255,255,255,.16)}}
+.qty-num{min-width:20px;text-align:center;color:#fff;font-size:.9rem;font-weight:900;font-variant-numeric:tabular-nums;user-select:none}
+@keyframes stepperIn{from{transform:scale(.55);opacity:.2}to{transform:scale(1);opacity:1}}
 
 /* ══ CART BAR ══ */
 .cartbar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);width:calc(100% - 28px);max-width:440px;z-index:9999;animation:cartPop .5s cubic-bezier(.22,1,.36,1) forwards}
@@ -505,6 +515,9 @@ img{display:block;max-width:100%}
 }
 @media(max-width:600px){
   .card-add{width:32px;height:32px}
+  .qty-stepper{height:32px;border-radius:12px}
+  .qty-btn{width:27px;font-size:1.2rem}
+  .qty-num{min-width:16px;font-size:.82rem}
   .hero{margin:8px 0}
 }
 ::-webkit-scrollbar{width:5px;height:5px}

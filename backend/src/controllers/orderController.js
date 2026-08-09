@@ -54,24 +54,6 @@ async function getUserFromReq(req) {
   }
 }
 
-function extractItemName(item) {
-  if (item.name) return item.name;
-  if (item.title) return item.title;
-  if (item.name_ru || item.name_lv || item.name_en) {
-    return {
-      ru: item.name_ru || item.name_lv || item.name_en || 'Product',
-      lv: item.name_lv || item.name_ru || item.name_en || 'Product',
-      en: item.name_en || item.name_lv || item.name_ru || 'Product',
-    };
-  }
-  return 'Product';
-}
-
-function extractItemPrice(item) {
-  const price = item.price ?? item.totalPrice ?? item.amount;
-  return Number(price) || 0;
-}
-
 exports.createOrder = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -86,6 +68,7 @@ exports.createOrder = async (req, res) => {
 
     if (!name || !phone) return res.status(400).json({ error: 'Name and phone required' });
     if (!Array.isArray(items) || items.length === 0) return res.status(400).json({ error: 'Cart is empty' });
+    if (items.length > 100) return res.status(400).json({ error: 'Too many items' });
 
     const ids = items
       .map(item => String(item.id || item.menuId || item.productId || ''))
@@ -97,36 +80,27 @@ exports.createOrder = async (req, res) => {
 
     const productMap = new Map(dbProducts.rows.map(p => [String(p.id), p]));
 
-    const enriched = items.map(item => {
-      const id = String(item.id || item.menuId || item.productId || Date.now());
-      const qty = Math.max(1, Number(item.qty || item.quantity || 1));
+    // Senior-level integrity: every line must map to a real menu item. Price and
+    // name come from the DB (never trust client-sent values); qty is clamped 1..99.
+    const enriched = [];
+    for (const item of items) {
+      const id = String(item.id || item.menuId || item.productId || '');
       const p = productMap.get(id);
 
-      if (p) {
-        return {
-          id: p.id,
-          e: p.e || item.e || '🍣',
-          name: normalizeName(p.name, extractItemName(item)),
-          price: Number(p.price) || 0,
-          qty,
-        };
+      if (!p) {
+        console.warn('Rejected order — unknown item id:', id || '(empty)');
+        return res.status(400).json({ error: 'Some items are no longer available. Please refresh your cart.' });
       }
 
-      const fallbackPrice = extractItemPrice(item);
-      const fallbackName = extractItemName(item);
-
-      if (fallbackPrice > 0) {
-        return {
-          id,
-          e: item.e || '🍣',
-          name: normalizeName(fallbackName, 'Product'),
-          price: fallbackPrice,
-          qty,
-        };
-      }
-
-      throw new Error('Product not found: ' + id);
-    });
+      const qty = Math.min(99, Math.max(1, Math.floor(Number(item.qty ?? item.quantity ?? 1)) || 1));
+      enriched.push({
+        id: p.id,
+        e: p.e || '🍣',
+        name: normalizeName(p.name, 'Product'),
+        price: Number(p.price) || 0,
+        qty,
+      });
+    }
 
     const total = enriched.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
     const num = String(Date.now() % 100000);

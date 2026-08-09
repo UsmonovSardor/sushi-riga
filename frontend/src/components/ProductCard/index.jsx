@@ -12,7 +12,7 @@ const getText = (value, lang, fallback = '') => {
 };
 
 export default function ProductCard({ item, delay = 0, reviewSummary }) {
-  const { add, cart } = useCart();
+  const { add, change, cart } = useCart();
   const { lang } = useLanguage();
   const t = T[lang];
 
@@ -83,6 +83,18 @@ export default function ProductCard({ item, delay = 0, reviewSummary }) {
     setTimeout(() => setBump(false), 400);
   };
 
+  // Stepper controls (shown once the item is in the cart)
+  const handleInc = (e) => {
+    e.stopPropagation();
+    flyToCart();
+    add(item);
+  };
+
+  const handleDec = (e) => {
+    e.stopPropagation();
+    change(item.id, -1); // qty→0 removes the item (handled in CartContext)
+  };
+
   return (
     <div className="card" style={{ animationDelay: delay + 'ms' }} ref={cardRef} onClick={handleAdd}>
       <span className="card-glare" aria-hidden="true" />
@@ -128,16 +140,24 @@ export default function ProductCard({ item, delay = 0, reviewSummary }) {
             {item.old && <span className="card-old">€{Number(item.old).toFixed(2)}</span>}
           </div>
 
-          <button
-            className={'card-add' + (inCart > 0 ? ' card-add--active' : '') + (bump ? ' bump' : '')}
-            onClick={handleAdd}
-            aria-label="Add to cart"
-          >
-            {ripples.map(r => (
-              <span key={r.id} className="ripple" style={{ left: r.x, top: r.y }} />
-            ))}
-            {inCart > 0 ? inCart : '+'}
-          </button>
+          {inCart > 0 ? (
+            <div className="qty-stepper" onClick={(e) => e.stopPropagation()}>
+              <button className="qty-btn qty-minus" onClick={handleDec} aria-label="Decrease quantity">−</button>
+              <span className="qty-num" aria-live="polite">{inCart}</span>
+              <button className="qty-btn qty-plus" onClick={handleInc} aria-label="Increase quantity">+</button>
+            </div>
+          ) : (
+            <button
+              className={'card-add' + (bump ? ' bump' : '')}
+              onClick={handleAdd}
+              aria-label="Add to cart"
+            >
+              {ripples.map(r => (
+                <span key={r.id} className="ripple" style={{ left: r.x, top: r.y }} />
+              ))}
+              +
+            </button>
+          )}
         </div>
       </div>
     </div>
