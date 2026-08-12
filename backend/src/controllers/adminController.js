@@ -126,6 +126,73 @@ exports.getStats = [authAdmin, async (_req, res) => {
   }
 }];
 
+// Full customer base: everyone who has ordered (keyed by phone, so guests count
+// too) enriched with their registration profile. Gives real per-customer CRM
+// numbers — order count, lifetime spend, average, first/last order.
+exports.getCustomers = [authAdmin, async (_req, res) => {
+  try {
+    const [ordersR, usersR] = await Promise.all([
+      query(`SELECT name, surname, phone, customer_phone, address, total, status, created_at
+             FROM orders ORDER BY created_at ASC`),
+      query('SELECT phone_norm, data, created_at FROM users_data'),
+    ]);
+
+    const norm = v => String(v || '').replace(/[^\d]/g, '');
+    const map = new Map();
+    const ensure = (key) => {
+      if (!map.has(key)) {
+        map.set(key, {
+          phone: '', name: '', surname: '', address: '',
+          registered: false, registeredAt: null,
+          ordersCount: 0, totalSpent: 0, firstOrder: null, lastOrder: null,
+        });
+      }
+      return map.get(key);
+    };
+
+    // Orders are ASC, so the last write wins → latest name/surname/address.
+    for (const o of ordersR.rows) {
+      const raw = o.customer_phone || o.phone || '';
+      const key = norm(raw);
+      if (!key) continue;
+      const c = ensure(key);
+      c.phone = raw || c.phone;
+      if (o.name) c.name = o.name;
+      if (o.surname) c.surname = o.surname;
+      if (o.address) c.address = o.address;
+      c.ordersCount += 1;
+      if (o.status !== 'cancelled') c.totalSpent += Number(o.total) || 0;
+      const at = o.created_at;
+      if (!c.firstOrder || new Date(at) < new Date(c.firstOrder)) c.firstOrder = at;
+      if (!c.lastOrder || new Date(at) > new Date(c.lastOrder)) c.lastOrder = at;
+    }
+
+    // Registration profile takes precedence for identity fields; also surfaces
+    // registered users who have not ordered yet.
+    for (const u of usersR.rows) {
+      const d = u.data || {};
+      const key = u.phone_norm || norm(d.phone);
+      if (!key) continue;
+      const c = ensure(key);
+      c.registered = true;
+      c.registeredAt = u.created_at;
+      if (d.name) c.name = d.name;
+      if (d.surname) c.surname = d.surname;
+      if (d.address) c.address = d.address;
+      c.phone = c.phone || d.phone || '';
+    }
+
+    const customers = [...map.values()]
+      .map(c => ({ ...c, avgOrder: c.ordersCount ? c.totalSpent / c.ordersCount : 0 }))
+      .sort((a, b) => b.totalSpent - a.totalSpent || new Date(b.lastOrder || 0) - new Date(a.lastOrder || 0));
+
+    res.json(customers);
+  } catch (err) {
+    console.error('getCustomers:', err.message);
+    res.status(500).json({ error: 'Mijozlar yuklanmadi' });
+  }
+}];
+
 exports.uploadImage = [authAdmin, async (req, res) => { try { const { base64 } = req.body; if (!base64) return res.status(400).json({ error: 'No image data' }); if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) { return res.status(500).json({ error: 'Cloudinary env missing' }); } cloudinary.config({ cloud_name: process.env.CLOUDINARY_CLOUD_NAME, api_key: process.env.CLOUDINARY_API_KEY, api_secret: process.env.CLOUDINARY_API_SECRET }); const result = await cloudinary.uploader.upload(base64, { folder: 'cherry-sushi/menu', resource_type: 'image', overwrite: false, transformation: [{ width: 900, height: 700, crop: 'limit' }, { quality: 'auto:good' }, { fetch_format: 'auto' }] }); res.json({ url: result.secure_url, publicId: result.public_id }); } catch (e) { console.error('Cloudinary:', e); res.status(500).json({ error: e.message || 'Upload failed' }); } }];
 
 exports.getMenu = [authAdmin, async (_req, res) => {

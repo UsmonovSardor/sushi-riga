@@ -3,6 +3,7 @@ const router = require('express').Router();
 const ctrl   = require('../controllers/adminController');
 router.post('/login',         ctrl.adminLogin);
 router.get('/stats',          ctrl.getStats);
+router.get('/customers',      ctrl.getCustomers);
 router.get('/menu',           ctrl.getMenu);
 router.post('/menu',          ctrl.addItem);
 router.put('/menu/:id',       ctrl.updateItem);

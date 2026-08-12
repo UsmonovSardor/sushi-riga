@@ -138,6 +138,7 @@ export default function Admin() {
   const [orders, setOrders] = useState([]);
   const [menu, setMenu] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [msg, setMsg] = useState('');
   const [search, setSrch] = useState('');
   const [catF, setCatF] = useState('all');
@@ -182,7 +183,7 @@ export default function Admin() {
 
       const noCache = { ...hdrs, 'Cache-Control': 'no-cache' };
 
-      const [s, o, m, rv] = await Promise.all([
+      const [s, o, m, rv, cu] = await Promise.all([
         fetch(`${API}/api/admin/stats?t=${Date.now()}`, {
           headers: noCache,
           cache: 'no-store',
@@ -206,12 +207,18 @@ export default function Admin() {
           headers: noCache,
           cache: 'no-store',
         }).then(r => r.json()).catch(() => []),
+
+        fetch(`${API}/api/admin/customers?t=${Date.now()}`, {
+          headers: noCache,
+          cache: 'no-store',
+        }).then(r => r.json()).catch(() => []),
       ]);
 
       setStats(s);
       setOrders(Array.isArray(o) ? o.slice().reverse() : []);
       setMenu(Array.isArray(m) ? m : []);
       setReviews(Array.isArray(rv) ? rv : []);
+      setCustomers(Array.isArray(cu) ? cu : []);
       setLastUpdated(new Date());
 
       if (manual) {
@@ -346,6 +353,22 @@ export default function Admin() {
       i.name?.en?.toLowerCase().includes(search.toLowerCase())
     )
   );
+
+  const filtCustomers = customers.filter(c => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (
+      `${c.name || ''} ${c.surname || ''}`.toLowerCase().includes(q) ||
+      String(c.phone || '').replace(/\s/g, '').includes(search.replace(/\s/g, ''))
+    );
+  });
+
+  const custTotals = customers.reduce((a, c) => {
+    a.registered += c.registered ? 1 : 0;
+    a.repeat += c.ordersCount > 1 ? 1 : 0;
+    a.revenue += Number(c.totalSpent) || 0;
+    return a;
+  }, { registered: 0, repeat: 0, revenue: 0 });
 
   const toggleAll = () => {
     const vis = filtOrders.map(o => o.id);
@@ -584,6 +607,7 @@ export default function Admin() {
         {[
           ['stats', '📊 Statistika'],
           ['orders', `📦 Buyurtmalar${newCount > 0 ? ` (${newCount} 🔴)` : ''}`],
+          ['customers', `👥 Mijozlar (${customers.length})`],
           ['menu', `🍣 Menyu (${menu.length})`],
           ['reviews', `⭐ Baholar (${reviews.length})`],
           ['add', editItem ? '✏️ Tahrirlash' : "➕ Qo'shish"],
@@ -747,6 +771,77 @@ export default function Admin() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {tab === 'customers' && (
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))', gap: 14, marginBottom: 18 }}>
+              {[
+                ['👥', 'Jami mijozlar', customers.length, '#7c3aed'],
+                ['⭐', "Ro'yxatdan o'tgan", custTotals.registered, '#2563eb'],
+                ['🔁', 'Takroriy mijoz', custTotals.repeat, '#16a34a'],
+                ['💰', 'Jami tushum', `€${fmt(custTotals.revenue)}`, '#e31e24'],
+              ].map(([icon, title, value, color]) => (
+                <div key={title} style={{ ...S.card, padding: 18 }}>
+                  <div style={{ fontSize: 22, marginBottom: 6 }}>{icon}</div>
+                  <div style={{ color: '#64748b', fontSize: '.76rem', fontWeight: 800 }}>{title}</div>
+                  <div style={{ color, fontSize: '1.5rem', fontWeight: 950, marginTop: 4 }}>{value}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, marginBottom: 16, alignItems: 'center' }}>
+              <input placeholder="🔍 Ism yoki telefon..." value={search} onChange={e => setSrch(e.target.value)} style={{ ...S.inp, flex: 1, minWidth: 200 }} />
+              <span style={{ fontSize: '.78rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>{filtCustomers.length} ta</span>
+            </div>
+
+            {filtCustomers.length === 0 && (
+              <div style={{ ...S.card, padding: '48px', textAlign: 'center', color: '#94a3b8' }}>Mijoz topilmadi</div>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {filtCustomers.map((c, i) => {
+                const initial = (c.name || '?').trim().charAt(0).toUpperCase() || '?';
+                return (
+                  <div key={(c.phone || 'x') + i} style={{ ...S.card, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+                    <div style={{ width: 46, height: 46, borderRadius: 14, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.1rem', color: '#fff', background: c.registered ? 'linear-gradient(135deg,#7c3aed,#4f46e5)' : 'linear-gradient(135deg,#94a3b8,#64748b)' }}>
+                      {initial}
+                    </div>
+
+                    <div style={{ minWidth: 160, flex: '1 1 200px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 800, fontSize: '.92rem' }}>{c.name} {c.surname}</span>
+                        {c.registered
+                          ? <span style={{ background: '#ede9fe', color: '#6d28d9', fontSize: '.62rem', fontWeight: 800, padding: '2px 8px', borderRadius: 20 }}>⭐ RO'YXATDA</span>
+                          : <span style={{ background: '#f1f5f9', color: '#64748b', fontSize: '.62rem', fontWeight: 800, padding: '2px 8px', borderRadius: 20 }}>👤 MEHMON</span>}
+                      </div>
+                      <a href={`tel:${c.phone}`} style={{ color: '#e31e24', textDecoration: 'none', fontSize: '.82rem', fontWeight: 700 }}>📞 {c.phone}</a>
+                      {c.address && <div style={{ fontSize: '.76rem', color: '#94a3b8', marginTop: 2 }}>📍 {c.address}</div>}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginLeft: 'auto', textAlign: 'right' }}>
+                      <div>
+                        <div style={{ fontSize: '.64rem', color: '#94a3b8', fontWeight: 700 }}>BUYURTMA</div>
+                        <div style={{ fontWeight: 900, fontSize: '1rem' }}>{c.ordersCount}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '.64rem', color: '#94a3b8', fontWeight: 700 }}>JAMI</div>
+                        <div style={{ fontWeight: 900, fontSize: '1rem', color: '#e31e24' }}>€{fmt(c.totalSpent)}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '.64rem', color: '#94a3b8', fontWeight: 700 }}>O'RTACHA</div>
+                        <div style={{ fontWeight: 800, fontSize: '.9rem', color: '#64748b' }}>€{fmt(c.avgOrder)}</div>
+                      </div>
+                      <div style={{ minWidth: 90 }}>
+                        <div style={{ fontSize: '.64rem', color: '#94a3b8', fontWeight: 700 }}>OXIRGI</div>
+                        <div style={{ fontWeight: 700, fontSize: '.76rem', color: '#64748b' }}>{c.lastOrder ? fmtT(c.lastOrder) : '—'}</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
