@@ -21,6 +21,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://res.cloudinary.com" />
+    <link rel="preconnect" href="https://lh3.googleusercontent.com" />
     <link rel="preconnect" href="https://images.unsplash.com" />
     <link rel="preconnect" href="https://sushi-riga-api-production-7b54.up.railway.app" crossorigin />
 
@@ -48,18 +49,22 @@
     <meta property="og:site_name" content="Cherry Sushi" />
     <meta property="og:title" content="Cherry Sushi — Suši Rīgā" />
     <meta property="og:description" content="Svaigi suši katru dienu. Lokomotīves iela 100, Rīga." />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://cherrysushi.eu/logo.jpg?v=2" />
-    <meta property="og:image:width" content="1280" />
-    <meta property="og:image:height" content="1280" />
+    <meta property="og:type" content="restaurant" />
+    <!-- Appetizing landscape shot converts far better in social/chat previews than the square logo -->
+    <meta property="og:image" content="https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=1200&h=630&fit=crop&auto=format&q=75" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Fresh sushi rolls — Cherry Sushi Rīga" />
     <meta property="og:url" content="https://cherrysushi.eu" />
     <meta property="og:locale" content="lv_LV" />
+    <meta property="og:locale:alternate" content="ru_RU" />
+    <meta property="og:locale:alternate" content="en_US" />
 
     <!-- 🐦 TWITTER -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Cherry Sushi — Suši Rīgā" />
     <meta name="twitter:description" content="Svaigi suši katru dienu. Lokomotīves iela 100, Rīga." />
-    <meta name="twitter:image" content="https://cherrysushi.eu/logo.jpg?v=2" />
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=1200&h=630&fit=crop&auto=format&q=75" />
 
     <!-- 🎨 COLOR -->
     <meta name="theme-color" content="#e31e24" />
@@ -69,18 +74,31 @@
 {
   "@context": "https://schema.org",
   "@type": "Restaurant",
+  "@id": "https://cherrysushi.eu/#restaurant",
   "name": "Cherry Sushi",
   "url": "https://cherrysushi.eu",
-  "logo": "https://cherrysushi.eu/favicon.png?v=2",
-  "image": "https://cherrysushi.eu/favicon.png?v=2",
+  "logo": "https://cherrysushi.eu/logo.jpg?v=2",
+  "image": [
+    "https://cherrysushi.eu/logo.jpg?v=2",
+    "https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=1200&h=630&fit=crop&auto=format&q=75"
+  ],
   "telephone": "+37120918484",
-  "servesCuisine": "Sushi",
+  "servesCuisine": ["Sushi", "Japanese"],
+  "priceRange": "€€",
+  "acceptsReservations": "False",
+  "hasMenu": "https://cherrysushi.eu",
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "Lokomotives iela 100",
-    "addressLocality": "Riga",
+    "streetAddress": "Lokomotīves iela 100",
+    "addressLocality": "Rīga",
     "addressCountry": "LV"
-  }
+  },
+  "openingHoursSpecification": [{
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+    "opens": "11:00",
+    "closes": "22:00"
+  }]
 }
 </script>
 

@@ -608,3 +608,12 @@ input,textarea,.card-name,.card-desc,.cart-item-name{-webkit-user-select:text;us
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
 }
+
+/* ══ MENU LOAD ERROR (retry) ══ */
+.menu-error{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;margin:40px auto;padding:36px 24px;max-width:420px;background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-md)}
+.menu-error-emoji{font-size:2.6rem;line-height:1}
+.menu-error-title{font-size:1.08rem;font-weight:800;color:var(--text);letter-spacing:-.3px}
+.menu-error-sub{font-size:.86rem;color:var(--muted);line-height:1.5;max-width:300px}
+.menu-error-btn{margin-top:8px;height:44px;padding:0 24px;border:none;border-radius:13px;background:var(--red-grad);color:#fff;font-weight:800;font-size:.92rem;cursor:pointer;box-shadow:var(--sh-red);transition:transform .2s var(--spring),box-shadow .2s var(--ease)}
+.menu-error-btn:hover{transform:translateY(-2px);box-shadow:var(--sh-red-lg)}
+.menu-error-btn:active{transform:scale(.96)}

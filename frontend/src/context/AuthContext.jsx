@@ -36,14 +36,21 @@ export function AuthProvider({ children }) {
       .finally(() => setLoad(false));
   }, []);
 
-  const register = async (name, surname, address, phone) => {
+  // Parse JSON defensively — a cold Railway backend can answer with a non-JSON
+  // 502/504 HTML page, and a bare r.json() would throw a cryptic SyntaxError
+  // instead of a readable "please try again".
+  const safeJson = async (r) => {
+    try { return await r.json(); } catch { return {}; }
+  };
+
+  const register = async (name, surname, address, phone, lang = 'lv') => {
     const r = await fetch(`${BASE}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, surname, address, phone }),
+      body: JSON.stringify({ name, surname, address, phone, lang }),
     });
 
-    const d = await r.json();
+    const d = await safeJson(r);
     if (!r.ok) throw new Error(d.error || 'Registration error');
 
     localStorage.setItem('sr_token', d.token);
@@ -52,14 +59,14 @@ export function AuthProvider({ children }) {
     return d.user;
   };
 
-  const login = async (name, surname, phone) => {
+  const login = async (name, surname, phone, lang = 'lv') => {
     const r = await fetch(`${BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, surname, phone }),
+      body: JSON.stringify({ name, surname, phone, lang }),
     });
 
-    const d = await r.json();
+    const d = await safeJson(r);
     if (!r.ok) throw new Error(d.error || 'Login error');
 
     localStorage.setItem('sr_token', d.token);

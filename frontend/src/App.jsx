@@ -25,6 +25,25 @@ const AdminPage = React.lazy(() => import('./pages/Admin'));
 import { ordersApi } from './services/api';
 import { useAuth } from './context/AuthContext';
 import { useLanguage } from './context/LanguageContext';
+import { useMenu } from './context/MenuContext';
+
+function MenuError({ onRetry, lang }) {
+  const L = (lv, ru, en) => (lang === 'lv' ? lv : lang === 'ru' ? ru : en);
+  return (
+    <div className="menu-error" role="alert">
+      <div className="menu-error-emoji">🍣</div>
+      <div className="menu-error-title">
+        {L('Neizdevās ielādēt ēdienkarti', 'Не удалось загрузить меню', 'Could not load the menu')}
+      </div>
+      <div className="menu-error-sub">
+        {L('Pārbaudiet savienojumu un mēģiniet vēlreiz.', 'Проверьте соединение и попробуйте снова.', 'Check your connection and try again.')}
+      </div>
+      <button className="menu-error-btn" onClick={onRetry}>
+        {L('Mēģināt vēlreiz', 'Попробовать снова', 'Try again')}
+      </button>
+    </div>
+  );
+}
 
 const SECTIONS = [
   { id:'hit',     e:'⭐', k:'c_hit',     cats:['hit'] },
@@ -54,6 +73,7 @@ function MainApp() {
 
   const { user } = useAuth();
   const { lang } = useLanguage();
+  const { error: menuError, reload: reloadMenu } = useMenu();
 
   React.useEffect(() => {
     if (!user) {
@@ -128,16 +148,20 @@ function MainApp() {
 
       <main className="main">
         <HeroSlider onOrderNow={openCart} />
-        {SECTIONS.map(s => (
-          <ErrorBoundary key={s.id}>
-            <MenuSection
-              sectionId={s.id}
-              emoji={s.e}
-              titleKey={s.k}
-              cats={s.cats}
-            />
-          </ErrorBoundary>
-        ))}
+        {menuError ? (
+          <MenuError onRetry={reloadMenu} lang={lang} />
+        ) : (
+          SECTIONS.map(s => (
+            <ErrorBoundary key={s.id}>
+              <MenuSection
+                sectionId={s.id}
+                emoji={s.e}
+                titleKey={s.k}
+                cats={s.cats}
+              />
+            </ErrorBoundary>
+          ))
+        )}
       </main>
 
       <Footer />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import T from '../../i18n/translations';
 
@@ -37,6 +37,7 @@ export default function HeroSlider({ onOrderNow }) {
   const [animKey, setAnimKey] = useState(0);
   const { lang } = useLanguage();
   const t = T[lang];
+  const videoRefs = useRef([]);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -46,6 +47,21 @@ export default function HeroSlider({ onOrderNow }) {
     return () => clearInterval(id);
   }, []);
 
+  // Only the visible slide's video loads and plays. The others stay preload=none
+  // (no download) and paused — so first paint fetches one clip, not three.
+  useEffect(() => {
+    videoRefs.current.forEach((v, i) => {
+      if (!v) return;
+      if (i === idx) {
+        v.preload = 'auto';
+        const p = v.play();
+        if (p && p.catch) p.catch(() => {});
+      } else {
+        v.pause();
+      }
+    });
+  }, [idx]);
+
   const go = target => { if (onOrderNow) return onOrderNow(); const el = document.getElementById('sec-' + target); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth' }); };
   const s = SLIDES[idx];
 
@@ -54,7 +70,14 @@ export default function HeroSlider({ onOrderNow }) {
       {SLIDES.map((sl, i) => (
         <div key={i} className={'hero-slide' + (i === idx ? ' on' : '')}>
           {sl.video
-            ? <video className="hero-video" src={sl.video} autoPlay muted loop playsInline preload="auto" poster={sl.bg} />
+            ? <video
+                ref={el => (videoRefs.current[i] = el)}
+                className="hero-video"
+                src={sl.video}
+                muted loop playsInline
+                preload={i === idx ? 'auto' : 'none'}
+                poster={sl.bg}
+              />
             : <div className="hero-bg" style={{ backgroundImage: `url(${sl.bg})` }} />}
           <div className="hero-overlay" style={{ background: sl.gradient }} />
         </div>

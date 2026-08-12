@@ -176,7 +176,7 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
                 ['name', 'text', 'name', L('Vārds', 'Имя', 'Name'), '*', L('Jūsu vārds', 'Ваше имя', 'Your name'), '👤'],
                 ['surname', 'text', 'family-name', L('Uzvārds', 'Фамилия', 'Surname'), '*', L('Jūsu uzvārds', 'Ваша фамилия', 'Your surname'), '👤'],
                 ['phone', 'tel', 'tel', L('Tālrunis', 'Телефон', 'Phone'), '*', '+371 XX XXX XXX', '📞'],
-                ['note', 'text', 'off', L('Piezīmes', 'Комментарий', 'Comment'), '', L('Masalan: soya sous ko‘proq...', 'Например: больше соевого соуса...', 'Example: more soy sauce...'), '💬'],
+                ['note', 'text', 'off', L('Piezīmes', 'Комментарий', 'Comment'), '', L('Piemēram: vairāk sojas mērces...', 'Например: больше соевого соуса...', 'Example: more soy sauce...'), '💬'],
               ].map(([k, type, ac, lbl, req, ph, ico]) => (
                 <div key={k} className="ofield">
                   <label className="ofield-label">

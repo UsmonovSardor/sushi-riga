@@ -65,13 +65,12 @@ export default function AuthModal({ onClose, onSuccess }) {
 
     try {
       if (mode === 'register') {
-        await register(form.name, form.surname, '', form.phone);
+        await register(form.name, form.surname, '', form.phone, lang);
       } else {
-        await login(form.name, form.surname, form.phone);
+        await login(form.name, form.surname, form.phone, lang);
       }
 
       setOk(true);
-      sss
 
       setTimeout(() => {
         onClose();
