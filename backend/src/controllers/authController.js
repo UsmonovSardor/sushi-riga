@@ -2,6 +2,7 @@
 
 const jwt = require('jsonwebtoken');
 const { query } = require('../db');
+const { t } = require('../utils/i18n');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -51,17 +52,15 @@ exports.register = async (req, res) => {
   try {
     await ensureUsersTable();
 
-    const { name, surname, address = '', phone } = req.body;
+    const { name, surname, address = '', phone, lang = 'lv' } = req.body;
 
     if (!name || !surname || !phone) {
-      return res.status(400).json({
-        error: 'Name, surname and phone required',
-      });
+      return res.status(400).json({ error: t('required_fields', lang) });
     }
 
     const phoneNorm = normalizePhone(phone);
     if (!phoneNorm) {
-      return res.status(400).json({ error: 'Phone required' });
+      return res.status(400).json({ error: t('phone_required', lang) });
     }
 
     const exists = await query(
@@ -70,9 +69,7 @@ exports.register = async (req, res) => {
     );
 
     if (exists.rows.length > 0) {
-      return res.status(409).json({
-        error: 'Bu nomer oldin ro‘yxatdan o‘tgan. Iltimos, kirish bo‘limidan kiring.',
-      });
+      return res.status(409).json({ error: t('phone_exists', lang) });
     }
 
     const now = new Date().toISOString();
@@ -105,7 +102,7 @@ exports.register = async (req, res) => {
     });
   } catch (e) {
     console.error('register:', e.message);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: t('server_error', req.body?.lang || 'lv') });
   }
 };
 
@@ -113,17 +110,15 @@ exports.login = async (req, res) => {
   try {
     await ensureUsersTable();
 
-    const { name, surname, phone } = req.body;
+    const { name, surname, phone, lang = 'lv' } = req.body;
 
     if (!name || !surname || !phone) {
-      return res.status(400).json({
-        error: 'Name, surname and phone required',
-      });
+      return res.status(400).json({ error: t('required_fields', lang) });
     }
 
     const phoneNorm = normalizePhone(phone);
     if (!phoneNorm) {
-      return res.status(400).json({ error: 'Phone required' });
+      return res.status(400).json({ error: t('phone_required', lang) });
     }
 
     const r = await query(
@@ -132,9 +127,7 @@ exports.login = async (req, res) => {
     );
 
     if (r.rows.length === 0) {
-      return res.status(404).json({
-        error: 'Bu nomer ro‘yxatdan o‘tmagan',
-      });
+      return res.status(404).json({ error: t('phone_not_found', lang) });
     }
 
     const user = r.rows[0].data;
@@ -148,9 +141,7 @@ exports.login = async (req, res) => {
       String(surname || '').trim().toLowerCase();
 
     if (!sameName || !sameSurname) {
-      return res.status(401).json({
-        error: 'Ism yoki familiya noto‘g‘ri',
-      });
+      return res.status(401).json({ error: t('bad_credentials', lang) });
     }
 
     const token = makeToken(user);
@@ -161,7 +152,7 @@ exports.login = async (req, res) => {
     });
   } catch (e) {
     console.error('login:', e.message);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: t('server_error', req.body?.lang || 'lv') });
   }
 };
 

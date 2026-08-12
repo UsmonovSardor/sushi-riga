@@ -4,6 +4,7 @@ const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const tg = require('../services/telegramService');
 const { query } = require('../db');
+const { t } = require('../utils/i18n');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -48,7 +49,12 @@ async function getUserFromReq(req) {
   try {
     const payload = jwt.verify(auth.slice(7), JWT_SECRET);
     const r = await query('SELECT * FROM users_data WHERE id=$1', [String(payload.id)]);
-    return r.rows[0] || null;
+    const row = r.rows[0];
+    if (!row) return null;
+    // The user's fields (phone, name, telegram_id, …) live inside the `data`
+    // JSONB column, not as top-level columns. Flatten them so callers can read
+    // user.phone / user.telegram_id directly.
+    return { ...(row.data || {}), id: row.id };
   } catch {
     return null;
   }
@@ -186,11 +192,12 @@ exports.getOrders = async (_req, res) => {
     res.json(r.rows.map(rowToPublicOrder));
   } catch (err) {
     console.error('getOrders:', err.message);
-    res.status(500).json({ error: 'Zakazlar yuklanmadi' });
+    res.status(500).json({ error: t('orders_load_failed', 'lv') });
   }
 };
 
 exports.getMyOrders = async (req, res) => {
+  const lang = req.query.lang || 'lv';
   try {
     const user = await getUserFromReq(req);
     if (!user) return res.status(401).json({ error: 'Login required' });
@@ -211,6 +218,6 @@ exports.getMyOrders = async (req, res) => {
     res.json(r.rows.map(rowToPublicOrder));
   } catch (err) {
     console.error('getMyOrders:', err.message);
-    res.status(500).json({ error: 'Zakazlar yuklanmadi' });
+    res.status(500).json({ error: t('orders_load_failed', lang) });
   }
 };
