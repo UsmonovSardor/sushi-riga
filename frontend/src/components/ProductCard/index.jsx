@@ -3,6 +3,7 @@ import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { clImg, clSrcSet } from '../../utils/img';
 import { useTilt } from '../../utils/useTilt';
+import { useReveal } from '../../utils/reveal';
 import T from '../../i18n/translations';
 
 const getText = (value, lang, fallback = '') => {
@@ -19,6 +20,7 @@ export default function ProductCard({ item, delay = 0, reviewSummary }) {
   const [bump, setBump] = useState(false);
   const [ripples, setRipples] = useState([]);
   const cardRef = useTilt(9);
+  useReveal(cardRef); // scroll-triggered entrance (shares the card ref with tilt)
 
   const imageUrl = item.img || item.image || item.photo || item.url;
   const name = getText(item.name, lang, 'Product');
@@ -96,7 +98,7 @@ export default function ProductCard({ item, delay = 0, reviewSummary }) {
   };
 
   return (
-    <div className="card" style={{ animationDelay: delay + 'ms' }} ref={cardRef} onClick={handleAdd}>
+    <div className="card" ref={cardRef} onClick={handleAdd}>
       <span className="card-glare" aria-hidden="true" />
       <div className="card-img">
         {item.hit && <span className="badge badge-hit">{t.b_hit || 'ХИТ'}</span>}

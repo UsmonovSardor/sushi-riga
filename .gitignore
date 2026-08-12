@@ -10,3 +10,4 @@ build/
 backend/src/data/orders.json
 backend/src/data/users.json
 backend/src/data/reviews.json
+.gstack/
