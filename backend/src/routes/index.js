@@ -6,6 +6,7 @@ router.use('/auth',    require('./auth'));
 router.use('/admin',   require('./admin'));
 router.use('/payment', require('./payment'));
 router.use('/reviews', require('./reviews'));
+router.use('/promos',  require('./promos'));
 router.use('/tma',     require('./tma'));
 router.use('/bot',     require('./bot'));
 module.exports = router;

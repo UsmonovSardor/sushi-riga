@@ -83,6 +83,26 @@ async function initDB() {
         await client.query(`CREATE INDEX IF NOT EXISTS idx_reviews_menu ON reviews(menu_id);`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_reviews_created ON reviews(created_at DESC);`);
 
+    // Admin-managed promo banners shown on the storefront.
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS promos (
+        id TEXT PRIMARY KEY,
+        title JSONB NOT NULL DEFAULT '{}',
+        subtitle JSONB NOT NULL DEFAULT '{}',
+        cta JSONB NOT NULL DEFAULT '{}',
+        img TEXT DEFAULT '',
+        link TEXT DEFAULT '',
+        theme TEXT NOT NULL DEFAULT 'red',
+        active BOOLEAN NOT NULL DEFAULT true,
+        sort INTEGER NOT NULL DEFAULT 0,
+        starts_at TIMESTAMPTZ,
+        ends_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_promos_active ON promos(active, sort);`);
+
     // ---- Telegram Mini App migrations (idempotent) ----
     await client.query(`ALTER TABLE users_data ADD COLUMN IF NOT EXISTS telegram_id BIGINT;`);
     await client.query(`ALTER TABLE users_data ADD COLUMN IF NOT EXISTS lang TEXT DEFAULT 'ru';`);

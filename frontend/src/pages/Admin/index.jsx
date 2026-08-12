@@ -133,6 +133,20 @@ const Stars = ({ n, size = 16, onClick }) => (
   </span>
 );
 
+const emptyPromo = () => ({
+  title_lv: '', title_ru: '', title_en: '',
+  sub_lv: '', sub_ru: '', sub_en: '',
+  cta_lv: '', cta_ru: '', cta_en: '',
+  img: '', link: '', theme: 'red', active: true, sort: 0,
+});
+
+const PROMO_THEMES = [
+  ['red', '🔴 Qizil'],
+  ['dark', '⚫ Qora'],
+  ['gold', '🟡 Oltin'],
+];
+const PROMO_LINKS = ['hit', 'cold', 'hot', 'tempura', 'special', 'double', 'sets', 'food', 'salad', 'snacks', 'drinks'];
+
 const emptyForm = () => ({
   cat: 'cold',
   e: '🍣',
@@ -147,6 +161,26 @@ const emptyForm = () => ({
   img: '',
   hit: false,
 });
+
+function PromoPreview({ p, pl, small }) {
+  const theme = ['red', 'dark', 'gold'].includes(p.theme) ? p.theme : 'red';
+  const bg = theme === 'dark' ? 'linear-gradient(120deg,#1f2937,#0f172a)'
+    : theme === 'gold' ? 'linear-gradient(120deg,#f59e0b,#b45309)'
+      : 'linear-gradient(135deg,#ff3b41,#c0181d)';
+  const title = pl(p.title_lv, p.title_ru || p.title_lv, p.title_en || p.title_lv);
+  const sub = pl(p.sub_lv, p.sub_ru, p.sub_en);
+  const cta = pl(p.cta_lv, p.cta_ru || p.cta_lv, p.cta_en || p.cta_lv);
+  return (
+    <div style={{ display: 'flex', minHeight: small ? 76 : 94, borderRadius: 16, overflow: 'hidden', background: bg, color: '#fff', boxShadow: '0 4px 16px rgba(0,0,0,.12)' }}>
+      {p.img && <div style={{ width: '34%', maxWidth: 210, backgroundImage: `url(${p.img})`, backgroundSize: 'cover', backgroundPosition: 'center', flexShrink: 0 }} />}
+      <div style={{ flex: 1, minWidth: 0, padding: '12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+        <div style={{ fontWeight: 900, fontSize: small ? '.95rem' : '1.18rem', lineHeight: 1.1 }}>{title || 'Sarlavha…'}</div>
+        {sub && <div style={{ fontSize: '.8rem', opacity: .9 }}>{sub}</div>}
+        {cta && <span style={{ marginTop: 6, alignSelf: 'flex-start', background: '#fff', color: '#0f172a', fontWeight: 800, fontSize: '.76rem', padding: '6px 13px', borderRadius: 9 }}>{cta} →</span>}
+      </div>
+    </div>
+  );
+}
 
 function CustomerDetail({ c, orders, topItems, onClose, fmt, fmtT, digits }) {
   const seg = SEGMENT[segmentOf(c)];
@@ -244,6 +278,11 @@ export default function Admin() {
   const [menu, setMenu] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [promos, setPromos] = useState([]);
+  const [promoForm, setPromoForm] = useState(emptyPromo());
+  const [promoEditId, setPromoEditId] = useState(null);
+  const [promoImgLoad, setPromoImgLoad] = useState(false);
+  const promoFileRef = useRef(null);
   const [msg, setMsg] = useState('');
   const [search, setSrch] = useState('');
   const [catF, setCatF] = useState('all');
@@ -291,7 +330,7 @@ export default function Admin() {
 
       const noCache = { ...hdrs, 'Cache-Control': 'no-cache' };
 
-      const [s, o, m, rv, cu] = await Promise.all([
+      const [s, o, m, rv, cu, pr] = await Promise.all([
         fetch(`${API}/api/admin/stats?t=${Date.now()}`, {
           headers: noCache,
           cache: 'no-store',
@@ -320,6 +359,11 @@ export default function Admin() {
           headers: noCache,
           cache: 'no-store',
         }).then(r => r.json()).catch(() => []),
+
+        fetch(`${API}/api/admin/promos?t=${Date.now()}`, {
+          headers: noCache,
+          cache: 'no-store',
+        }).then(r => r.json()).catch(() => []),
       ]);
 
       setStats(s);
@@ -327,6 +371,7 @@ export default function Admin() {
       setMenu(Array.isArray(m) ? m : []);
       setReviews(Array.isArray(rv) ? rv : []);
       setCustomers(Array.isArray(cu) ? cu : []);
+      setPromos(Array.isArray(pr) ? pr : []);
       setLastUpdated(new Date());
 
       if (manual) {
@@ -712,6 +757,73 @@ export default function Admin() {
     flash("🗑 Izoh o'chirildi");
   }
 
+  // ── Promo banners ──
+  async function handlePromoFile(file) {
+    if (!file) return;
+    setPromoImgLoad(true);
+    const reader = new FileReader();
+    reader.onload = async ev => {
+      try {
+        const r = await fetch(`${API}/api/admin/upload-image`, {
+          method: 'POST', headers: hdrs,
+          body: JSON.stringify({ base64: ev.target.result, ext: file.name.split('.').pop() }),
+        });
+        const d = await r.json();
+        if (d.url) { setPromoForm(f => ({ ...f, img: d.url })); flash('✅ Rasm yuklandi'); }
+        else flash('❌ ' + (d.error || 'Xato'));
+      } catch { flash('❌ Upload xato'); }
+      finally { setPromoImgLoad(false); }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function editPromo(p) {
+    setPromoEditId(p.id);
+    setPromoForm({
+      title_lv: p.title?.lv || '', title_ru: p.title?.ru || '', title_en: p.title?.en || '',
+      sub_lv: p.subtitle?.lv || '', sub_ru: p.subtitle?.ru || '', sub_en: p.subtitle?.en || '',
+      cta_lv: p.cta?.lv || '', cta_ru: p.cta?.ru || '', cta_en: p.cta?.en || '',
+      img: p.img || '', link: p.link || '', theme: p.theme || 'red', active: p.active !== false, sort: p.sort || 0,
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function savePromo(e) {
+    e.preventDefault();
+    const pf = promoForm;
+    if (!pf.title_lv && !pf.title_ru && !pf.title_en) { flash('❌ Sarlavha kerak'); return; }
+    const body = {
+      title: { lv: pf.title_lv, ru: pf.title_ru || pf.title_lv, en: pf.title_en || pf.title_lv },
+      subtitle: { lv: pf.sub_lv, ru: pf.sub_ru, en: pf.sub_en },
+      cta: { lv: pf.cta_lv, ru: pf.cta_ru || pf.cta_lv, en: pf.cta_en || pf.cta_lv },
+      img: pf.img, link: pf.link, theme: pf.theme, active: pf.active, sort: Number(pf.sort) || 0,
+    };
+    try {
+      const url = promoEditId ? `${API}/api/admin/promos/${promoEditId}` : `${API}/api/admin/promos`;
+      const r = await fetch(url, { method: promoEditId ? 'PUT' : 'POST', headers: hdrs, body: JSON.stringify(body) });
+      if (!r.ok) throw new Error('Xato');
+      flash(promoEditId ? '✅ Yangilandi' : "✅ Qo'shildi");
+      setPromoForm(emptyPromo()); setPromoEditId(null);
+      await load();
+    } catch (ex) { flash('❌ ' + ex.message); }
+  }
+
+  async function togglePromoActive(p) {
+    await fetch(`${API}/api/admin/promos/${p.id}`, { method: 'PUT', headers: hdrs, body: JSON.stringify({ active: !p.active }) });
+    setPromos(list => list.map(x => x.id === p.id ? { ...x, active: !x.active } : x));
+    setTimeout(() => load(), 300);
+  }
+
+  async function delPromo(id) {
+    if (!window.confirm(tr('confirmDelete'))) return;
+    await fetch(`${API}/api/admin/promos/${id}`, { method: 'DELETE', headers: hdrs });
+    setPromos(list => list.filter(x => x.id !== id));
+    if (promoEditId === id) { setPromoForm(emptyPromo()); setPromoEditId(null); }
+    flash("🗑 O'chirildi");
+  }
+
+  const pl = (lv, ru, en) => (lang === 'lv' ? lv : lang === 'ru' ? ru : en);
+
   const newCount = orders.filter(o => o.status === 'new').length;
 
   if (!token) return (
@@ -803,6 +915,7 @@ export default function Admin() {
           ['orders', `📦 Buyurtmalar${newCount > 0 ? ` (${newCount} 🔴)` : ''}`],
           ['customers', `👥 Mijozlar (${customers.length})`],
           ['menu', `🍣 Menyu (${menu.length})`],
+          ['promos', `🎁 Promo (${promos.length})`],
           ['reviews', `⭐ Baholar (${reviews.length})`],
           ['add', editItem ? '✏️ Tahrirlash' : "➕ Qo'shish"],
         ].map(([k, label]) => (
@@ -1177,6 +1290,106 @@ export default function Admin() {
                     <button onClick={() => toggleHit(item.id)} style={{ ...S.btn(item.hit ? '#fef3c7' : '#f1f5f9', item.hit ? '#92400e' : '#475569', '0 10px'), height: 32, fontSize: '.85rem' }}>{item.hit ? '⭐' : '☆'}</button>
                     <button onClick={() => startEdit(item)} style={{ ...S.btn('#eff6ff', '#2563eb'), flex: 1, height: 32, fontSize: '.78rem', justifyContent: 'center' }}>✏️ Tahrir</button>
                     <button onClick={() => delItem(item.id)} style={{ ...S.btn('#fff5f5', '#e31e24', '0 10px'), height: 32, fontSize: '.85rem' }}>🗑</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tab === 'promos' && (
+          <div style={{ maxWidth: 980, margin: '0 auto' }}>
+            <div style={{ ...S.card, padding: 24, marginBottom: 22 }}>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 900, margin: '0 0 18px', color: '#0f172a' }}>
+                {promoEditId ? '✏️ Promo tahrirlash' : '➕ Yangi promo banner'}
+              </h2>
+
+              <form onSubmit={savePromo}>
+                <label style={S.lbl}>Sarlavha *</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 14 }}>
+                  {[['title_lv', '🇱🇻'], ['title_ru', '🇷🇺'], ['title_en', '🇬🇧']].map(([k, f]) => (
+                    <input key={k} style={S.inp} placeholder={`${f} Sarlavha`} value={promoForm[k]} onChange={e => setPromoForm(p => ({ ...p, [k]: e.target.value }))} />
+                  ))}
+                </div>
+
+                <label style={S.lbl}>Matn (ixtiyoriy)</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 14 }}>
+                  {[['sub_lv', '🇱🇻'], ['sub_ru', '🇷🇺'], ['sub_en', '🇬🇧']].map(([k, f]) => (
+                    <input key={k} style={S.inp} placeholder={`${f} Matn`} value={promoForm[k]} onChange={e => setPromoForm(p => ({ ...p, [k]: e.target.value }))} />
+                  ))}
+                </div>
+
+                <label style={S.lbl}>Tugma matni (ixtiyoriy)</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 14 }}>
+                  {[['cta_lv', '🇱🇻'], ['cta_ru', '🇷🇺'], ['cta_en', '🇬🇧']].map(([k, f]) => (
+                    <input key={k} style={S.inp} placeholder={`${f} masalan: Buyurtma`} value={promoForm[k]} onChange={e => setPromoForm(p => ({ ...p, [k]: e.target.value }))} />
+                  ))}
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 14 }}>
+                  <div>
+                    <label style={S.lbl}>Mavzu</label>
+                    <select style={{ ...S.inp, cursor: 'pointer' }} value={promoForm.theme} onChange={e => setPromoForm(p => ({ ...p, theme: e.target.value }))}>
+                      {PROMO_THEMES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={S.lbl}>Tartib</label>
+                    <input type="number" style={S.inp} value={promoForm.sort} onChange={e => setPromoForm(p => ({ ...p, sort: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label style={S.lbl}>Holat</label>
+                    <select style={{ ...S.inp, cursor: 'pointer' }} value={promoForm.active ? 'yes' : 'no'} onChange={e => setPromoForm(p => ({ ...p, active: e.target.value === 'yes' }))}>
+                      <option value="yes">✅ Faol</option>
+                      <option value="no">⏸ O'chiq</option>
+                    </select>
+                  </div>
+                </div>
+
+                <label style={S.lbl}>Havola (bosilganda qayerga)</label>
+                <input style={S.inp} placeholder="Bo'lim id (sets, hit...) yoki https://..." value={promoForm.link} onChange={e => setPromoForm(p => ({ ...p, link: e.target.value }))} />
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '8px 0 16px' }}>
+                  {PROMO_LINKS.map(s => (
+                    <button key={s} type="button" onClick={() => setPromoForm(p => ({ ...p, link: s }))} style={{ padding: '5px 11px', borderRadius: 999, border: '1px solid ' + (promoForm.link === s ? '#e31e24' : '#e2e8f0'), background: promoForm.link === s ? '#fff5f5' : '#fff', color: promoForm.link === s ? '#e31e24' : '#64748b', fontSize: '.72rem', fontWeight: 700, cursor: 'pointer' }}>{s}</button>
+                  ))}
+                </div>
+
+                <label style={S.lbl}>Rasm</label>
+                <input style={{ ...S.inp, marginBottom: 8 }} type="url" placeholder="https://... yoki pastdan yuklang" value={promoForm.img} onChange={e => setPromoForm(p => ({ ...p, img: e.target.value }))} />
+                <div onClick={() => promoFileRef.current?.click()} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); handlePromoFile(e.dataTransfer.files[0]); }} style={{ border: '2px dashed #e2e8f0', borderRadius: 12, padding: '18px', textAlign: 'center', background: '#f8fafc', cursor: 'pointer', marginBottom: 16 }}>
+                  <input ref={promoFileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handlePromoFile(e.target.files[0])} />
+                  {promoImgLoad ? <span style={{ color: '#64748b' }}>⏳ Yuklanmoqda...</span> : <span style={{ color: '#64748b', fontSize: '.84rem' }}>📸 Rasm tanlang yoki shu yerga tashlang (JPG/PNG/WEBP)</span>}
+                </div>
+
+                <label style={S.lbl}>Ko'rinishi</label>
+                <div style={{ marginBottom: 18 }}>
+                  <PromoPreview p={promoForm} pl={pl} />
+                </div>
+
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <button type="submit" style={{ ...S.btn('#e31e24'), height: 46, flex: 1, justifyContent: 'center', fontSize: '.92rem' }}>{promoEditId ? '💾 Saqlash' : "➕ Qo'shish"}</button>
+                  {promoEditId && <button type="button" onClick={() => { setPromoForm(emptyPromo()); setPromoEditId(null); }} style={{ ...S.btn('#f1f5f9', '#475569'), height: 46, padding: '0 22px' }}>Bekor</button>}
+                </div>
+              </form>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {promos.length === 0 && <div style={{ ...S.card, padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Hali promo yo'q — birinchisini qo'shing 👆</div>}
+              {promos.map(p => (
+                <div key={p.id} style={{ ...S.card, padding: 14, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', opacity: p.active ? 1 : .55 }}>
+                  <div style={{ flex: '1 1 320px', minWidth: 240 }}>
+                    <PromoPreview
+                      p={{ title_lv: p.title?.lv, title_ru: p.title?.ru, title_en: p.title?.en, sub_lv: p.subtitle?.lv, sub_ru: p.subtitle?.ru, sub_en: p.subtitle?.en, cta_lv: p.cta?.lv, cta_ru: p.cta?.ru, cta_en: p.cta?.en, img: p.img, theme: p.theme }}
+                      pl={pl}
+                      small
+                    />
+                    {p.link && <div style={{ fontSize: '.7rem', color: '#94a3b8', marginTop: 6 }}>🔗 {p.link}</div>}
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, marginLeft: 'auto', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <span style={{ fontSize: '.7rem', fontWeight: 800, padding: '3px 10px', borderRadius: 20, background: p.active ? '#dcfce7' : '#f1f5f9', color: p.active ? '#15803d' : '#64748b' }}>{p.active ? '✅ Faol' : "⏸ O'chiq"}</span>
+                    <button onClick={() => togglePromoActive(p)} style={{ ...S.btn('#f1f5f9', '#475569', '0 12px'), height: 34, fontSize: '.82rem' }}>{p.active ? '⏸' : '▶️'}</button>
+                    <button onClick={() => editPromo(p)} style={{ ...S.btn('#eff6ff', '#2563eb', '0 12px'), height: 34, fontSize: '.82rem' }}>✏️</button>
+                    <button onClick={() => delPromo(p.id)} style={{ ...S.btn('#fff5f5', '#e31e24', '0 12px'), height: 34, fontSize: '.82rem' }}>🗑</button>
                   </div>
                 </div>
               ))}

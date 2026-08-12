@@ -41,6 +41,10 @@ export const ordersApi = {
   }),
 };
 
+export const promosApi = {
+  getActive: () => req(`${BASE}/promos`),
+};
+
 export const reviewsApi = {
   getSummary: () => req(`${BASE}/reviews/summary`),
   getMyPending: () => req(`${BASE}/reviews/my-pending`, { headers: authHeaders() }),

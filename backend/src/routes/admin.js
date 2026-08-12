@@ -1,6 +1,7 @@
 'use strict';
 const router = require('express').Router();
 const ctrl   = require('../controllers/adminController');
+const promo  = require('../controllers/promoController');
 router.post('/login',         ctrl.adminLogin);
 router.get('/stats',          ctrl.getStats);
 router.get('/customers',      ctrl.getCustomers);
@@ -14,4 +15,8 @@ router.patch('/orders/:id',   ctrl.updateOrder);
 router.delete('/orders/:id',  ctrl.deleteOrder);
 router.delete('/orders',      ctrl.deleteOrders);
 router.post('/upload-image',  ctrl.uploadImage);
+router.get('/promos',         promo.getAll);
+router.post('/promos',        promo.create);
+router.put('/promos/:id',     promo.update);
+router.delete('/promos/:id',  promo.remove);
 module.exports = router;
