@@ -8,7 +8,6 @@ import Header        from './components/Header';
 import PromoBar      from './components/PromoBar';
 import CategoryNav   from './components/CategoryNav';
 import HeroSlider    from './components/HeroSlider';
-import PromoBanner   from './components/PromoBanner';
 import MenuSection   from './components/MenuSection';
 import Cart          from './components/Cart';
 import CartBar       from './components/CartBar';
@@ -149,7 +148,6 @@ function MainApp() {
 
       <main className="main">
         <HeroSlider onOrderNow={openCart} />
-        <PromoBanner onOrderNow={openCart} />
         {menuError ? (
           <MenuError onRetry={reloadMenu} lang={lang} />
         ) : (

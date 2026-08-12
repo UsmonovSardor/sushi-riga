@@ -25,8 +25,10 @@ function rowToPromo(row) {
     id: row.id,
     title: row.title || {},
     subtitle: row.subtitle || {},
+    badge: row.badge || {},
     cta: row.cta || {},
     img: row.img || '',
+    video: row.video || '',
     link: row.link || '',
     theme: row.theme || 'red',
     active: row.active !== false,
@@ -69,14 +71,14 @@ exports.getAll = [authAdmin, async (_req, res) => {
 
 exports.create = [authAdmin, async (req, res) => {
   try {
-    const { title, subtitle, cta, img, link, theme, active, sort, startsAt, endsAt } = req.body;
+    const { title, subtitle, badge, cta, img, video, link, theme, active, sort, startsAt, endsAt } = req.body;
     const id = String(Date.now());
     const r = await query(
-      `INSERT INTO promos (id, title, subtitle, cta, img, link, theme, active, sort, starts_at, ends_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
+      `INSERT INTO promos (id, title, subtitle, badge, cta, img, video, link, theme, active, sort, starts_at, ends_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
       [
-        id, asJson(title), asJson(subtitle), asJson(cta),
-        img || '', link || '', theme || 'red',
+        id, asJson(title), asJson(subtitle), asJson(badge), asJson(cta),
+        img || '', video || '', link || '', theme || 'red',
         active !== false, Number(sort) || 0,
         startsAt || null, endsAt || null,
       ]
@@ -98,14 +100,16 @@ exports.update = [authAdmin, async (req, res) => {
 
     const r = await query(
       `UPDATE promos SET
-         title=$1, subtitle=$2, cta=$3, img=$4, link=$5, theme=$6,
-         active=$7, sort=$8, starts_at=$9, ends_at=$10, updated_at=NOW()
-       WHERE id=$11 RETURNING *`,
+         title=$1, subtitle=$2, badge=$3, cta=$4, img=$5, video=$6, link=$7, theme=$8,
+         active=$9, sort=$10, starts_at=$11, ends_at=$12, updated_at=NOW()
+       WHERE id=$13 RETURNING *`,
       [
         b.title !== undefined ? asJson(b.title) : c.title,
         b.subtitle !== undefined ? asJson(b.subtitle) : c.subtitle,
+        b.badge !== undefined ? asJson(b.badge) : c.badge,
         b.cta !== undefined ? asJson(b.cta) : c.cta,
         b.img !== undefined ? b.img : c.img,
+        b.video !== undefined ? b.video : c.video,
         b.link !== undefined ? b.link : c.link,
         b.theme !== undefined ? b.theme : c.theme,
         b.active !== undefined ? (b.active !== false) : c.active,

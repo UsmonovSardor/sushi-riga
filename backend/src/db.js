@@ -102,6 +102,53 @@ async function initDB() {
       );
     `);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_promos_active ON promos(active, sort);`);
+    // Hero-slide fields: a background video (in addition to img) and a badge pill.
+    await client.query(`ALTER TABLE promos ADD COLUMN IF NOT EXISTS video TEXT DEFAULT '';`);
+    await client.query(`ALTER TABLE promos ADD COLUMN IF NOT EXISTS badge JSONB NOT NULL DEFAULT '{}';`);
+
+    // Seed the current 3 hero slides once, so the admin has real content to
+    // manage from day one (instead of the previously hardcoded slider).
+    const pcount = await client.query('SELECT COUNT(*)::int AS n FROM promos');
+    if (pcount.rows[0].n === 0) {
+      const seed = [
+        {
+          id: 'seed1', sort: 0, video: '/hero/cherry-sushi-1.mp4',
+          img: 'https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=1200&h=630&fit=crop&auto=format&q=75',
+          link: 'cold',
+          badge: { lv: '🍣 Populārākais', ru: '🍣 Популярное', en: '🍣 Popular' },
+          title: { lv: 'Svaigi rolli\nkatru dienu', ru: 'Свежие роллы\nкаждый день', en: 'Fresh rolls\nevery day' },
+          subtitle: { lv: 'Gatavoti no svaigiem produktiem', ru: 'Готовим из свежих продуктов', en: 'Made from fresh ingredients' },
+          cta: { lv: 'Pasūtīt', ru: 'Заказать', en: 'Order Now' },
+        },
+        {
+          id: 'seed2', sort: 1, video: '/hero/cherry-sushi-2.mp4',
+          img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=1200&h=630&fit=crop&auto=format&q=75',
+          link: 'double',
+          badge: { lv: '🎯 Jaunums', ru: '🎯 Новинка', en: '🎯 New' },
+          title: { lv: 'Dubultie sēti\nlielāka garša', ru: 'Дабл сеты\nбольше вкуса', en: 'Double sets\nmore flavor' },
+          subtitle: { lv: 'Labākā izvēle kompānijai', ru: 'Лучший выбор для компании', en: 'Best choice for the company' },
+          cta: { lv: 'Pasūtīt', ru: 'Заказать', en: 'Order Now' },
+        },
+        {
+          id: 'seed3', sort: 2, video: '/hero/cherry-sushi-3.mp4',
+          img: 'https://images.unsplash.com/photo-1559410545-0bdcd187e0a6?w=1200&h=630&fit=crop&auto=format&q=75',
+          link: 'sets',
+          badge: { lv: '🔥 Akcija', ru: '🔥 Акция', en: '🔥 Sale' },
+          title: { lv: 'Sēti ar atlaidi\nlīdz 30%', ru: 'Сеты со скидкой\nдо 30%', en: 'Sets on sale\nup to 30%' },
+          subtitle: { lv: 'Pieredzējušu šefpavāru receptes', ru: 'Рецепты опытных поваров', en: 'Expert chef recipes' },
+          cta: { lv: 'Pasūtīt', ru: 'Заказать', en: 'Order Now' },
+        },
+      ];
+      for (const s of seed) {
+        await client.query(
+          `INSERT INTO promos (id, title, subtitle, badge, cta, img, video, link, theme, active, sort)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'dark',true,$9)`,
+          [s.id, JSON.stringify(s.title), JSON.stringify(s.subtitle), JSON.stringify(s.badge),
+           JSON.stringify(s.cta), s.img, s.video, s.link, s.sort]
+        );
+      }
+      console.log('✅ Seeded 3 hero slides');
+    }
 
     // ---- Telegram Mini App migrations (idempotent) ----
     await client.query(`ALTER TABLE users_data ADD COLUMN IF NOT EXISTS telegram_id BIGINT;`);

@@ -42,7 +42,7 @@ app.use(compression()); // gzip/brotli JSON + static responses
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({ origin: (o, cb) => cb(null, isAllowed(o)), credentials: true, optionsSuccessStatus: 200 }));
 app.use(rateLimit({ windowMs: 15*60*1000, max: 500, standardHeaders: true, legacyHeaders: false }));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '25mb' })); // headroom for base64 hero video uploads
 app.use(morgan(config.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // Serve uploaded images

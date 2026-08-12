@@ -134,17 +134,13 @@ const Stars = ({ n, size = 16, onClick }) => (
 );
 
 const emptyPromo = () => ({
+  badge_lv: '', badge_ru: '', badge_en: '',
   title_lv: '', title_ru: '', title_en: '',
   sub_lv: '', sub_ru: '', sub_en: '',
   cta_lv: '', cta_ru: '', cta_en: '',
-  img: '', link: '', theme: 'red', active: true, sort: 0,
+  img: '', video: '', link: '', theme: 'dark', active: true, sort: 0,
 });
 
-const PROMO_THEMES = [
-  ['red', '🔴 Qizil'],
-  ['dark', '⚫ Qora'],
-  ['gold', '🟡 Oltin'],
-];
 const PROMO_LINKS = ['hit', 'cold', 'hot', 'tempura', 'special', 'double', 'sets', 'food', 'salad', 'snacks', 'drinks'];
 
 const emptyForm = () => ({
@@ -163,20 +159,21 @@ const emptyForm = () => ({
 });
 
 function PromoPreview({ p, pl, small }) {
-  const theme = ['red', 'dark', 'gold'].includes(p.theme) ? p.theme : 'red';
-  const bg = theme === 'dark' ? 'linear-gradient(120deg,#1f2937,#0f172a)'
-    : theme === 'gold' ? 'linear-gradient(120deg,#f59e0b,#b45309)'
-      : 'linear-gradient(135deg,#ff3b41,#c0181d)';
   const title = pl(p.title_lv, p.title_ru || p.title_lv, p.title_en || p.title_lv);
   const sub = pl(p.sub_lv, p.sub_ru, p.sub_en);
   const cta = pl(p.cta_lv, p.cta_ru || p.cta_lv, p.cta_en || p.cta_lv);
+  const badge = pl(p.badge_lv, p.badge_ru || p.badge_lv, p.badge_en || p.badge_lv);
   return (
-    <div style={{ display: 'flex', minHeight: small ? 76 : 94, borderRadius: 16, overflow: 'hidden', background: bg, color: '#fff', boxShadow: '0 4px 16px rgba(0,0,0,.12)' }}>
-      {p.img && <div style={{ width: '34%', maxWidth: 210, backgroundImage: `url(${p.img})`, backgroundSize: 'cover', backgroundPosition: 'center', flexShrink: 0 }} />}
-      <div style={{ flex: 1, minWidth: 0, padding: '12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
-        <div style={{ fontWeight: 900, fontSize: small ? '.95rem' : '1.18rem', lineHeight: 1.1 }}>{title || 'Sarlavha…'}</div>
-        {sub && <div style={{ fontSize: '.8rem', opacity: .9 }}>{sub}</div>}
-        {cta && <span style={{ marginTop: 6, alignSelf: 'flex-start', background: '#fff', color: '#0f172a', fontWeight: 800, fontSize: '.76rem', padding: '6px 13px', borderRadius: 9 }}>{cta} →</span>}
+    <div style={{ position: 'relative', height: small ? 128 : 190, borderRadius: 18, overflow: 'hidden', background: '#1a1416', color: '#fff', boxShadow: '0 6px 20px rgba(0,0,0,.18)' }}>
+      {p.video
+        ? <video src={p.video} muted loop autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        : p.img ? <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${p.img})`, backgroundSize: 'cover', backgroundPosition: 'center' }} /> : null}
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(100deg,rgba(14,10,12,.82),rgba(14,10,12,.42) 42%,transparent 72%)' }} />
+      <div style={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: small ? '14px 18px' : '20px 26px', maxWidth: '72%' }}>
+        {badge && <span style={{ alignSelf: 'flex-start', background: 'rgba(255,255,255,.18)', backdropFilter: 'blur(4px)', fontSize: '.6rem', fontWeight: 800, padding: '4px 10px', borderRadius: 20, marginBottom: 8 }}>{badge}</span>}
+        <div style={{ fontWeight: 900, fontSize: small ? '1.15rem' : '1.6rem', lineHeight: 1.08, letterSpacing: '-.5px', whiteSpace: 'pre-line' }}>{title || 'Sarlavha…'}</div>
+        {sub && <div style={{ fontSize: small ? '.78rem' : '.9rem', opacity: .9, marginTop: 4 }}>{sub}</div>}
+        {cta && <span style={{ marginTop: 12, alignSelf: 'flex-start', background: '#fff', color: '#0f172a', fontWeight: 800, fontSize: '.78rem', padding: '8px 16px', borderRadius: 11 }}>{cta} →</span>}
       </div>
     </div>
   );
@@ -757,21 +754,25 @@ export default function Admin() {
     flash("🗑 Izoh o'chirildi");
   }
 
-  // ── Promo banners ──
-  async function handlePromoFile(file) {
+  // ── Hero slides / banners ──
+  async function handlePromoMedia(file) {
     if (!file) return;
+    const isVideo = (file.type || '').startsWith('video');
+    if (isVideo && file.size > 24 * 1024 * 1024) { flash('❌ Video juda katta (max ~24MB)'); return; }
     setPromoImgLoad(true);
     const reader = new FileReader();
     reader.onload = async ev => {
       try {
         const r = await fetch(`${API}/api/admin/upload-image`, {
           method: 'POST', headers: hdrs,
-          body: JSON.stringify({ base64: ev.target.result, ext: file.name.split('.').pop() }),
+          body: JSON.stringify({ base64: ev.target.result, ext: file.name.split('.').pop(), resourceType: isVideo ? 'video' : 'image' }),
         });
         const d = await r.json();
-        if (d.url) { setPromoForm(f => ({ ...f, img: d.url })); flash('✅ Rasm yuklandi'); }
-        else flash('❌ ' + (d.error || 'Xato'));
-      } catch { flash('❌ Upload xato'); }
+        if (d.url) {
+          setPromoForm(f => (isVideo ? { ...f, video: d.url } : { ...f, img: d.url }));
+          flash(isVideo ? '✅ Video yuklandi' : '✅ Rasm yuklandi');
+        } else flash('❌ ' + (d.error || 'Xato'));
+      } catch { flash('❌ Yuklashda xato'); }
       finally { setPromoImgLoad(false); }
     };
     reader.readAsDataURL(file);
@@ -780,10 +781,11 @@ export default function Admin() {
   function editPromo(p) {
     setPromoEditId(p.id);
     setPromoForm({
+      badge_lv: p.badge?.lv || '', badge_ru: p.badge?.ru || '', badge_en: p.badge?.en || '',
       title_lv: p.title?.lv || '', title_ru: p.title?.ru || '', title_en: p.title?.en || '',
       sub_lv: p.subtitle?.lv || '', sub_ru: p.subtitle?.ru || '', sub_en: p.subtitle?.en || '',
       cta_lv: p.cta?.lv || '', cta_ru: p.cta?.ru || '', cta_en: p.cta?.en || '',
-      img: p.img || '', link: p.link || '', theme: p.theme || 'red', active: p.active !== false, sort: p.sort || 0,
+      img: p.img || '', video: p.video || '', link: p.link || '', theme: p.theme || 'dark', active: p.active !== false, sort: p.sort || 0,
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -793,10 +795,11 @@ export default function Admin() {
     const pf = promoForm;
     if (!pf.title_lv && !pf.title_ru && !pf.title_en) { flash('❌ Sarlavha kerak'); return; }
     const body = {
+      badge: { lv: pf.badge_lv, ru: pf.badge_ru || pf.badge_lv, en: pf.badge_en || pf.badge_lv },
       title: { lv: pf.title_lv, ru: pf.title_ru || pf.title_lv, en: pf.title_en || pf.title_lv },
       subtitle: { lv: pf.sub_lv, ru: pf.sub_ru, en: pf.sub_en },
       cta: { lv: pf.cta_lv, ru: pf.cta_ru || pf.cta_lv, en: pf.cta_en || pf.cta_lv },
-      img: pf.img, link: pf.link, theme: pf.theme, active: pf.active, sort: Number(pf.sort) || 0,
+      img: pf.img, video: pf.video, link: pf.link, theme: pf.theme, active: pf.active, sort: Number(pf.sort) || 0,
     };
     try {
       const url = promoEditId ? `${API}/api/admin/promos/${promoEditId}` : `${API}/api/admin/promos`;
@@ -915,7 +918,7 @@ export default function Admin() {
           ['orders', `📦 Buyurtmalar${newCount > 0 ? ` (${newCount} 🔴)` : ''}`],
           ['customers', `👥 Mijozlar (${customers.length})`],
           ['menu', `🍣 Menyu (${menu.length})`],
-          ['promos', `🎁 Promo (${promos.length})`],
+          ['promos', `🎞 Banner (${promos.length})`],
           ['reviews', `⭐ Baholar (${reviews.length})`],
           ['add', editItem ? '✏️ Tahrirlash' : "➕ Qo'shish"],
         ].map(([k, label]) => (
@@ -1301,14 +1304,21 @@ export default function Admin() {
           <div style={{ maxWidth: 980, margin: '0 auto' }}>
             <div style={{ ...S.card, padding: 24, marginBottom: 22 }}>
               <h2 style={{ fontSize: '1.05rem', fontWeight: 900, margin: '0 0 18px', color: '#0f172a' }}>
-                {promoEditId ? '✏️ Promo tahrirlash' : '➕ Yangi promo banner'}
+                {promoEditId ? '✏️ Banner tahrirlash' : '➕ Yangi banner (hero slayd)'}
               </h2>
 
               <form onSubmit={savePromo}>
-                <label style={S.lbl}>Sarlavha *</label>
+                <label style={S.lbl}>Yorliq (badge — kichik yozuv)</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 14 }}>
+                  {[['badge_lv', '🇱🇻'], ['badge_ru', '🇷🇺'], ['badge_en', '🇬🇧']].map(([k, f]) => (
+                    <input key={k} style={S.inp} placeholder={`${f} 🔥 Aksiya`} value={promoForm[k]} onChange={e => setPromoForm(p => ({ ...p, [k]: e.target.value }))} />
+                  ))}
+                </div>
+
+                <label style={S.lbl}>Sarlavha * (Enter bosib 2-qatorga o'ting)</label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 14 }}>
                   {[['title_lv', '🇱🇻'], ['title_ru', '🇷🇺'], ['title_en', '🇬🇧']].map(([k, f]) => (
-                    <input key={k} style={S.inp} placeholder={`${f} Sarlavha`} value={promoForm[k]} onChange={e => setPromoForm(p => ({ ...p, [k]: e.target.value }))} />
+                    <textarea key={k} rows={2} style={{ ...S.inp, height: 'auto', minHeight: 60, padding: '10px 14px', resize: 'vertical', lineHeight: 1.3 }} placeholder={`${f} Sarlavha`} value={promoForm[k]} onChange={e => setPromoForm(p => ({ ...p, [k]: e.target.value }))} />
                   ))}
                 </div>
 
@@ -1326,21 +1336,15 @@ export default function Admin() {
                   ))}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
                   <div>
-                    <label style={S.lbl}>Mavzu</label>
-                    <select style={{ ...S.inp, cursor: 'pointer' }} value={promoForm.theme} onChange={e => setPromoForm(p => ({ ...p, theme: e.target.value }))}>
-                      {PROMO_THEMES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label style={S.lbl}>Tartib</label>
+                    <label style={S.lbl}>Tartib (kichik = oldinda)</label>
                     <input type="number" style={S.inp} value={promoForm.sort} onChange={e => setPromoForm(p => ({ ...p, sort: e.target.value }))} />
                   </div>
                   <div>
                     <label style={S.lbl}>Holat</label>
                     <select style={{ ...S.inp, cursor: 'pointer' }} value={promoForm.active ? 'yes' : 'no'} onChange={e => setPromoForm(p => ({ ...p, active: e.target.value === 'yes' }))}>
-                      <option value="yes">✅ Faol</option>
+                      <option value="yes">✅ Faol (saytda ko'rinadi)</option>
                       <option value="no">⏸ O'chiq</option>
                     </select>
                   </div>
@@ -1354,12 +1358,28 @@ export default function Admin() {
                   ))}
                 </div>
 
-                <label style={S.lbl}>Rasm</label>
-                <input style={{ ...S.inp, marginBottom: 8 }} type="url" placeholder="https://... yoki pastdan yuklang" value={promoForm.img} onChange={e => setPromoForm(p => ({ ...p, img: e.target.value }))} />
-                <div onClick={() => promoFileRef.current?.click()} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); handlePromoFile(e.dataTransfer.files[0]); }} style={{ border: '2px dashed #e2e8f0', borderRadius: 12, padding: '18px', textAlign: 'center', background: '#f8fafc', cursor: 'pointer', marginBottom: 16 }}>
-                  <input ref={promoFileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handlePromoFile(e.target.files[0])} />
-                  {promoImgLoad ? <span style={{ color: '#64748b' }}>⏳ Yuklanmoqda...</span> : <span style={{ color: '#64748b', fontSize: '.84rem' }}>📸 Rasm tanlang yoki shu yerga tashlang (JPG/PNG/WEBP)</span>}
+                <label style={S.lbl}>Media — rasm yoki video</label>
+                <div onClick={() => promoFileRef.current?.click()} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); handlePromoMedia(e.dataTransfer.files[0]); }} style={{ border: '2px dashed #e2e8f0', borderRadius: 12, padding: '20px', textAlign: 'center', background: '#f8fafc', cursor: 'pointer', marginBottom: 10 }}>
+                  <input ref={promoFileRef} type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={e => handlePromoMedia(e.target.files[0])} />
+                  {promoImgLoad ? <span style={{ color: '#64748b' }}>⏳ Yuklanmoqda...</span> : <span style={{ color: '#64748b', fontSize: '.84rem' }}>🎬 Video yoki 📸 rasm tanlang / shu yerga tashlang</span>}
                 </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 8 }}>
+                  <div>
+                    <label style={S.lbl}>🎬 Video URL</label>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <input style={{ ...S.inp, flex: 1, minWidth: 0 }} type="url" placeholder="https://...mp4" value={promoForm.video} onChange={e => setPromoForm(p => ({ ...p, video: e.target.value }))} />
+                      {promoForm.video && <button type="button" onClick={() => setPromoForm(p => ({ ...p, video: '' }))} style={{ ...S.btn('#fff5f5', '#e31e24', '0 10px'), height: 42 }}>✕</button>}
+                    </div>
+                  </div>
+                  <div>
+                    <label style={S.lbl}>📸 Rasm URL (poster)</label>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <input style={{ ...S.inp, flex: 1, minWidth: 0 }} type="url" placeholder="https://...jpg" value={promoForm.img} onChange={e => setPromoForm(p => ({ ...p, img: e.target.value }))} />
+                      {promoForm.img && <button type="button" onClick={() => setPromoForm(p => ({ ...p, img: '' }))} style={{ ...S.btn('#fff5f5', '#e31e24', '0 10px'), height: 42 }}>✕</button>}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ fontSize: '.72rem', color: '#94a3b8', marginBottom: 16 }}>💡 Video bo'lsa — u fon bo'ladi; rasm — poster (video yuklanguncha) yoki video bo'lmasa fon bo'lib turadi.</div>
 
                 <label style={S.lbl}>Ko'rinishi</label>
                 <div style={{ marginBottom: 18 }}>
@@ -1379,7 +1399,7 @@ export default function Admin() {
                 <div key={p.id} style={{ ...S.card, padding: 14, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', opacity: p.active ? 1 : .55 }}>
                   <div style={{ flex: '1 1 320px', minWidth: 240 }}>
                     <PromoPreview
-                      p={{ title_lv: p.title?.lv, title_ru: p.title?.ru, title_en: p.title?.en, sub_lv: p.subtitle?.lv, sub_ru: p.subtitle?.ru, sub_en: p.subtitle?.en, cta_lv: p.cta?.lv, cta_ru: p.cta?.ru, cta_en: p.cta?.en, img: p.img, theme: p.theme }}
+                      p={{ badge_lv: p.badge?.lv, badge_ru: p.badge?.ru, badge_en: p.badge?.en, title_lv: p.title?.lv, title_ru: p.title?.ru, title_en: p.title?.en, sub_lv: p.subtitle?.lv, sub_ru: p.subtitle?.ru, sub_en: p.subtitle?.en, cta_lv: p.cta?.lv, cta_ru: p.cta?.ru, cta_en: p.cta?.en, img: p.img, video: p.video }}
                       pl={pl}
                       small
                     />
