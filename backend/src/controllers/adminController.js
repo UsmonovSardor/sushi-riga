@@ -50,6 +50,7 @@ function rowToOrder(row) {
     items: row.items || [],
     total: parseFloat(row.total),
     payMethod: row.pay_method,
+    source: row.source || 'web',
     lang: row.lang,
     status: row.status,
     statusHistory: row.status_history || [],
@@ -132,7 +133,7 @@ exports.getStats = [authAdmin, async (_req, res) => {
 exports.getCustomers = [authAdmin, async (_req, res) => {
   try {
     const [ordersR, usersR] = await Promise.all([
-      query(`SELECT name, surname, phone, customer_phone, address, total, status, created_at
+      query(`SELECT name, surname, phone, customer_phone, address, total, status, source, created_at
              FROM orders ORDER BY created_at ASC`),
       query('SELECT phone_norm, data, created_at FROM users_data'),
     ]);
@@ -145,6 +146,7 @@ exports.getCustomers = [authAdmin, async (_req, res) => {
           phone: '', name: '', surname: '', address: '',
           registered: false, registeredAt: null,
           ordersCount: 0, totalSpent: 0, firstOrder: null, lastOrder: null,
+          webOrders: 0, tmaOrders: 0,
         });
       }
       return map.get(key);
@@ -161,6 +163,7 @@ exports.getCustomers = [authAdmin, async (_req, res) => {
       if (o.surname) c.surname = o.surname;
       if (o.address) c.address = o.address;
       c.ordersCount += 1;
+      if (o.source === 'tma') c.tmaOrders += 1; else c.webOrders += 1;
       if (o.status !== 'cancelled') c.totalSpent += Number(o.total) || 0;
       const at = o.created_at;
       if (!c.firstOrder || new Date(at) < new Date(c.firstOrder)) c.firstOrder = at;
@@ -183,7 +186,11 @@ exports.getCustomers = [authAdmin, async (_req, res) => {
     }
 
     const customers = [...map.values()]
-      .map(c => ({ ...c, avgOrder: c.ordersCount ? c.totalSpent / c.ordersCount : 0 }))
+      .map(c => ({
+        ...c,
+        avgOrder: c.ordersCount ? c.totalSpent / c.ordersCount : 0,
+        channel: c.tmaOrders > c.webOrders ? 'tma' : 'web',
+      }))
       .sort((a, b) => b.totalSpent - a.totalSpent || new Date(b.lastOrder || 0) - new Date(a.lastOrder || 0));
 
     res.json(customers);

@@ -94,6 +94,17 @@ async function initDB() {
     await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS provider_charge_id TEXT;`);
     await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS telegram_id BIGINT;`);
 
+    // Order channel: 'web' (website) or 'tma' (Telegram Mini App). New orders set
+    // this at creation; existing orders are backfilled from whether the placing
+    // customer is a Telegram user (their users_data row has a telegram_id).
+    await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'web';`);
+    await client.query(`
+      UPDATE orders o SET source = 'tma'
+      WHERE o.source <> 'tma'
+        AND o.customer_id IN (SELECT id FROM users_data WHERE telegram_id IS NOT NULL);
+    `);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_orders_source ON orders(source);`);
+
     
 
     await client.query(`CREATE INDEX IF NOT EXISTS idx_menu_cat ON menu_items(cat);`);

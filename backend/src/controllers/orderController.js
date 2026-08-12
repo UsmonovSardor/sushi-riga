@@ -34,6 +34,7 @@ function rowToPublicOrder(row) {
     items: row.items || [],
     total: Number(row.total) || 0,
     payMethod: row.pay_method || 'cash',
+    source: row.source || 'web',
     lang: row.lang || 'lv',
     status: row.status || 'new',
     statusHistory: row.status_history || [],
@@ -71,6 +72,11 @@ exports.createOrder = async (req, res) => {
       address = '', payMethod = 'cash',
     } = req.body;
     const pay = payMethod === 'card' ? 'card' : 'cash';
+
+    // Channel is inferred server-side (not trusted from the client): a Telegram
+    // Mini App user's record carries a telegram id; website/guest orders do not.
+    const tgId = user?.telegramId || user?.telegram_id || null;
+    const source = tgId ? 'tma' : 'web';
 
     if (!name || !phone) return res.status(400).json({ error: 'Name and phone required' });
     if (!Array.isArray(items) || items.length === 0) return res.status(400).json({ error: 'Cart is empty' });
@@ -116,9 +122,9 @@ exports.createOrder = async (req, res) => {
     await query(
       `INSERT INTO orders
         (id, name, surname, phone, note, address, items, total, pay_method, lang,
-         status, status_history, customer_id, customer_phone, telegram_id, created_at, updated_at)
+         status, status_history, customer_id, customer_phone, telegram_id, source, created_at, updated_at)
        VALUES
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$16)`,
+        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$17)`,
       [
         num,
         name,
@@ -134,7 +140,8 @@ exports.createOrder = async (req, res) => {
         JSON.stringify(statusHistory),
         user?.id ? String(user.id) : null,
         user?.phone || phone,
-        user?.telegram_id || null,
+        tgId,
+        source,
         now,
       ]
     );
@@ -172,6 +179,7 @@ exports.createOrder = async (req, res) => {
         items: enriched,
         total,
         pay_method: pay,
+        source,
         lang,
         status: 'new',
         status_history: statusHistory,
