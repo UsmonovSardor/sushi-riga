@@ -36,6 +36,27 @@ const TEXT = {
 
 const PAY = { cash: '💵 Naqd', card: '💳 Karta' };
 
+const SOURCE = {
+  web: { label: 'Sayt', icon: '🌐', color: '#e0f2fe', text: '#0369a1' },
+  tma: { label: 'Telegram', icon: '✈️', color: '#e0eaff', text: '#3730a3' },
+};
+
+// Customer segment (priority order: VIP → at-risk → regular → new).
+const DAY = 86400000;
+function segmentOf(c) {
+  const daysSince = c.lastOrder ? (Date.now() - new Date(c.lastOrder)) / DAY : Infinity;
+  if ((c.totalSpent || 0) >= 100) return 'vip';
+  if ((c.ordersCount || 0) >= 1 && daysSince > 30) return 'risk';
+  if ((c.ordersCount || 0) >= 3) return 'regular';
+  return 'new';
+}
+const SEGMENT = {
+  vip:     { label: '👑 VIP', color: '#fef3c7', text: '#92400e' },
+  regular: { label: '🔁 Doimiy', color: '#dcfce7', text: '#15803d' },
+  risk:    { label: '⚠️ Yo‘qolayotgan', color: '#fee2e2', text: '#991b1b' },
+  new:     { label: '🆕 Yangi', color: '#e0e7ff', text: '#3730a3' },
+};
+
 const CATS = [
   'cold', 'hot', 'tempura', 'gunkan', 'nigiri', 'sashimi',
   'double', 'sets', 'soup', 'wok', 'burger', 'salad',
@@ -127,6 +148,90 @@ const emptyForm = () => ({
   hit: false,
 });
 
+function CustomerDetail({ c, orders, topItems, onClose, fmt, fmtT, digits }) {
+  const seg = SEGMENT[segmentOf(c)];
+  const src = SOURCE[c.channel || 'web'];
+  const initial = (c.name || '?').trim().charAt(0).toUpperCase() || '?';
+  const wa = digits(c.phone);
+  const contacts = [
+    { label: '☎️ Qo‘ng‘iroq', href: `tel:${c.phone}`, bg: '#dcfce7', col: '#15803d' },
+    wa && { label: '💬 WhatsApp', href: `https://wa.me/${wa}`, bg: '#dcfce7', col: '#128c7e' },
+    c.username && { label: '✈️ Telegram', href: `https://t.me/${c.username}`, bg: '#e0eaff', col: '#3730a3' },
+  ].filter(Boolean);
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,.55)', zIndex: 500, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 20, overflowY: 'auto' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 640, boxShadow: '0 24px 80px rgba(0,0,0,.35)', margin: 'auto', overflow: 'hidden' }}>
+        <div style={{ padding: '20px 22px', background: 'linear-gradient(135deg,#7c3aed,#4f46e5)', color: '#fff', display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 52, height: 52, borderRadius: 16, background: 'rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.3rem' }}>{initial}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 900, fontSize: '1.15rem' }}>{c.name} {c.surname}</div>
+            <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
+              <span style={{ background: seg.color, color: seg.text, fontSize: '.62rem', fontWeight: 800, padding: '2px 8px', borderRadius: 20 }}>{seg.label}</span>
+              <span style={{ background: src.color, color: src.text, fontSize: '.62rem', fontWeight: 800, padding: '2px 8px', borderRadius: 20 }}>{src.icon} {src.label}</span>
+              <span style={{ background: 'rgba(255,255,255,.22)', fontSize: '.62rem', fontWeight: 800, padding: '2px 8px', borderRadius: 20 }}>{c.registered ? '⭐ Ro‘yxatda' : '👤 Mehmon'}</span>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', width: 34, height: 34, borderRadius: 10, cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>✕</button>
+        </div>
+
+        <div style={{ padding: 22 }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap' }}>
+            {contacts.map(ct => (
+              <a key={ct.label} href={ct.href} target="_blank" rel="noreferrer" style={{ background: ct.bg, color: ct.col, textDecoration: 'none', fontWeight: 800, fontSize: '.82rem', padding: '9px 16px', borderRadius: 10 }}>{ct.label}</a>
+            ))}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(110px,1fr))', gap: 10, marginBottom: 18 }}>
+            {[
+              ['Buyurtma', c.ordersCount, '#0f172a'],
+              ['Jami (LTV)', `€${fmt(c.totalSpent)}`, '#e31e24'],
+              ['O‘rtacha', `€${fmt(c.avgOrder)}`, '#64748b'],
+              ['Birinchi', c.firstOrder ? new Date(c.firstOrder).toLocaleDateString('ru-RU') : '—', '#64748b'],
+              ['Oxirgi', c.lastOrder ? new Date(c.lastOrder).toLocaleDateString('ru-RU') : '—', '#64748b'],
+            ].map(([t, v, col]) => (
+              <div key={t} style={{ background: '#f8fafc', borderRadius: 12, padding: '12px 14px' }}>
+                <div style={{ fontSize: '.62rem', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>{t}</div>
+                <div style={{ fontWeight: 900, fontSize: '1.02rem', color: col, marginTop: 3 }}>{v}</div>
+              </div>
+            ))}
+          </div>
+
+          {c.address && <div style={{ fontSize: '.82rem', color: '#475569', marginBottom: 18 }}>📍 {c.address}</div>}
+
+          {topItems.length > 0 && (
+            <>
+              <div style={{ fontWeight: 800, fontSize: '.72rem', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 10 }}>Sevimli taomlar</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
+                {topItems.map(it => (
+                  <span key={it.name} style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 999, padding: '6px 12px', fontSize: '.78rem', fontWeight: 700 }}>{it.e} {it.name} ×{it.qty}</span>
+                ))}
+              </div>
+            </>
+          )}
+
+          <div style={{ fontWeight: 800, fontSize: '.72rem', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 10 }}>Buyurtmalar tarixi ({orders.length})</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 320, overflowY: 'auto' }}>
+            {orders.length === 0 && <div style={{ color: '#94a3b8', fontSize: '.84rem' }}>Buyurtma yo'q</div>}
+            {orders.slice().reverse().map(o => (
+              <div key={o.id} style={{ border: '1px solid #f1f5f9', borderRadius: 12, padding: '10px 14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
+                  <span style={{ fontWeight: 900, color: '#e31e24', fontSize: '.84rem' }}>#{o.id}</span>
+                  <span style={{ background: STATUS[o.status || 'new']?.color, color: STATUS[o.status || 'new']?.text, borderRadius: 20, padding: '2px 10px', fontSize: '.68rem', fontWeight: 700 }}>{STATUS[o.status || 'new']?.icon} {STATUS[o.status || 'new']?.label}</span>
+                  <span style={{ background: SOURCE[o.source || 'web']?.color, color: SOURCE[o.source || 'web']?.text, borderRadius: 20, padding: '2px 9px', fontSize: '.66rem', fontWeight: 800 }}>{SOURCE[o.source || 'web']?.icon}</span>
+                  <span style={{ fontSize: '.72rem', color: '#94a3b8' }}>{fmtT(o.createdAt)}</span>
+                  <span style={{ marginLeft: 'auto', fontWeight: 900, color: '#0f172a' }}>€{fmt(o.total)}</span>
+                </div>
+                <div style={{ fontSize: '.75rem', color: '#64748b' }}>{(o.items || []).map(it => `${it.name?.lv || it.name?.ru || it.name?.en} ×${it.qty}`).join(', ')}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Admin() {
   const { lang } = useLanguage();
 
@@ -143,6 +248,9 @@ export default function Admin() {
   const [search, setSrch] = useState('');
   const [catF, setCatF] = useState('all');
   const [stF, setStF] = useState('all');
+  const [srcF, setSrcF] = useState('all');       // order channel filter
+  const [custSeg, setCustSeg] = useState('all');  // customer segment filter
+  const [custDetail, setCustDetail] = useState(null); // customer-360 modal
   const [editItem, setEdit] = useState(null);
   const [form, setForm] = useState(emptyForm());
   const [saving, setSaving] = useState(false);
@@ -337,6 +445,7 @@ export default function Admin() {
 
   const filtOrders = orders.filter(o =>
     (stF === 'all' || o.status === stF) &&
+    (srcF === 'all' || (o.source || 'web') === srcF) &&
     (
       !search ||
       o.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -355,6 +464,7 @@ export default function Admin() {
   );
 
   const filtCustomers = customers.filter(c => {
+    if (custSeg !== 'all' && segmentOf(c) !== custSeg) return false;
     if (!search) return true;
     const q = search.toLowerCase();
     return (
@@ -369,6 +479,90 @@ export default function Admin() {
     a.revenue += Number(c.totalSpent) || 0;
     return a;
   }, { registered: 0, repeat: 0, revenue: 0 });
+
+  const segCounts = customers.reduce((a, c) => {
+    a[segmentOf(c)] = (a[segmentOf(c)] || 0) + 1;
+    return a;
+  }, {});
+
+  // A customer's own orders (matched by normalized phone) — powers the 360 view.
+  const digits = v => String(v || '').replace(/\D/g, '');
+  const customerOrders = c => {
+    const key = digits(c?.phone);
+    if (!key) return [];
+    return orders.filter(o => digits(o.customerPhone || o.phone) === key);
+  };
+  const customerTopItems = c => {
+    const m = new Map();
+    customerOrders(c).forEach(o => (o.items || []).forEach(it => {
+      const k = it.name?.lv || it.name?.ru || it.name?.en || String(it.id);
+      const cur = m.get(k) || { name: k, e: it.e || '🍣', qty: 0 };
+      cur.qty += Number(it.qty) || 0;
+      m.set(k, cur);
+    }));
+    return [...m.values()].sort((a, b) => b.qty - a.qty).slice(0, 3);
+  };
+
+  const exportCustomersCSV = () => {
+    const head = ['Ism', 'Familiya', 'Telefon', 'Manzil', 'Royxatda', 'Kanal', 'Buyurtma', 'Jami EUR', 'Ortacha EUR', 'Birinchi', 'Oxirgi', 'Segment'];
+    const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const rows = filtCustomers.map(c => [
+      c.name, c.surname, c.phone, c.address, c.registered ? 'ha' : 'yoq',
+      c.channel === 'tma' ? 'Telegram' : 'Sayt', c.ordersCount,
+      fmt(c.totalSpent), fmt(c.avgOrder),
+      c.firstOrder ? new Date(c.firstOrder).toLocaleDateString('ru-RU') : '',
+      c.lastOrder ? new Date(c.lastOrder).toLocaleDateString('ru-RU') : '',
+      SEGMENT[segmentOf(c)]?.label.replace(/[^\p{L} ]/gu, '').trim() || '',
+    ].map(esc).join(','));
+    const csv = '﻿' + [head.map(esc).join(','), ...rows].join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cherry-mijozlar-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    flash(`📥 ${filtCustomers.length} ta mijoz eksport qilindi`);
+  };
+
+  // ── Dashboard analytics — all computed client-side from the loaded orders ──
+  const valid = orders.filter(o => o.status !== 'cancelled');
+  const last7 = (() => {
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - i);
+      days.push({ key: d.toISOString().slice(0, 10), label: d.toLocaleDateString('ru-RU', { weekday: 'short' }), orders: 0, revenue: 0 });
+    }
+    const idx = Object.fromEntries(days.map((d, i) => [d.key, i]));
+    valid.forEach(o => {
+      const k = new Date(o.createdAt).toISOString().slice(0, 10);
+      if (k in idx) { days[idx[k]].orders++; days[idx[k]].revenue += Number(o.total) || 0; }
+    });
+    return days;
+  })();
+  const topItems = (() => {
+    const m = new Map();
+    valid.forEach(o => (o.items || []).forEach(it => {
+      const k = it.name?.lv || it.name?.ru || it.name?.en || String(it.id);
+      const cur = m.get(k) || { name: k, e: it.e || '🍣', qty: 0, revenue: 0 };
+      cur.qty += Number(it.qty) || 0;
+      cur.revenue += (Number(it.price) || 0) * (Number(it.qty) || 0);
+      m.set(k, cur);
+    }));
+    return [...m.values()].sort((a, b) => b.qty - a.qty).slice(0, 8);
+  })();
+  const bySrc = valid.reduce((a, o) => {
+    const s = o.source === 'tma' ? 'tma' : 'web';
+    a[s].orders++; a[s].revenue += Number(o.total) || 0;
+    return a;
+  }, { web: { orders: 0, revenue: 0 }, tma: { orders: 0, revenue: 0 } });
+  const byHour = (() => {
+    const h = Array.from({ length: 24 }, () => 0);
+    valid.forEach(o => { h[new Date(o.createdAt).getHours()]++; });
+    return h;
+  })();
+  const aov = valid.length ? valid.reduce((s, o) => s + (Number(o.total) || 0), 0) / valid.length : 0;
+  const maxDayRev = Math.max(1, ...last7.map(d => d.revenue));
+  const maxHour = Math.max(1, ...byHour);
 
   const toggleAll = () => {
     const vis = filtOrders.map(o => o.id);
@@ -658,6 +852,71 @@ export default function Admin() {
               ))}
             </div>
 
+            <div style={{ ...S.card, padding: 22, marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
+                <h3 style={{ margin: 0, fontSize: '1rem' }}>📈 Oxirgi 7 kun</h3>
+                <span style={{ fontSize: '.8rem', color: '#64748b' }}>O'rtacha chek: <b style={{ color: '#e31e24' }}>€{fmt(aov)}</b></span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 170 }}>
+                {last7.map(d => (
+                  <div key={d.key} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                    <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#0f172a' }}>€{Math.round(d.revenue)}</div>
+                    <div style={{ width: '100%', maxWidth: 46, height: `${Math.round((d.revenue / maxDayRev) * 120)}px`, minHeight: 4, background: 'linear-gradient(180deg,#f87171,#e31e24)', borderRadius: '8px 8px 0 0' }} title={`${d.orders} buyurtma`} />
+                    <div style={{ fontSize: '.7rem', color: '#94a3b8', fontWeight: 700 }}>{d.label}</div>
+                    <div style={{ fontSize: '.66rem', color: '#cbd5e1' }}>{d.orders} ta</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 16, marginBottom: 16 }}>
+              <div style={{ ...S.card, padding: 22 }}>
+                <h3 style={{ margin: '0 0 16px', fontSize: '1rem' }}>📡 Manba bo'yicha</h3>
+                {Object.entries(SOURCE).map(([k, v]) => {
+                  const s = bySrc[k];
+                  const totalO = bySrc.web.orders + bySrc.tma.orders;
+                  const pct = totalO ? Math.round((s.orders / totalO) * 100) : 0;
+                  return (
+                    <div key={k} style={{ marginBottom: 14 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.84rem', fontWeight: 800, marginBottom: 6 }}>
+                        <span>{v.icon} {v.label}</span>
+                        <span>{s.orders} ta · €{fmt(s.revenue)} · {pct}%</span>
+                      </div>
+                      <div style={{ height: 10, background: '#f1f5f9', borderRadius: 999, overflow: 'hidden' }}>
+                        <div style={{ width: `${pct}%`, height: '100%', background: v.text, borderRadius: 999 }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={{ ...S.card, padding: 22 }}>
+                <h3 style={{ margin: '0 0 16px', fontSize: '1rem' }}>🔥 Top taomlar</h3>
+                {topItems.length === 0 && <div style={{ color: '#94a3b8', fontSize: '.85rem' }}>Ma'lumot yo'q</div>}
+                {topItems.map((it, i) => (
+                  <div key={it.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < topItems.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                    <span style={{ fontSize: '.8rem', fontWeight: 900, color: '#cbd5e1', width: 16 }}>{i + 1}</span>
+                    <span style={{ fontSize: '1.05rem' }}>{it.e}</span>
+                    <span style={{ flex: 1, fontSize: '.82rem', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.name}</span>
+                    <span style={{ fontSize: '.8rem', fontWeight: 800, color: '#e31e24' }}>{it.qty}×</span>
+                    <span style={{ fontSize: '.75rem', color: '#94a3b8', minWidth: 52, textAlign: 'right' }}>€{fmt(it.revenue)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ ...S.card, padding: 22, marginBottom: 16 }}>
+              <h3 style={{ margin: '0 0 16px', fontSize: '1rem' }}>🕐 Faol soatlar</h3>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 92 }}>
+                {byHour.map((n, h) => (
+                  <div key={h} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                    <div style={{ width: '100%', height: `${Math.round((n / maxHour) * 66)}px`, minHeight: n ? 3 : 0, background: n ? '#6366f1' : 'transparent', borderRadius: '3px 3px 0 0' }} title={`${h}:00 — ${n} ta`} />
+                    {h % 3 === 0 && <div style={{ fontSize: '.6rem', color: '#94a3b8' }}>{h}</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 16 }}>
               <div style={{ ...S.card, padding: 22 }}>
                 <h3 style={{ margin: '0 0 16px', fontSize: '1rem' }}>📊 Statuslar</h3>
@@ -704,10 +963,17 @@ export default function Admin() {
             <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
               <input placeholder="🔍 Ism yoki #raqam..." value={search} onChange={e => setSrch(e.target.value)} style={{ ...S.inp, flex: 1, minWidth: 200 }} />
 
-              <select value={stF} onChange={e => setStF(e.target.value)} style={{ ...S.inp, width: 200, cursor: 'pointer' }}>
-                <option value="all">Barchasi ({orders.length})</option>
+              <select value={stF} onChange={e => setStF(e.target.value)} style={{ ...S.inp, width: 180, cursor: 'pointer' }}>
+                <option value="all">Barcha status ({orders.length})</option>
                 {Object.entries(STATUS).map(([k, v]) => (
                   <option key={k} value={k}>{v.icon} {v.label} ({orders.filter(o => o.status === k).length})</option>
+                ))}
+              </select>
+
+              <select value={srcF} onChange={e => setSrcF(e.target.value)} style={{ ...S.inp, width: 170, cursor: 'pointer' }}>
+                <option value="all">Barcha manba</option>
+                {Object.entries(SOURCE).map(([k, v]) => (
+                  <option key={k} value={k}>{v.icon} {v.label} ({orders.filter(o => (o.source || 'web') === k).length})</option>
                 ))}
               </select>
 
@@ -735,6 +1001,9 @@ export default function Admin() {
                     <span style={{ fontWeight: 900, fontSize: '.92rem', color: '#e31e24' }}>#{o.id}</span>
                     <span style={{ background: STATUS[o.status || 'new']?.color, color: STATUS[o.status || 'new']?.text, borderRadius: 20, padding: '3px 12px', fontSize: '.73rem', fontWeight: 700 }}>
                       {STATUS[o.status || 'new']?.icon} {STATUS[o.status || 'new']?.label}
+                    </span>
+                    <span style={{ background: SOURCE[o.source || 'web']?.color, color: SOURCE[o.source || 'web']?.text, borderRadius: 20, padding: '3px 11px', fontSize: '.7rem', fontWeight: 800 }}>
+                      {SOURCE[o.source || 'web']?.icon} {SOURCE[o.source || 'web']?.label}
                     </span>
                     <span style={{ fontSize: '.75rem', color: '#94a3b8' }}>🕐 {fmtT(o.createdAt)}</span>
                     <span style={{ fontSize: '.75rem', color: '#94a3b8' }}>{PAY[o.payMethod] || o.payMethod}</span>
@@ -792,9 +1061,20 @@ export default function Admin() {
               ))}
             </div>
 
-            <div style={{ display: 'flex', gap: 10, marginBottom: 16, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 12, alignItems: 'center', flexWrap: 'wrap' }}>
               <input placeholder="🔍 Ism yoki telefon..." value={search} onChange={e => setSrch(e.target.value)} style={{ ...S.inp, flex: 1, minWidth: 200 }} />
+              <button onClick={exportCustomersCSV} style={S.btn('#16a34a')}>📥 CSV eksport</button>
               <span style={{ fontSize: '.78rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>{filtCustomers.length} ta</span>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+              {[['all', `Hammasi (${customers.length})`], ...Object.entries(SEGMENT).map(([k, v]) => [k, `${v.label} (${segCounts[k] || 0})`])].map(([k, label]) => (
+                <button key={k} onClick={() => setCustSeg(k)} style={{
+                  padding: '7px 14px', borderRadius: 999, border: '1.5px solid ' + (custSeg === k ? '#e31e24' : '#e2e8f0'),
+                  background: custSeg === k ? '#fff5f5' : '#fff', color: custSeg === k ? '#e31e24' : '#475569',
+                  fontWeight: 700, fontSize: '.78rem', cursor: 'pointer', fontFamily: 'Inter,sans-serif', whiteSpace: 'nowrap',
+                }}>{label}</button>
+              ))}
             </div>
 
             {filtCustomers.length === 0 && (
@@ -804,20 +1084,21 @@ export default function Admin() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {filtCustomers.map((c, i) => {
                 const initial = (c.name || '?').trim().charAt(0).toUpperCase() || '?';
+                const seg = SEGMENT[segmentOf(c)];
+                const src = SOURCE[c.channel || 'web'];
                 return (
-                  <div key={(c.phone || 'x') + i} style={{ ...S.card, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+                  <div key={(c.phone || 'x') + i} onClick={() => setCustDetail(c)} style={{ ...S.card, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', cursor: 'pointer' }}>
                     <div style={{ width: 46, height: 46, borderRadius: 14, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.1rem', color: '#fff', background: c.registered ? 'linear-gradient(135deg,#7c3aed,#4f46e5)' : 'linear-gradient(135deg,#94a3b8,#64748b)' }}>
                       {initial}
                     </div>
 
                     <div style={{ minWidth: 160, flex: '1 1 200px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                         <span style={{ fontWeight: 800, fontSize: '.92rem' }}>{c.name} {c.surname}</span>
-                        {c.registered
-                          ? <span style={{ background: '#ede9fe', color: '#6d28d9', fontSize: '.62rem', fontWeight: 800, padding: '2px 8px', borderRadius: 20 }}>⭐ RO'YXATDA</span>
-                          : <span style={{ background: '#f1f5f9', color: '#64748b', fontSize: '.62rem', fontWeight: 800, padding: '2px 8px', borderRadius: 20 }}>👤 MEHMON</span>}
+                        <span style={{ background: seg.color, color: seg.text, fontSize: '.6rem', fontWeight: 800, padding: '2px 8px', borderRadius: 20 }}>{seg.label}</span>
+                        <span style={{ background: src.color, color: src.text, fontSize: '.6rem', fontWeight: 800, padding: '2px 7px', borderRadius: 20 }}>{src.icon}</span>
                       </div>
-                      <a href={`tel:${c.phone}`} style={{ color: '#e31e24', textDecoration: 'none', fontSize: '.82rem', fontWeight: 700 }}>📞 {c.phone}</a>
+                      <a href={`tel:${c.phone}`} onClick={e => e.stopPropagation()} style={{ color: '#e31e24', textDecoration: 'none', fontSize: '.82rem', fontWeight: 700 }}>📞 {c.phone}</a>
                       {c.address && <div style={{ fontSize: '.76rem', color: '#94a3b8', marginTop: 2 }}>📍 {c.address}</div>}
                     </div>
 
@@ -844,6 +1125,18 @@ export default function Admin() {
               })}
             </div>
           </div>
+        )}
+
+        {custDetail && (
+          <CustomerDetail
+            c={custDetail}
+            orders={customerOrders(custDetail)}
+            topItems={customerTopItems(custDetail)}
+            onClose={() => setCustDetail(null)}
+            fmt={fmt}
+            fmtT={fmtT}
+            digits={digits}
+          />
         )}
 
         {tab === 'menu' && (

@@ -143,7 +143,7 @@ exports.getCustomers = [authAdmin, async (_req, res) => {
     const ensure = (key) => {
       if (!map.has(key)) {
         map.set(key, {
-          phone: '', name: '', surname: '', address: '',
+          phone: '', name: '', surname: '', address: '', username: '',
           registered: false, registeredAt: null,
           ordersCount: 0, totalSpent: 0, firstOrder: null, lastOrder: null,
           webOrders: 0, tmaOrders: 0,
@@ -182,6 +182,7 @@ exports.getCustomers = [authAdmin, async (_req, res) => {
       if (d.name) c.name = d.name;
       if (d.surname) c.surname = d.surname;
       if (d.address) c.address = d.address;
+      if (d.username) c.username = d.username;
       c.phone = c.phone || d.phone || '';
     }
 
