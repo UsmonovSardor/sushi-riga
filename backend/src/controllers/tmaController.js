@@ -9,9 +9,12 @@
 
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
-const { query } = require('../db');
+const { db, schema } = require('../db');
+const { eq } = require('drizzle-orm');
 const config = require('../config');
 const bot = require('../services/botService');
+
+const { usersData, orders } = schema;
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const BOT_TOKEN = config.BOT_TOKEN;
@@ -91,17 +94,15 @@ exports.auth = async (req, res) => {
     const lang = (tgUser.language_code || 'ru').slice(0, 2);
 
     // Find existing by telegram_id
-    const existing = await query(
-      'SELECT * FROM users_data WHERE telegram_id=$1',
-      [telegramId]
-    );
+    const existing = await db.select().from(usersData)
+      .where(eq(usersData.telegramId, telegramId)).limit(1);
 
     let record;
 
-    if (existing.rows.length > 0) {
-      record = existing.rows[0].data;
-      record.id = existing.rows[0].id;
-      record.points = existing.rows[0].points ?? record.points ?? 0;
+    if (existing.length > 0) {
+      record = existing[0].data;
+      record.id = existing[0].id;
+      record.points = existing[0].points ?? record.points ?? 0;
     } else {
       const now = new Date().toISOString();
       const id = String(telegramId);
@@ -121,11 +122,13 @@ exports.auth = async (req, res) => {
         updatedAt: now,
       };
 
-      await query(
-        `INSERT INTO users_data (id, phone_norm, telegram_id, lang, data, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, NOW(), NOW())`,
-        [id, record.phoneNorm, telegramId, lang, JSON.stringify(record)]
-      );
+      await db.insert(usersData).values({
+        id,
+        phoneNorm: record.phoneNorm,
+        telegramId,
+        lang,
+        data: record,
+      });
     }
 
     const token = makeToken(record);
@@ -167,15 +170,14 @@ exports.invoice = async (req, res) => {
     const { orderId } = req.body;
     if (!orderId) return res.status(400).json({ error: 'orderId required' });
 
-    const r = await query('SELECT * FROM orders WHERE id=$1', [String(orderId)]);
-    if (r.rows.length === 0) return res.status(404).json({ error: 'Order not found' });
-
-    const order = r.rows[0];
+    const [order] = await db.select().from(orders)
+      .where(eq(orders.id, String(orderId))).limit(1);
+    if (!order) return res.status(404).json({ error: 'Order not found' });
 
     // Ownership: JWT id matches the order's telegram/customer id.
     const owns =
-      String(order.telegram_id || '') === String(u.id) ||
-      String(order.customer_id || '') === String(u.id);
+      String(order.telegramId || '') === String(u.id) ||
+      String(order.customerId || '') === String(u.id);
     if (!owns) return res.status(403).json({ error: 'Forbidden' });
 
     if (order.paid) return res.status(409).json({ error: 'already_paid' });

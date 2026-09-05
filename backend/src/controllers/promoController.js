@@ -1,7 +1,9 @@
 'use strict';
 
 const jwt = require('jsonwebtoken');
-const { query } = require('../db');
+const { db, schema } = require('../db');
+const { eq, and, or, isNull, lte, gte, asc, desc, sql } = require('drizzle-orm');
+const { promos } = schema;
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const ADMIN_KEY = process.env.ADMIN_SECRET;
@@ -33,25 +35,25 @@ function rowToPromo(row) {
     theme: row.theme || 'red',
     active: row.active !== false,
     sort: Number(row.sort) || 0,
-    startsAt: row.starts_at || null,
-    endsAt: row.ends_at || null,
+    startsAt: row.startsAt || null,
+    endsAt: row.endsAt || null,
   };
 }
 
-const asJson = v => (v && typeof v === 'object' ? JSON.stringify(v) : '{}');
+const asObj = v => (v && typeof v === 'object' ? v : {});
 
 // ── PUBLIC: only active promos that are inside their schedule window ──
 exports.getPublic = async (_req, res) => {
   try {
-    const r = await query(
-      `SELECT * FROM promos
-       WHERE active = true
-         AND (starts_at IS NULL OR starts_at <= NOW())
-         AND (ends_at   IS NULL OR ends_at   >= NOW())
-       ORDER BY sort ASC, created_at DESC`
-    );
+    const rows = await db.select().from(promos)
+      .where(and(
+        eq(promos.active, true),
+        or(isNull(promos.startsAt), lte(promos.startsAt, sql`NOW()`)),
+        or(isNull(promos.endsAt), gte(promos.endsAt, sql`NOW()`)),
+      ))
+      .orderBy(asc(promos.sort), desc(promos.createdAt));
     res.set('Cache-Control', 'no-store');
-    res.json(r.rows.map(rowToPromo));
+    res.json(rows.map(rowToPromo));
   } catch (err) {
     console.error('promos public:', err.message);
     res.status(500).json({ error: 'Promo yuklanmadi' });
@@ -61,8 +63,9 @@ exports.getPublic = async (_req, res) => {
 // ── ADMIN ──
 exports.getAll = [authAdmin, async (_req, res) => {
   try {
-    const r = await query('SELECT * FROM promos ORDER BY sort ASC, created_at DESC');
-    res.json(r.rows.map(rowToPromo));
+    const rows = await db.select().from(promos)
+      .orderBy(asc(promos.sort), desc(promos.createdAt));
+    res.json(rows.map(rowToPromo));
   } catch (err) {
     console.error('promos all:', err.message);
     res.status(500).json({ error: 'Promo yuklanmadi' });
@@ -72,18 +75,22 @@ exports.getAll = [authAdmin, async (_req, res) => {
 exports.create = [authAdmin, async (req, res) => {
   try {
     const { title, subtitle, badge, cta, img, video, link, theme, active, sort, startsAt, endsAt } = req.body;
-    const id = String(Date.now());
-    const r = await query(
-      `INSERT INTO promos (id, title, subtitle, badge, cta, img, video, link, theme, active, sort, starts_at, ends_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
-      [
-        id, asJson(title), asJson(subtitle), asJson(badge), asJson(cta),
-        img || '', video || '', link || '', theme || 'red',
-        active !== false, Number(sort) || 0,
-        startsAt || null, endsAt || null,
-      ]
-    );
-    res.status(201).json(rowToPromo(r.rows[0]));
+    const [row] = await db.insert(promos).values({
+      id: String(Date.now()),
+      title: asObj(title),
+      subtitle: asObj(subtitle),
+      badge: asObj(badge),
+      cta: asObj(cta),
+      img: img || '',
+      video: video || '',
+      link: link || '',
+      theme: theme || 'red',
+      active: active !== false,
+      sort: Number(sort) || 0,
+      startsAt: startsAt || null,
+      endsAt: endsAt || null,
+    }).returning();
+    res.status(201).json(rowToPromo(row));
   } catch (err) {
     console.error('promo create:', err.message);
     res.status(500).json({ error: "Promo qo'shilmadi" });
@@ -93,33 +100,26 @@ exports.create = [authAdmin, async (req, res) => {
 exports.update = [authAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const cur = await query('SELECT * FROM promos WHERE id=$1', [id]);
-    if (cur.rows.length === 0) return res.status(404).json({ error: 'Not found' });
-    const c = cur.rows[0];
+    const [c] = await db.select().from(promos).where(eq(promos.id, id)).limit(1);
+    if (!c) return res.status(404).json({ error: 'Not found' });
     const b = req.body;
 
-    const r = await query(
-      `UPDATE promos SET
-         title=$1, subtitle=$2, badge=$3, cta=$4, img=$5, video=$6, link=$7, theme=$8,
-         active=$9, sort=$10, starts_at=$11, ends_at=$12, updated_at=NOW()
-       WHERE id=$13 RETURNING *`,
-      [
-        b.title !== undefined ? asJson(b.title) : c.title,
-        b.subtitle !== undefined ? asJson(b.subtitle) : c.subtitle,
-        b.badge !== undefined ? asJson(b.badge) : c.badge,
-        b.cta !== undefined ? asJson(b.cta) : c.cta,
-        b.img !== undefined ? b.img : c.img,
-        b.video !== undefined ? b.video : c.video,
-        b.link !== undefined ? b.link : c.link,
-        b.theme !== undefined ? b.theme : c.theme,
-        b.active !== undefined ? (b.active !== false) : c.active,
-        b.sort !== undefined ? Number(b.sort) || 0 : c.sort,
-        b.startsAt !== undefined ? (b.startsAt || null) : c.starts_at,
-        b.endsAt !== undefined ? (b.endsAt || null) : c.ends_at,
-        id,
-      ]
-    );
-    res.json(rowToPromo(r.rows[0]));
+    const [row] = await db.update(promos).set({
+      title:    b.title !== undefined ? asObj(b.title) : c.title,
+      subtitle: b.subtitle !== undefined ? asObj(b.subtitle) : c.subtitle,
+      badge:    b.badge !== undefined ? asObj(b.badge) : c.badge,
+      cta:      b.cta !== undefined ? asObj(b.cta) : c.cta,
+      img:      b.img !== undefined ? b.img : c.img,
+      video:    b.video !== undefined ? b.video : c.video,
+      link:     b.link !== undefined ? b.link : c.link,
+      theme:    b.theme !== undefined ? b.theme : c.theme,
+      active:   b.active !== undefined ? (b.active !== false) : c.active,
+      sort:     b.sort !== undefined ? Number(b.sort) || 0 : c.sort,
+      startsAt: b.startsAt !== undefined ? (b.startsAt || null) : c.startsAt,
+      endsAt:   b.endsAt !== undefined ? (b.endsAt || null) : c.endsAt,
+      updatedAt: new Date(),
+    }).where(eq(promos.id, id)).returning();
+    res.json(rowToPromo(row));
   } catch (err) {
     console.error('promo update:', err.message);
     res.status(500).json({ error: 'Yangilanmadi' });
@@ -128,8 +128,9 @@ exports.update = [authAdmin, async (req, res) => {
 
 exports.remove = [authAdmin, async (req, res) => {
   try {
-    const r = await query('DELETE FROM promos WHERE id=$1 RETURNING id', [req.params.id]);
-    if (r.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+    const del = await db.delete(promos).where(eq(promos.id, req.params.id))
+      .returning({ id: promos.id });
+    if (del.length === 0) return res.status(404).json({ error: 'Not found' });
     res.json({ ok: true });
   } catch (err) {
     console.error('promo delete:', err.message);

@@ -1,7 +1,9 @@
 'use strict';
 
 const jwt = require('jsonwebtoken');
-const { query } = require('../db');
+const { db, schema } = require('../db');
+const { eq, and, or, inArray, desc, sql } = require('drizzle-orm');
+const { reviews, orders, usersData } = schema;
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const ADMIN_KEY = process.env.ADMIN_SECRET;
@@ -9,11 +11,11 @@ const ADMIN_KEY = process.env.ADMIN_SECRET;
 async function getUser(req) {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Bearer ')) return null;
-
   try {
     const payload = jwt.verify(auth.slice(7), JWT_SECRET);
-    const r = await query('SELECT * FROM users_data WHERE id=$1', [String(payload.id)]);
-    return r.rows[0] || null;
+    const [row] = await db.select().from(usersData)
+      .where(eq(usersData.id, String(payload.id))).limit(1);
+    return row || null;
   } catch {
     return null;
   }
@@ -21,9 +23,7 @@ async function getUser(req) {
 
 function isAdmin(req) {
   const auth = req.headers.authorization || '';
-
   if (ADMIN_KEY && auth === `Bearer ${ADMIN_KEY}`) return true;
-
   try {
     const payload = jwt.verify(auth.slice(7), JWT_SECRET);
     return payload.role === 'admin';
@@ -35,31 +35,30 @@ function isAdmin(req) {
 function publicReview(row) {
   return {
     id: row.id,
-    menuId: row.menu_id,
-    orderId: row.order_id,
-    userId: row.user_id,
+    menuId: row.menuId,
+    orderId: row.orderId,
+    userId: row.userId,
     rating: Number(row.rating),
     comment: row.comment || '',
-    createdAt: row.created_at,
+    createdAt: row.createdAt,
   };
 }
 
 exports.summary = async (_req, res) => {
   try {
-    const r = await query(`
-      SELECT menu_id, COUNT(*)::int AS count, ROUND(AVG(rating)::numeric, 1) AS avg
-      FROM reviews
-      GROUP BY menu_id
-    `);
+    const rows = await db.select({
+      menuId: reviews.menuId,
+      count: sql`count(*)::int`,
+      avg: sql`round(avg(${reviews.rating})::numeric, 1)`,
+    }).from(reviews).groupBy(reviews.menuId);
 
     const summary = {};
-    r.rows.forEach(row => {
-      summary[row.menu_id] = {
+    rows.forEach(row => {
+      summary[row.menuId] = {
         count: Number(row.count) || 0,
         avg: Number(row.avg) || 0,
       };
     });
-
     res.json(summary);
   } catch (err) {
     console.error('reviews summary:', err.message);
@@ -69,15 +68,10 @@ exports.summary = async (_req, res) => {
 
 exports.forMenu = async (req, res) => {
   try {
-    const r = await query(
-      `SELECT * FROM reviews
-       WHERE menu_id=$1
-       ORDER BY created_at DESC
-       LIMIT 100`,
-      [String(req.params.menuId)]
-    );
-
-    res.json(r.rows.map(publicReview));
+    const rows = await db.select().from(reviews)
+      .where(eq(reviews.menuId, String(req.params.menuId)))
+      .orderBy(desc(reviews.createdAt)).limit(100);
+    res.json(rows.map(publicReview));
   } catch (err) {
     console.error('reviews forMenu:', err.message);
     res.status(500).json({ error: 'Reviews load error' });
@@ -87,14 +81,9 @@ exports.forMenu = async (req, res) => {
 exports.all = async (req, res) => {
   try {
     if (!isAdmin(req)) return res.status(401).json({ error: 'Admin required' });
-
-    const r = await query(`
-      SELECT * FROM reviews
-      ORDER BY created_at DESC
-      LIMIT 1000
-    `);
-
-    res.json(r.rows.map(publicReview));
+    const rows = await db.select().from(reviews)
+      .orderBy(desc(reviews.createdAt)).limit(1000);
+    res.json(rows.map(publicReview));
   } catch (err) {
     console.error('reviews all:', err.message);
     res.status(500).json({ error: 'Reviews admin load error' });
@@ -109,42 +98,33 @@ exports.myPending = async (req, res) => {
     const userData = user.data || {};
     const phone = String(userData.phone || '').replace(/[^\d]/g, '');
 
-    const r = await query(
-      `
-      SELECT o.id AS order_id, o.items
-      FROM orders o
-      WHERE (
-        o.customer_id=$1
-        OR REGEXP_REPLACE(o.phone,'[^0-9]','','g')=$2
-        OR REGEXP_REPLACE(o.customer_phone,'[^0-9]','','g')=$2
-      )
-      AND o.status IN ('ready', 'delivered')
-      ORDER BY o.created_at DESC
-      LIMIT 50
-      `,
-      [String(user.id), phone]
-    );
+    const orderRows = await db.select({ orderId: orders.id, items: orders.items })
+      .from(orders)
+      .where(and(
+        or(
+          eq(orders.customerId, String(user.id)),
+          sql`REGEXP_REPLACE(${orders.phone},'[^0-9]','','g') = ${phone}`,
+          sql`REGEXP_REPLACE(${orders.customerPhone},'[^0-9]','','g') = ${phone}`,
+        ),
+        inArray(orders.status, ['ready', 'delivered']),
+      ))
+      .orderBy(desc(orders.createdAt)).limit(50);
 
-    const done = await query(
-      `SELECT order_id, menu_id FROM reviews WHERE user_id=$1`,
-      [String(user.id)]
-    );
+    const done = await db.select({ orderId: reviews.orderId, menuId: reviews.menuId })
+      .from(reviews).where(eq(reviews.userId, String(user.id)));
 
-    const doneSet = new Set(done.rows.map(x => `${x.order_id}_${x.menu_id}`));
+    const doneSet = new Set(done.map(x => `${x.orderId}_${x.menuId}`));
     const pending = [];
 
-    r.rows.forEach(order => {
+    orderRows.forEach(order => {
       const items = Array.isArray(order.items) ? order.items : [];
-
       items.forEach(item => {
         const menuId = String(item.id || item.menuId || item.productId || '');
         if (!menuId) return;
-
-        const key = `${order.order_id}_${menuId}`;
+        const key = `${order.orderId}_${menuId}`;
         if (doneSet.has(key)) return;
-
         pending.push({
-          orderId: order.order_id,
+          orderId: order.orderId,
           menuId,
           itemName:
             typeof item.name === 'object'
@@ -169,50 +149,37 @@ exports.add = async (req, res) => {
 
     const { menuId, orderId, rating, comment = '' } = req.body;
     const n = Number(rating);
-
     if (!menuId || !orderId || !Number.isInteger(n) || n < 1 || n > 5) {
       return res.status(400).json({ error: 'Invalid review' });
     }
 
-    const check = await query(
-      `
-      SELECT id FROM orders
-      WHERE id=$1
-        AND customer_id=$2
-        AND status IN ('ready', 'delivered')
-      LIMIT 1
-      `,
-      [String(orderId), String(user.id)]
-    );
+    const check = await db.select({ id: orders.id }).from(orders)
+      .where(and(
+        eq(orders.id, String(orderId)),
+        eq(orders.customerId, String(user.id)),
+        inArray(orders.status, ['ready', 'delivered']),
+      )).limit(1);
 
-    if (check.rows.length === 0) {
+    if (check.length === 0) {
       return res.status(403).json({ error: 'You can review only completed own orders' });
     }
 
-    const id = String(Date.now());
+    const [row] = await db.insert(reviews).values({
+      id: String(Date.now()),
+      menuId: String(menuId),
+      orderId: String(orderId),
+      userId: String(user.id),
+      rating: n,
+      comment: String(comment).slice(0, 400),
+    }).returning();
 
-    const r = await query(
-      `
-      INSERT INTO reviews (id, menu_id, order_id, user_id, rating, comment, created_at)
-      VALUES ($1,$2,$3,$4,$5,$6,NOW())
-      RETURNING *
-      `,
-      [
-        id,
-        String(menuId),
-        String(orderId),
-        String(user.id),
-        n,
-        String(comment).slice(0, 400),
-      ]
-    );
-
-    res.status(201).json(publicReview(r.rows[0]));
+    res.status(201).json(publicReview(row));
   } catch (err) {
-    if (err.code === '23505') {
+    // Drizzle wraps the pg error, so the unique-violation code (23505) lands on
+    // err.cause.code rather than err.code.
+    if (err.code === '23505' || err.cause?.code === '23505') {
       return res.status(409).json({ error: 'Already reviewed' });
     }
-
     console.error('reviews add:', err.message);
     res.status(500).json({ error: 'Review add error' });
   }
@@ -221,14 +188,9 @@ exports.add = async (req, res) => {
 exports.remove = async (req, res) => {
   try {
     if (!isAdmin(req)) return res.status(401).json({ error: 'Admin required' });
-
-    const r = await query(
-      `DELETE FROM reviews WHERE id=$1 RETURNING id`,
-      [String(req.params.id)]
-    );
-
-    if (r.rows.length === 0) return res.status(404).json({ error: 'Not found' });
-
+    const del = await db.delete(reviews).where(eq(reviews.id, String(req.params.id)))
+      .returning({ id: reviews.id });
+    if (del.length === 0) return res.status(404).json({ error: 'Not found' });
     res.json({ ok: true });
   } catch (err) {
     console.error('reviews remove:', err.message);

@@ -2,8 +2,10 @@
 
 const jwt = require('jsonwebtoken');
 const cloudinary = require('cloudinary').v2;
-const { query } = require('../db');
+const { db, schema } = require('../db');
+const { eq, desc, asc, inArray, sql } = require('drizzle-orm');
 const bot = require('../services/botService');
+const { menuItems, orders, usersData } = schema;
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const ADMIN_KEY = process.env.ADMIN_SECRET;
@@ -31,7 +33,7 @@ function rowToItem(row) {
     name: row.name,
     desc: row.description,
     price: parseFloat(row.price),
-    old: row.old_price != null ? parseFloat(row.old_price) : null,
+    old: row.oldPrice != null ? parseFloat(row.oldPrice) : null,
     img: row.img,
     hit: row.hit,
   };
@@ -40,8 +42,8 @@ function rowToItem(row) {
 function rowToOrder(row) {
   return {
     id: row.id,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
     name: row.name,
     surname: row.surname || '',
     phone: row.phone,
@@ -49,15 +51,15 @@ function rowToOrder(row) {
     address: row.address || '',
     items: row.items || [],
     total: parseFloat(row.total),
-    payMethod: row.pay_method,
+    payMethod: row.payMethod,
     source: row.source || 'web',
     lang: row.lang,
     status: row.status,
-    statusHistory: row.status_history || [],
-    customerId: row.customer_id,
-    customerPhone: row.customer_phone,
-    readyAt: row.ready_at || null,
-    deliveredAt: row.delivered_at || null,
+    statusHistory: row.statusHistory || [],
+    customerId: row.customerId,
+    customerPhone: row.customerPhone,
+    readyAt: row.readyAt || null,
+    deliveredAt: row.deliveredAt || null,
   };
 }
 
@@ -72,54 +74,46 @@ function invalidateCache() {
 
 exports.adminLogin = (req, res) => {
   const { secret } = req.body;
-
   if (!secret || secret !== ADMIN_KEY) {
     return res.status(401).json({ error: 'Wrong secret' });
   }
-
   res.json({ token: ADMIN_KEY, role: 'admin' });
 };
 
 exports.getStats = [authAdmin, async (_req, res) => {
   try {
-    const [ordersR, menuR, usersR] = await Promise.all([
-      query('SELECT * FROM orders ORDER BY created_at DESC LIMIT 1000'),
-      query('SELECT COUNT(*)::int AS n FROM menu_items'),
-      query('SELECT COUNT(*)::int AS n FROM users_data')
+    const [ordersRows, menuCount, usersCount] = await Promise.all([
+      db.select().from(orders).orderBy(desc(orders.createdAt)).limit(1000),
+      db.select({ n: sql`count(*)::int` }).from(menuItems),
+      db.select({ n: sql`count(*)::int` }).from(usersData),
     ]);
 
-    const orders = ordersR.rows.map(rowToOrder);
-
+    const list = ordersRows.map(rowToOrder);
     const today = new Date().toISOString().slice(0, 10);
+    const getDateKey = v => (v ? new Date(v).toISOString().slice(0, 10) : '');
 
-    const getDateKey = (value) => {
-      if (!value) return '';
-      return new Date(value).toISOString().slice(0, 10);
-    };
-
-    const validOrders = orders.filter(o => o.status !== 'cancelled');
+    const validOrders = list.filter(o => o.status !== 'cancelled');
     const todayOrders = validOrders.filter(o => getDateKey(o.createdAt) === today);
 
     const byStatus = {};
     const byPay = {};
-
-    orders.forEach(o => {
+    list.forEach(o => {
       byStatus[o.status || 'new'] = (byStatus[o.status || 'new'] || 0) + 1;
       byPay[o.payMethod || 'cash'] = (byPay[o.payMethod || 'cash'] || 0) + 1;
     });
 
     res.json({
-      totalOrders: orders.length,
+      totalOrders: list.length,
       totalRevenue: validOrders.reduce((s, o) => s + (Number(o.total) || 0), 0),
       todayOrders: todayOrders.length,
       todayRevenue: todayOrders.reduce((s, o) => s + (Number(o.total) || 0), 0),
-      totalItems: Number(menuR.rows[0].n) || 0,
-      totalUsers: Number(usersR.rows[0].n) || 0,
+      totalItems: Number(menuCount[0].n) || 0,
+      totalUsers: Number(usersCount[0].n) || 0,
       categories: 0,
       byStatus,
       byPay,
       last7: {},
-      topItems: []
+      topItems: [],
     });
   } catch (err) {
     console.error('getStats:', err);
@@ -128,14 +122,19 @@ exports.getStats = [authAdmin, async (_req, res) => {
 }];
 
 // Full customer base: everyone who has ordered (keyed by phone, so guests count
-// too) enriched with their registration profile. Gives real per-customer CRM
-// numbers — order count, lifetime spend, average, first/last order.
+// too) enriched with their registration profile.
 exports.getCustomers = [authAdmin, async (_req, res) => {
   try {
-    const [ordersR, usersR] = await Promise.all([
-      query(`SELECT name, surname, phone, customer_phone, address, total, status, source, created_at
-             FROM orders ORDER BY created_at ASC`),
-      query('SELECT phone_norm, data, created_at FROM users_data'),
+    const [ordersRows, usersRows] = await Promise.all([
+      db.select({
+        name: orders.name, surname: orders.surname, phone: orders.phone,
+        customerPhone: orders.customerPhone, address: orders.address,
+        total: orders.total, status: orders.status, source: orders.source,
+        createdAt: orders.createdAt,
+      }).from(orders).orderBy(asc(orders.createdAt)),
+      db.select({
+        phoneNorm: usersData.phoneNorm, data: usersData.data, createdAt: usersData.createdAt,
+      }).from(usersData),
     ]);
 
     const norm = v => String(v || '').replace(/[^\d]/g, '');
@@ -153,8 +152,8 @@ exports.getCustomers = [authAdmin, async (_req, res) => {
     };
 
     // Orders are ASC, so the last write wins → latest name/surname/address.
-    for (const o of ordersR.rows) {
-      const raw = o.customer_phone || o.phone || '';
+    for (const o of ordersRows) {
+      const raw = o.customerPhone || o.phone || '';
       const key = norm(raw);
       if (!key) continue;
       const c = ensure(key);
@@ -165,20 +164,18 @@ exports.getCustomers = [authAdmin, async (_req, res) => {
       c.ordersCount += 1;
       if (o.source === 'tma') c.tmaOrders += 1; else c.webOrders += 1;
       if (o.status !== 'cancelled') c.totalSpent += Number(o.total) || 0;
-      const at = o.created_at;
+      const at = o.createdAt;
       if (!c.firstOrder || new Date(at) < new Date(c.firstOrder)) c.firstOrder = at;
       if (!c.lastOrder || new Date(at) > new Date(c.lastOrder)) c.lastOrder = at;
     }
 
-    // Registration profile takes precedence for identity fields; also surfaces
-    // registered users who have not ordered yet.
-    for (const u of usersR.rows) {
+    for (const u of usersRows) {
       const d = u.data || {};
-      const key = u.phone_norm || norm(d.phone);
+      const key = u.phoneNorm || norm(d.phone);
       if (!key) continue;
       const c = ensure(key);
       c.registered = true;
-      c.registeredAt = u.created_at;
+      c.registeredAt = u.createdAt;
       if (d.name) c.name = d.name;
       if (d.surname) c.surname = d.surname;
       if (d.address) c.address = d.address;
@@ -232,11 +229,11 @@ exports.getMenu = [authAdmin, async (_req, res) => {
   try {
     if (_cache && Date.now() - _cacheAt < CACHE_TTL) return res.json(_cache);
 
-    const r = await query('SELECT * FROM menu_items ORDER BY cat, created_at ASC');
+    const rows = await db.select().from(menuItems)
+      .orderBy(asc(menuItems.cat), asc(menuItems.createdAt));
 
-    _cache = r.rows.map(rowToItem);
+    _cache = rows.map(rowToItem);
     _cacheAt = Date.now();
-
     res.json(_cache);
   } catch (err) {
     console.error('getMenu:', err.message);
@@ -246,7 +243,7 @@ exports.getMenu = [authAdmin, async (_req, res) => {
 
 exports.addItem = [authAdmin, async (req, res) => {
   try {
-    const { id, cat, e, name, desc, price, old, img, hit } = req.body;
+    const { id, cat, e, name, desc: description, price, old, img, hit } = req.body;
 
     if (!cat || !name || price == null) {
       return res.status(400).json({ error: 'cat, name, price majburiy' });
@@ -254,30 +251,26 @@ exports.addItem = [authAdmin, async (req, res) => {
 
     const itemId = id ? String(id) : String(Date.now());
 
-    const dup = await query('SELECT id FROM menu_items WHERE id=$1', [itemId]);
-    if (dup.rows.length > 0) {
+    const dup = await db.select({ id: menuItems.id }).from(menuItems)
+      .where(eq(menuItems.id, itemId)).limit(1);
+    if (dup.length > 0) {
       return res.status(409).json({ error: 'Bu ID allaqachon mavjud' });
     }
 
-    const r = await query(
-      `INSERT INTO menu_items (id, cat, e, name, description, price, old_price, img, hit)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-       RETURNING *`,
-      [
-        itemId,
-        cat,
-        e || '',
-        JSON.stringify(name),
-        JSON.stringify(desc || {}),
-        parseFloat(price),
-        old != null ? parseFloat(old) : null,
-        img || '',
-        hit === true || hit === 'true',
-      ]
-    );
+    const [row] = await db.insert(menuItems).values({
+      id: itemId,
+      cat,
+      e: e || '',
+      name,
+      description: description || {},
+      price: String(parseFloat(price)),
+      oldPrice: old != null ? String(parseFloat(old)) : null,
+      img: img || '',
+      hit: hit === true || hit === 'true',
+    }).returning();
 
     invalidateCache();
-    res.status(201).json(rowToItem(r.rows[0]));
+    res.status(201).json(rowToItem(row));
   } catch (err) {
     console.error('addItem:', err.message);
     res.status(500).json({ error: "Ovqat qo'shilmadi" });
@@ -287,33 +280,25 @@ exports.addItem = [authAdmin, async (req, res) => {
 exports.updateItem = [authAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { cat, e, name, desc, price, old, img, hit } = req.body;
+    const { cat, e, name, desc: description, price, old, img, hit } = req.body;
 
-    const cur = await query('SELECT * FROM menu_items WHERE id=$1', [id]);
-    if (cur.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+    const [c] = await db.select().from(menuItems).where(eq(menuItems.id, id)).limit(1);
+    if (!c) return res.status(404).json({ error: 'Not found' });
 
-    const c = cur.rows[0];
-
-    const r = await query(
-      `UPDATE menu_items 
-       SET cat=$1, e=$2, name=$3, description=$4, price=$5, old_price=$6, img=$7, hit=$8, updated_at=NOW()
-       WHERE id=$9
-       RETURNING *`,
-      [
-        cat != null ? cat : c.cat,
-        e != null ? e : c.e,
-        name != null ? JSON.stringify(name) : c.name,
-        desc != null ? JSON.stringify(desc) : c.description,
-        price != null ? parseFloat(price) : parseFloat(c.price),
-        old !== undefined ? (old != null ? parseFloat(old) : null) : c.old_price,
-        img != null ? img : c.img,
-        hit != null ? (hit === true || hit === 'true') : c.hit,
-        id,
-      ]
-    );
+    const [row] = await db.update(menuItems).set({
+      cat:         cat != null ? cat : c.cat,
+      e:           e != null ? e : c.e,
+      name:        name != null ? name : c.name,
+      description: description != null ? description : c.description,
+      price:       price != null ? String(parseFloat(price)) : c.price,
+      oldPrice:    old !== undefined ? (old != null ? String(parseFloat(old)) : null) : c.oldPrice,
+      img:         img != null ? img : c.img,
+      hit:         hit != null ? (hit === true || hit === 'true') : c.hit,
+      updatedAt:   new Date(),
+    }).where(eq(menuItems.id, id)).returning();
 
     invalidateCache();
-    res.json(rowToItem(r.rows[0]));
+    res.json(rowToItem(row));
   } catch (err) {
     console.error('updateItem:', err.message);
     res.status(500).json({ error: 'Yangilanmadi' });
@@ -322,9 +307,9 @@ exports.updateItem = [authAdmin, async (req, res) => {
 
 exports.deleteItem = [authAdmin, async (req, res) => {
   try {
-    const r = await query('DELETE FROM menu_items WHERE id=$1 RETURNING id', [req.params.id]);
-
-    if (r.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+    const del = await db.delete(menuItems).where(eq(menuItems.id, req.params.id))
+      .returning({ id: menuItems.id });
+    if (del.length === 0) return res.status(404).json({ error: 'Not found' });
 
     invalidateCache();
     res.json({ ok: true });
@@ -336,17 +321,16 @@ exports.deleteItem = [authAdmin, async (req, res) => {
 
 exports.toggleHit = [authAdmin, async (req, res) => {
   try {
-    const cur = await query('SELECT hit FROM menu_items WHERE id=$1', [req.params.id]);
+    const [cur] = await db.select({ hit: menuItems.hit }).from(menuItems)
+      .where(eq(menuItems.id, req.params.id)).limit(1);
+    if (!cur) return res.status(404).json({ error: 'Not found' });
 
-    if (cur.rows.length === 0) return res.status(404).json({ error: 'Not found' });
-
-    const r = await query(
-      'UPDATE menu_items SET hit=$1, updated_at=NOW() WHERE id=$2 RETURNING *',
-      [!cur.rows[0].hit, req.params.id]
-    );
+    const [row] = await db.update(menuItems)
+      .set({ hit: !cur.hit, updatedAt: new Date() })
+      .where(eq(menuItems.id, req.params.id)).returning();
 
     invalidateCache();
-    res.json(rowToItem(r.rows[0]));
+    res.json(rowToItem(row));
   } catch (err) {
     console.error('toggleHit:', err.message);
     res.status(500).json({ error: 'Toggle xatosi' });
@@ -355,8 +339,8 @@ exports.toggleHit = [authAdmin, async (req, res) => {
 
 exports.getOrders = [authAdmin, async (_req, res) => {
   try {
-    const r = await query('SELECT * FROM orders ORDER BY created_at DESC LIMIT 1000');
-    res.json(r.rows.map(rowToOrder));
+    const rows = await db.select().from(orders).orderBy(desc(orders.createdAt)).limit(1000);
+    res.json(rows.map(rowToOrder));
   } catch (err) {
     console.error('getOrders:', err.message);
     res.status(500).json({ error: 'Zakazlar yuklanmadi' });
@@ -367,42 +351,36 @@ exports.updateOrder = [authAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const nextStatus = req.body.status;
-
     const allowed = ['new', 'cooking', 'ready', 'delivered', 'cancelled'];
-
     if (!allowed.includes(nextStatus)) {
       return res.status(400).json({ error: 'Invalid status' });
     }
 
-    const cur = await query('SELECT * FROM orders WHERE id=$1', [id]);
+    const [c] = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
+    if (!c) return res.status(404).json({ error: 'Not found' });
 
-    if (cur.rows.length === 0) return res.status(404).json({ error: 'Not found' });
-
-    const c = cur.rows[0];
-    const now = new Date().toISOString();
-
+    const now = new Date();
     const history = [
-      ...(c.status_history || []),
-      { status: nextStatus, at: now, by: 'admin' },
+      ...(c.statusHistory || []),
+      { status: nextStatus, at: now.toISOString(), by: 'admin' },
     ];
+    const readyAt = nextStatus === 'ready' && c.status !== 'ready' ? now : c.readyAt;
+    const deliveredAt = nextStatus === 'delivered' && c.status !== 'delivered' ? now : c.deliveredAt;
 
-    const readyAt = nextStatus === 'ready' && c.status !== 'ready' ? now : c.ready_at;
-    const deliveredAt = nextStatus === 'delivered' && c.status !== 'delivered' ? now : c.delivered_at;
-
-    const r = await query(
-      `UPDATE orders
-       SET status=$1, status_history=$2, ready_at=$3, delivered_at=$4, updated_at=NOW()
-       WHERE id=$5
-       RETURNING *`,
-      [nextStatus, JSON.stringify(history), readyAt, deliveredAt, id]
-    );
+    const [row] = await db.update(orders).set({
+      status: nextStatus,
+      statusHistory: history,
+      readyAt,
+      deliveredAt,
+      updatedAt: now,
+    }).where(eq(orders.id, id)).returning();
 
     // Push status update to the customer's Telegram (Mini App orders)
     if (c.status !== nextStatus) {
-      bot.sendStatusUpdate(r.rows[0], nextStatus).catch(() => {});
+      bot.sendStatusUpdate(row, nextStatus).catch(() => {});
     }
 
-    res.json(rowToOrder(r.rows[0]));
+    res.json(rowToOrder(row));
   } catch (err) {
     console.error('updateOrder:', err.message);
     res.status(500).json({ error: 'Zakaz yangilanmadi' });
@@ -411,10 +389,9 @@ exports.updateOrder = [authAdmin, async (req, res) => {
 
 exports.deleteOrder = [authAdmin, async (req, res) => {
   try {
-    const r = await query('DELETE FROM orders WHERE id=$1 RETURNING id', [req.params.id]);
-
-    if (r.rows.length === 0) return res.status(404).json({ error: 'Not found' });
-
+    const del = await db.delete(orders).where(eq(orders.id, req.params.id))
+      .returning({ id: orders.id });
+    if (del.length === 0) return res.status(404).json({ error: 'Not found' });
     res.json({ ok: true });
   } catch (err) {
     console.error('deleteOrder:', err.message);
@@ -425,16 +402,13 @@ exports.deleteOrder = [authAdmin, async (req, res) => {
 exports.deleteOrders = [authAdmin, async (req, res) => {
   try {
     const { ids } = req.body;
-
     if (Array.isArray(ids) && ids.length > 0) {
-      const ph = ids.map((_, i) => `$${i + 1}`).join(',');
-      await query(`DELETE FROM orders WHERE id IN (${ph})`, ids.map(String));
+      await db.delete(orders).where(inArray(orders.id, ids.map(String)));
     } else {
-      await query('DELETE FROM orders');
+      await db.delete(orders);
     }
-
-    const cnt = await query('SELECT COUNT(*)::int AS n FROM orders');
-    res.json({ ok: true, remaining: cnt.rows[0].n });
+    const [{ n }] = await db.select({ n: sql`count(*)::int` }).from(orders);
+    res.json({ ok: true, remaining: Number(n) });
   } catch (err) {
     console.error('deleteOrders:', err.message);
     res.status(500).json({ error: "O'chirilmadi" });

@@ -1,6 +1,8 @@
 'use strict';
 
-const { query } = require('../db');
+const { db, schema } = require('../db');
+const { eq } = require('drizzle-orm');
+const { menuItems } = schema;
 
 // DB → frontend format
 function mapItem(row) {
@@ -11,7 +13,7 @@ function mapItem(row) {
     name: row.name,
     desc: row.description,
     price: parseFloat(row.price),
-    old: row.old_price ? parseFloat(row.old_price) : null,
+    old: row.oldPrice != null ? parseFloat(row.oldPrice) : null,
     img: row.img,
     hit: row.hit,
   };
@@ -20,8 +22,8 @@ function mapItem(row) {
 // 🔥 GET ALL
 exports.getAll = async (_req, res) => {
   try {
-    const { rows } = await query(`SELECT * FROM menu_items ORDER BY id DESC`);
-    res.json(rows.map(mapItem));
+    const rows = await db.select().from(menuItems).orderBy(menuItems.id);
+    res.json(rows.reverse().map(mapItem)); // id DESC
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'DB error' });
@@ -31,7 +33,7 @@ exports.getAll = async (_req, res) => {
 // 🔥 GET HITS
 exports.getHits = async (_req, res) => {
   try {
-    const { rows } = await query(`SELECT * FROM menu_items WHERE hit = true`);
+    const rows = await db.select().from(menuItems).where(eq(menuItems.hit, true));
     res.json(rows.map(mapItem));
   } catch (e) {
     res.status(500).json({ error: 'DB error' });
@@ -41,13 +43,7 @@ exports.getHits = async (_req, res) => {
 // 🔥 GET BY CATEGORY
 exports.getByCategory = async (req, res) => {
   try {
-    const { cat } = req.params;
-
-    const { rows } = await query(
-      `SELECT * FROM menu_items WHERE cat = $1`,
-      [cat]
-    );
-
+    const rows = await db.select().from(menuItems).where(eq(menuItems.cat, req.params.cat));
     res.json(rows.map(mapItem));
   } catch (e) {
     res.status(500).json({ error: 'DB error' });
@@ -58,8 +54,7 @@ exports.getByCategory = async (req, res) => {
 exports.search = async (req, res) => {
   try {
     const q = (req.query.q || '').toLowerCase();
-
-    const { rows } = await query(`SELECT * FROM menu_items`);
+    const rows = await db.select().from(menuItems);
 
     const filtered = rows.filter(r => {
       const name = JSON.stringify(r.name).toLowerCase();

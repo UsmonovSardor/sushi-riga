@@ -1,8 +1,10 @@
 'use strict';
 
 const jwt = require('jsonwebtoken');
-const { query } = require('../db');
+const { db, schema } = require('../db');
+const { eq } = require('drizzle-orm');
 const { t } = require('../utils/i18n');
+const { usersData } = schema;
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -19,30 +21,9 @@ function publicUser(user) {
   };
 }
 
-async function ensureUsersTable() {
-  await query(`
-    CREATE TABLE IF NOT EXISTS users_data (
-      id TEXT PRIMARY KEY,
-      phone_norm TEXT UNIQUE NOT NULL,
-      data JSONB NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-  `);
-
-  await query(`
-    CREATE INDEX IF NOT EXISTS idx_users_phone_norm
-    ON users_data(phone_norm);
-  `);
-}
-
 function makeToken(user) {
   return jwt.sign(
-    {
-      id: String(user.id),
-      phone: user.phone,
-      role: user.role || 'user',
-    },
+    { id: String(user.id), phone: user.phone, role: user.role || 'user' },
     JWT_SECRET,
     { expiresIn: '30d' }
   );
@@ -50,8 +31,6 @@ function makeToken(user) {
 
 exports.register = async (req, res) => {
   try {
-    await ensureUsersTable();
-
     const { name, surname, address = '', phone, lang = 'lv' } = req.body;
 
     if (!name || !surname || !phone) {
@@ -63,17 +42,14 @@ exports.register = async (req, res) => {
       return res.status(400).json({ error: t('phone_required', lang) });
     }
 
-    const exists = await query(
-      'SELECT data FROM users_data WHERE phone_norm=$1',
-      [phoneNorm]
-    );
+    const exists = await db.select({ id: usersData.id }).from(usersData)
+      .where(eq(usersData.phoneNorm, phoneNorm)).limit(1);
 
-    if (exists.rows.length > 0) {
+    if (exists.length > 0) {
       return res.status(409).json({ error: t('phone_exists', lang) });
     }
 
     const now = new Date().toISOString();
-
     const user = {
       id: String(Date.now()),
       name: String(name).trim(),
@@ -86,20 +62,13 @@ exports.register = async (req, res) => {
       updatedAt: now,
     };
 
-    await query(
-      `
-      INSERT INTO users_data (id, phone_norm, data, created_at, updated_at)
-      VALUES ($1, $2, $3, NOW(), NOW())
-      `,
-      [user.id, phoneNorm, JSON.stringify(user)]
-    );
-
-    const token = makeToken(user);
-
-    res.json({
-      token,
-      user: publicUser(user),
+    await db.insert(usersData).values({
+      id: user.id,
+      phoneNorm,
+      data: user,
     });
+
+    res.json({ token: makeToken(user), user: publicUser(user) });
   } catch (e) {
     console.error('register:', e.message);
     res.status(500).json({ error: t('server_error', req.body?.lang || 'lv') });
@@ -108,8 +77,6 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    await ensureUsersTable();
-
     const { name, surname, phone, lang = 'lv' } = req.body;
 
     if (!name || !surname || !phone) {
@@ -121,35 +88,25 @@ exports.login = async (req, res) => {
       return res.status(400).json({ error: t('phone_required', lang) });
     }
 
-    const r = await query(
-      'SELECT data FROM users_data WHERE phone_norm=$1',
-      [phoneNorm]
-    );
+    const [row] = await db.select({ data: usersData.data }).from(usersData)
+      .where(eq(usersData.phoneNorm, phoneNorm)).limit(1);
 
-    if (r.rows.length === 0) {
+    if (!row) {
       return res.status(404).json({ error: t('phone_not_found', lang) });
     }
 
-    const user = r.rows[0].data;
+    const user = row.data;
 
     const sameName =
-      String(user.name || '').trim().toLowerCase() ===
-      String(name || '').trim().toLowerCase();
-
+      String(user.name || '').trim().toLowerCase() === String(name || '').trim().toLowerCase();
     const sameSurname =
-      String(user.surname || '').trim().toLowerCase() ===
-      String(surname || '').trim().toLowerCase();
+      String(user.surname || '').trim().toLowerCase() === String(surname || '').trim().toLowerCase();
 
     if (!sameName || !sameSurname) {
       return res.status(401).json({ error: t('bad_credentials', lang) });
     }
 
-    const token = makeToken(user);
-
-    res.json({
-      token,
-      user: publicUser(user),
-    });
+    res.json({ token: makeToken(user), user: publicUser(user) });
   } catch (e) {
     console.error('login:', e.message);
     res.status(500).json({ error: t('server_error', req.body?.lang || 'lv') });
@@ -158,26 +115,21 @@ exports.login = async (req, res) => {
 
 exports.me = async (req, res) => {
   try {
-    await ensureUsersTable();
-
     const auth = req.headers.authorization;
-
     if (!auth || !auth.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'No token' });
     }
 
     const payload = jwt.verify(auth.slice(7), JWT_SECRET);
 
-    const r = await query(
-      'SELECT data FROM users_data WHERE id=$1',
-      [String(payload.id)]
-    );
+    const [row] = await db.select({ data: usersData.data }).from(usersData)
+      .where(eq(usersData.id, String(payload.id))).limit(1);
 
-    if (r.rows.length === 0) {
+    if (!row) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json(publicUser(r.rows[0].data));
+    res.json(publicUser(row.data));
   } catch (e) {
     console.error('me:', e.message);
     res.status(401).json({ error: 'Invalid token' });
