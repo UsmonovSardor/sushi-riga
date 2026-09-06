@@ -53,7 +53,7 @@ img{display:block;max-width:100%}
 @keyframes sheen      {0%{left:-60%}16%{left:130%}100%{left:130%}}
 
 /* ══ HEADER — Premium Light (glass, dark icons, red only on logo + cart CTA) ══ */
-.header{background:var(--glass);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);position:sticky;top:0;z-index:100;transition:box-shadow .3s var(--ease),background .3s var(--ease);border-bottom:1px solid var(--border);box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.header{background:var(--glass);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);position:sticky;top:0;z-index:100;transition:box-shadow .3s var(--ease),background .3s var(--ease);border-bottom:1px solid var(--border);box-shadow:0 1px 2px rgba(16,24,40,.04);contain:layout paint}
 .header.scrolled{background:rgba(255,255,255,.86);box-shadow:var(--sh-md)}
 .header-in{height:56px;padding:0 var(--px);display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto}
 .h-left{display:flex;align-items:center;gap:8px}
@@ -101,7 +101,14 @@ img{display:block;max-width:100%}
 .promo-bar-text{color:var(--red-dk);font-size:.72rem;font-weight:700;white-space:nowrap}
 
 /* ══ CATEGORY NAV — premium snap pills ══ */
-.cnav{background:var(--glass);backdrop-filter:saturate(180%) blur(14px);-webkit-backdrop-filter:saturate(180%) blur(14px);position:sticky;top:56px;z-index:90;border-bottom:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.cnav{background:var(--glass);backdrop-filter:saturate(180%) blur(14px);-webkit-backdrop-filter:saturate(180%) blur(14px);position:sticky;top:56px;z-index:90;border-bottom:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,.04);contain:layout paint}
+/* Mobile GPUs choke redrawing two stacked backdrop-blur layers every scroll
+   frame. Lighten the radius on small screens — visually near-identical, far
+   cheaper to composite. */
+@media(max-width:640px){
+  .header{backdrop-filter:saturate(160%) blur(10px);-webkit-backdrop-filter:saturate(160%) blur(10px)}
+  .cnav{backdrop-filter:saturate(160%) blur(9px);-webkit-backdrop-filter:saturate(160%) blur(9px)}
+}
 .cnav-inner{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:10px var(--px);max-width:1200px;margin:0 auto;scroll-snap-type:x proximity}
 .cnav-inner::-webkit-scrollbar{display:none}
 .catbtn{scroll-snap-align:start;flex-shrink:0;padding:9px 15px;font-size:.8rem;font-weight:700;color:var(--muted);white-space:nowrap;background:#fff;border:1px solid var(--border);border-radius:999px;transition:color .18s,background .18s,border-color .18s,box-shadow .2s,transform .18s var(--spring);cursor:pointer;touch-action:manipulation}

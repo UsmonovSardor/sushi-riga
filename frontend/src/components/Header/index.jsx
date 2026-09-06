@@ -35,9 +35,18 @@ const menuBtn = {
   const userRef = useRef(null);
 
   useEffect(() => {
-    const fn = () => setSc(window.scrollY > 4);
+    // rAF-coalesced: at most one read/state-check per frame, no matter how many
+    // scroll events fire. setSc is a no-op re-render when the boolean is stable.
+    let raf = 0;
+    const fn = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        setSc(window.scrollY > 4);
+      });
+    };
     window.addEventListener('scroll', fn, { passive: true });
-    return () => window.removeEventListener('scroll', fn);
+    return () => { window.removeEventListener('scroll', fn); if (raf) cancelAnimationFrame(raf); };
   }, []);
 
   useEffect(() => {

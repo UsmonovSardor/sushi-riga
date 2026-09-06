@@ -40,6 +40,8 @@ export default function HeroSlider({ onOrderNow }: { onOrderNow?: () => void }) 
   const [idx, setIdx] = useState(0);
   const [animKey, setAnimKey] = useState(0);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const inViewRef = useRef(true);
 
   // Admin-managed slides when present; otherwise the offline fallback.
   const slides: Slide[] = useMemo(() => {
@@ -70,10 +72,27 @@ export default function HeroSlider({ onOrderNow }: { onOrderNow?: () => void }) 
   useEffect(() => {
     videoRefs.current.forEach((v, i) => {
       if (!v) return;
-      if (i === idx) { v.preload = 'auto'; const p = v.play(); if (p && p.catch) p.catch(() => {}); }
+      if (i === idx && inViewRef.current) { v.preload = 'auto'; const p = v.play(); if (p && p.catch) p.catch(() => {}); }
       else v.pause();
     });
   }, [idx, slides]);
+
+  // Pause the video while the hero is scrolled off-screen — a playing <video>
+  // keeps decoding frames on the GPU/main thread even when invisible, which
+  // stutters the scroll. Resume the active slide when it returns to view.
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([entry]) => {
+      inViewRef.current = entry.isIntersecting;
+      const v = videoRefs.current[idx];
+      if (!v) return;
+      if (entry.isIntersecting) { const p = v.play(); if (p && p.catch) p.catch(() => {}); }
+      else v.pause();
+    }, { threshold: 0.01 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [idx]);
 
   const L = (obj?: Localized) => obj?.[lang] || obj?.lv || obj?.ru || obj?.en || '';
   const s = slides[idx] || slides[0];
@@ -89,7 +108,7 @@ export default function HeroSlider({ onOrderNow }: { onOrderNow?: () => void }) 
   };
 
   return (
-    <div className="hero">
+    <div className="hero" ref={rootRef}>
       {slides.map((sl, i) => (
         <div key={i} className={'hero-slide' + (i === idx ? ' on' : '')}>
           {sl.video
