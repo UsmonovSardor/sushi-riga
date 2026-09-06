@@ -1,0 +1,24 @@
+{
+  "name": "sushi-riga",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cherry Sushi monorepo — web storefront, API, Telegram Mini App + shared types",
+  "packageManager": "npm@11.9.0",
+  "workspaces": [
+    "frontend",
+    "backend",
+    "telegram-app",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "db:generate": "npm run db:generate --workspace backend",
+    "db:migrate": "npm run db:migrate --workspace backend"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0"
+  }
+}

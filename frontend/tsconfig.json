@@ -6,6 +6,10 @@
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
 
+    "paths": {
+      "@sushi/types": ["../packages/types/src/index.ts"]
+    },
+
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,

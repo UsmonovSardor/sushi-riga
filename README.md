@@ -80,3 +80,39 @@ npm run build      # production build + service worker
 **Backend:** Node.js, Express, PostgreSQL (pg), Helmet, CORS, compression, rate-limit, express-validator, JWT (jsonwebtoken + bcryptjs), Stripe, Cloudinary, Telegram Bot API
 **Frontend:** React 18, Vite, vite-plugin-pwa (Workbox), Context API, Stripe.js
 **Deploy:** Railway (API + static frontend + PostgreSQL) · cherrysushi.eu
+
+## Monorepo (Turborepo)
+
+This repo is an npm-workspaces + [Turborepo](https://turbo.build) monorepo:
+
+```
+sushi-riga/
+├── package.json         # workspace root + turbo scripts
+├── turbo.json           # task pipeline (build / dev / typecheck / lint)
+├── packages/
+│   └── types/           # @sushi/types — shared domain types (single source of truth)
+├── frontend/            # web storefront (React + Vite PWA)
+├── backend/             # REST API (Express + Drizzle + Postgres)
+└── telegram-app/        # Telegram Mini App (React + Vite)
+```
+
+From the repo root:
+
+```bash
+npm install            # installs every workspace (hoisted)
+npm run dev            # turbo: all dev servers in parallel
+npm run build          # turbo: builds every app (cached)
+npm run typecheck      # turbo: tsc --noEmit across TS packages
+```
+
+**Shared types.** `@sushi/types` is the canonical source for API request/response
+shapes. Apps consume it as a **type-only** import (via each app's `tsconfig`
+`paths`), so the compiler shares one definition while bundlers erase the import —
+the shipped bundles carry no dependency on the package.
+
+> ⚠️ **Deploy note — do NOT delete the per-app `package-lock.json` files.**
+> Railway deploys each app **standalone** from its own directory (`rootDir:
+> frontend` / `backend` / `telegram-app`), running `npm install` against that
+> app's own lockfile — it never sees the workspace root. The root
+> `package-lock.json` is for local workspace dev only; the per-app lockfiles are
+> what production builds from. Both are intentionally kept.
