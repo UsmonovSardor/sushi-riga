@@ -1,5 +1,6 @@
 'use strict';
 const express    = require('express');
+const Sentry     = require('@sentry/node');
 const helmet     = require('helmet');
 const cors       = require('cors');
 const morgan     = require('morgan');
@@ -63,6 +64,10 @@ app.use('/uploads', express.static(uploadsDir));
 app.get('/health', (_req, res) => res.json({ status: 'ok', ts: new Date() }));
 app.use('/api', router);
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
+
+// Capture unhandled route errors in Sentry (no-op when SENTRY_DSN is unset),
+// then fall through to our JSON error responder.
+Sentry.setupExpressErrorHandler(app);
 app.use(errorHandler);
 
 module.exports = app;

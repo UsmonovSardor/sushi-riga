@@ -1,5 +1,7 @@
 'use strict';
 
+// Sentry MUST be first — it auto-instruments http/express as they load.
+require('./src/instrument');
 require('dotenv').config();
 
 const app    = require('./src/app');
