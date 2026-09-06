@@ -6,7 +6,6 @@ const { eq, and, or, inArray, desc, sql } = require('drizzle-orm');
 const { reviews, orders, usersData } = schema;
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const ADMIN_KEY = process.env.ADMIN_SECRET;
 
 async function getUser(req) {
   const auth = req.headers.authorization;
@@ -23,7 +22,7 @@ async function getUser(req) {
 
 function isAdmin(req) {
   const auth = req.headers.authorization || '';
-  if (ADMIN_KEY && auth === `Bearer ${ADMIN_KEY}`) return true;
+  if (!auth.startsWith('Bearer ')) return false;
   try {
     const payload = jwt.verify(auth.slice(7), JWT_SECRET);
     return payload.role === 'admin';

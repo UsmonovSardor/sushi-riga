@@ -6,13 +6,12 @@ const { eq, and, or, isNull, lte, gte, asc, desc, sql } = require('drizzle-orm')
 const { promos } = schema;
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const ADMIN_KEY = process.env.ADMIN_SECRET;
 
-// Same admin gate the menu/order admin routes use.
+// Same admin gate the menu/order admin routes use: a JWT with role:'admin'
+// (issued by adminLogin). The raw secret is never accepted as a bearer token.
 function authAdmin(req, res, next) {
   const auth = req.headers.authorization;
-  if (!auth) return res.status(401).json({ error: 'No token' });
-  if (ADMIN_KEY && auth === `Bearer ${ADMIN_KEY}`) return next();
+  if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'No token' });
   try {
     const p = jwt.verify(auth.slice(7), JWT_SECRET);
     if (p.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });

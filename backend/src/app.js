@@ -12,6 +12,10 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
+// Behind Railway's edge proxy: trust one hop so req.ip / rate-limit keys use the
+// real client IP from X-Forwarded-For (otherwise every request looks like one IP).
+app.set('trust proxy', 1);
+
 const ORIGINS = [
   'https://cherrysushi.eu','https://www.cherrysushi.eu',
   'http://cherrysushi.eu','http://www.cherrysushi.eu',

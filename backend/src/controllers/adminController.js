@@ -1,6 +1,7 @@
 'use strict';
 
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const cloudinary = require('cloudinary').v2;
 const { db, schema } = require('../db');
 const { eq, desc, asc, inArray, sql } = require('drizzle-orm');
@@ -11,12 +12,21 @@ const { menuItems, orders, usersData } = schema;
 const JWT_SECRET = process.env.JWT_SECRET;
 const ADMIN_KEY = process.env.ADMIN_SECRET;
 
+// Constant-time secret comparison (avoids leaking the secret via response timing).
+function secretMatches(input) {
+  if (!ADMIN_KEY || typeof input !== 'string') return false;
+  const a = Buffer.from(input);
+  const b = Buffer.from(ADMIN_KEY);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
 function authAdmin(req, res, next) {
   const auth = req.headers.authorization;
-  if (!auth) return res.status(401).json({ error: 'No token' });
+  if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'No token' });
 
-  if (ADMIN_KEY && auth === `Bearer ${ADMIN_KEY}`) return next();
-
+  // Admins present a short-lived JWT (role:'admin'), issued by adminLogin. The
+  // raw ADMIN_SECRET is NEVER accepted as a bearer token — it only proves
+  // identity once, at /admin/login, in exchange for a token.
   try {
     const p = jwt.verify(auth.slice(7), JWT_SECRET);
     if (p.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
@@ -75,10 +85,13 @@ function invalidateCache() {
 
 exports.adminLogin = (req, res) => {
   const { secret } = req.body;
-  if (!secret || secret !== ADMIN_KEY) {
+  if (!secretMatches(secret)) {
     return res.status(401).json({ error: 'Wrong secret' });
   }
-  res.json({ token: ADMIN_KEY, role: 'admin' });
+  // Exchange the secret for a short-lived admin JWT. The secret itself is never
+  // sent back or stored client-side.
+  const token = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '7d' });
+  res.json({ token, role: 'admin' });
 };
 
 exports.getStats = [authAdmin, async (_req, res) => {

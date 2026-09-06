@@ -332,7 +332,14 @@ export default function Admin() {
           headers: noCache,
           cache: 'no-store',
         }).then(async r => {
-          const data = await r.json();
+          const data = await r.json().catch(() => ({}));
+          // An expired/invalid admin token (e.g. a stale one from before the
+          // JWT switch) → drop to the login screen instead of showing errors.
+          if (r.status === 401) {
+            localStorage.removeItem('sr_admin');
+            setToken('');
+            throw new Error('Session expired — please log in again');
+          }
           if (!r.ok) throw new Error(data.error || 'Stats error');
           return data;
         }),
