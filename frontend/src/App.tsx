@@ -26,6 +26,7 @@ import { useAuth } from './context/AuthContext';
 import { useLanguage } from './context/LanguageContext';
 import { useMenu } from './context/MenuContext';
 import { useMyOrders } from './hooks/queries';
+import { useOrderStream } from './hooks/useOrderStream';
 import type { Lang } from './types';
 
 function MenuError({ onRetry, lang }: { onRetry: () => void; lang: Lang }) {
@@ -83,9 +84,11 @@ function MainApp() {
   const { lang } = useLanguage();
   const { error: menuError, reload: reloadMenu } = useMenu();
 
-  // Signed-in customers' orders, polled every 30s so a kitchen "ready" status
-  // surfaces on its own. Replaces the old manual setInterval + silent catch{}.
+  // Signed-in customers' orders. A kitchen "ready" status arrives in real time
+  // over SSE (useOrderStream invalidates this query); the 30s poll stays on as
+  // a fallback for when the stream can't connect.
   const myOrders = useMyOrders({ enabled: !!user, poll: true });
+  useOrderStream(!!user);
 
   // Derive the unseen "ready" notification from the cached orders.
   React.useEffect(() => {

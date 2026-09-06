@@ -5,6 +5,7 @@ const cloudinary = require('cloudinary').v2;
 const { db, schema } = require('../db');
 const { eq, desc, asc, inArray, sql } = require('drizzle-orm');
 const bot = require('../services/botService');
+const orderEvents = require('../services/orderEvents');
 const { menuItems, orders, usersData } = schema;
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -375,9 +376,15 @@ exports.updateOrder = [authAdmin, async (req, res) => {
       updatedAt: now,
     }).where(eq(orders.id, id)).returning();
 
-    // Push status update to the customer's Telegram (Mini App orders)
+    // Push status update to the customer's Telegram (Mini App orders) and to any
+    // open web SSE stream (instant status on the site — no polling wait).
     if (c.status !== nextStatus) {
       bot.sendStatusUpdate(row, nextStatus).catch(() => {});
+      const evt = { type: 'status', orderId: row.id, status: nextStatus };
+      if (row.customerId) orderEvents.publish(row.customerId, evt);
+      if (row.telegramId && String(row.telegramId) !== String(row.customerId)) {
+        orderEvents.publish(row.telegramId, evt);
+      }
     }
 
     res.json(rowToOrder(row));

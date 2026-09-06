@@ -16,6 +16,9 @@ const orderLimiter = rateLimit({
 });
 
 router.get('/my', ctrl.getMyOrders);
+// Real-time order-status stream (SSE). Auth is via ?token= (EventSource can't
+// send headers); the handler verifies the JWT itself.
+router.get('/stream', ctrl.stream);
 router.post('/', orderLimiter, validate(schemas.createOrder), ctrl.createOrder);
 // NOTE: the "all orders" listing is intentionally NOT exposed here — it returns
 // customer PII (names, phones). Admins read orders via the authenticated

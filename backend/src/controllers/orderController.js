@@ -5,6 +5,7 @@ const tg = require('../services/telegramService');
 const { db, schema } = require('../db');
 const { eq, inArray, desc, or, sql } = require('drizzle-orm');
 const { t } = require('../utils/i18n');
+const orderEvents = require('../services/orderEvents');
 const { orders, menuItems, usersData } = schema;
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -194,4 +195,43 @@ exports.getMyOrders = async (req, res) => {
     console.error('getMyOrders:', err.message);
     res.status(500).json({ error: t('orders_load_failed', lang) });
   }
+};
+
+/**
+ * Server-Sent Events stream of order-status changes for the signed-in customer.
+ *
+ * EventSource cannot set an Authorization header, so the JWT is passed as a
+ * `?token=` query param and verified here. The connection subscribes to the
+ * customer's channel; adminController.updateOrder publishes a `{type:'status'}`
+ * frame that reaches the browser instantly (the client then refreshes its
+ * orders query). A heartbeat comment keeps proxies from closing the socket.
+ */
+exports.stream = (req, res) => {
+  let payload;
+  try {
+    payload = jwt.verify(String(req.query.token || ''), JWT_SECRET);
+  } catch {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+
+  res.set({
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no', // disable proxy buffering (nginx/railway edge)
+  });
+  res.flushHeaders?.();
+  res.write(': connected\n\n');
+
+  const unsubscribe = orderEvents.subscribe(payload.id, res);
+
+  const heartbeat = setInterval(() => {
+    try { res.write(': ping\n\n'); } catch { /* closed */ }
+  }, 25_000);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    unsubscribe();
+    res.end();
+  });
 };

@@ -38,7 +38,14 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(compression()); // gzip/brotli JSON + static responses
+// gzip/brotli JSON + static responses — but never buffer the SSE stream
+// (compression would hold the response open and break real-time delivery).
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers.accept === 'text/event-stream') return false;
+    return compression.filter(req, res);
+  },
+}));
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({ origin: (o, cb) => cb(null, isAllowed(o)), credentials: true, optionsSuccessStatus: 200 }));
 app.use(rateLimit({ windowMs: 15*60*1000, max: 500, standardHeaders: true, legacyHeaders: false }));
