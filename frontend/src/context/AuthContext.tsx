@@ -1,10 +1,25 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import type { Lang, User } from '../types';
 
 const BASE = import.meta.env.VITE_API_URL || 'https://sushi-riga-api-production-7b54.up.railway.app';
-const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+interface AuthCtx {
+  user: User | null;
+  loading: boolean;
+  login: (name: string, surname: string, phone: string, lang?: Lang) => Promise<User>;
+  register: (name: string, surname: string, address: string, phone: string, lang?: Lang) => Promise<User>;
+  logout: () => void;
+}
+
+const AuthContext = createContext<AuthCtx | null>(null);
+export const useAuth = (): AuthCtx => {
+  const v = useContext(AuthContext);
+  if (!v) throw new Error('useAuth must be used within AuthProvider');
+  return v;
+};
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoad] = useState(true);
 
   useEffect(() => {
@@ -23,8 +38,8 @@ export function AuthProvider({ children }) {
     fetch(`${BASE}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(u => {
+      .then(r => (r.ok ? r.json() : Promise.reject()))
+      .then((u: User) => {
         localStorage.setItem('sr_user', JSON.stringify(u));
         setUser(u);
       })
@@ -39,11 +54,11 @@ export function AuthProvider({ children }) {
   // Parse JSON defensively — a cold Railway backend can answer with a non-JSON
   // 502/504 HTML page, and a bare r.json() would throw a cryptic SyntaxError
   // instead of a readable "please try again".
-  const safeJson = async (r) => {
+  const safeJson = async (r: Response): Promise<any> => {
     try { return await r.json(); } catch { return {}; }
   };
 
-  const register = async (name, surname, address, phone, lang = 'lv') => {
+  const register = async (name: string, surname: string, address: string, phone: string, lang: Lang = 'lv'): Promise<User> => {
     const r = await fetch(`${BASE}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -59,7 +74,7 @@ export function AuthProvider({ children }) {
     return d.user;
   };
 
-  const login = async (name, surname, phone, lang = 'lv') => {
+  const login = async (name: string, surname: string, phone: string, lang: Lang = 'lv'): Promise<User> => {
     const r = await fetch(`${BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -87,5 +102,3 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
-
-export const useAuth = () => useContext(AuthContext);

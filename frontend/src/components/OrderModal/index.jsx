@@ -4,12 +4,13 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useOverlay } from '../../utils/useOverlay';
 import T from '../../i18n/translations';
-import { ordersApi } from '../../services/api';
+import { useCreateOrder } from '../../hooks/queries';
 
 export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
   const { cart, total, clear, change } = useCart();
   const { lang } = useLanguage();
   const { user, loading } = useAuth();
+  const createOrder = useCreateOrder();
   const t = T[lang];
   const L = (lv, ru, en) => lang === 'lv' ? lv : lang === 'ru' ? ru : en;
 
@@ -74,7 +75,7 @@ export default function OrderModal({ isOpen, onClose, onOpenAuth }) {
     setBusy(true);
 
     try {
-      const od = await ordersApi.create({
+      const od = await createOrder.mutateAsync({
         ...form,
         address: '',
         lang,

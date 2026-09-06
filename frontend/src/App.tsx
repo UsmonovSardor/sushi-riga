@@ -22,13 +22,14 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 const AdminPage = React.lazy(() => import('./pages/Admin'));
 
-import { ordersApi } from './services/api';
 import { useAuth } from './context/AuthContext';
 import { useLanguage } from './context/LanguageContext';
 import { useMenu } from './context/MenuContext';
+import { useMyOrders } from './hooks/queries';
+import type { Lang } from './types';
 
-function MenuError({ onRetry, lang }) {
-  const L = (lv, ru, en) => (lang === 'lv' ? lv : lang === 'ru' ? ru : en);
+function MenuError({ onRetry, lang }: { onRetry: () => void; lang: Lang }) {
+  const L = (lv: string, ru: string, en: string) => (lang === 'lv' ? lv : lang === 'ru' ? ru : en);
   return (
     <div className="menu-error" role="alert">
       <div className="menu-error-emoji">🍣</div>
@@ -45,7 +46,14 @@ function MenuError({ onRetry, lang }) {
   );
 }
 
-const SECTIONS = [
+interface Section {
+  id: string;
+  e: string;
+  k: string;
+  cats: string[];
+}
+
+const SECTIONS: Section[] = [
   { id:'hit',     e:'⭐', k:'c_hit',     cats:['hit'] },
   { id:'cold',    e:'🍣', k:'c_cold',    cats:['cold'] },
   { id:'hot',     e:'🔥', k:'c_hot',     cats:['hot'] },
@@ -69,45 +77,46 @@ function MainApp() {
 
   const [readyNote, setReadyNote] = useState('');
   const [readyCount, setReadyCount] = useState(0);
-  const [readyIds, setReadyIds] = useState([]);
+  const [readyIds, setReadyIds] = useState<string[]>([]);
 
   const { user } = useAuth();
   const { lang } = useLanguage();
   const { error: menuError, reload: reloadMenu } = useMenu();
 
+  // Signed-in customers' orders, polled every 30s so a kitchen "ready" status
+  // surfaces on its own. Replaces the old manual setInterval + silent catch{}.
+  const myOrders = useMyOrders({ enabled: !!user, poll: true });
+
+  // Derive the unseen "ready" notification from the cached orders.
   React.useEffect(() => {
     if (!user) {
       setReadyCount(0);
+      setReadyIds([]);
       return;
     }
-
-    const seenKey = 'sr_ready_seen';
-    const check = async () => {
-  try {
-    const seen = JSON.parse(localStorage.getItem(seenKey) || '[]');
-    const list = await ordersApi.getMine();
+    let seen: string[] = [];
+    try { seen = JSON.parse(localStorage.getItem('sr_ready_seen') || '[]'); } catch {}
+    const list = myOrders.data ?? [];
     const readyList = list.filter(o => o.status === 'ready' && !seen.includes(o.id));
     setReadyIds(readyList.map(o => o.id));
     setReadyCount(readyList.length);
     const ready = readyList[0];
     if (ready) {
-      setReadyNote(lang === 'lv' ? `Pasūtījums #${ready.id} ir gatavs!` : lang === 'ru' ? `Заказ #${ready.id} готов!` : `Order #${ready.id} is ready!`);
+      setReadyNote(
+        lang === 'lv' ? `Pasūtījums #${ready.id} ir gatavs!`
+          : lang === 'ru' ? `Заказ #${ready.id} готов!`
+          : `Order #${ready.id} is ready!`
+      );
     }
-  } catch {}
-};
+  }, [user, lang, myOrders.data]);
 
-    
-
-    check();
-    
-
-    window.addEventListener('sr_order_created', check);
-
-    return () => {
-      
-      window.removeEventListener('sr_order_created', check);
-    };
-  }, [user, lang]);
+  // A freshly placed order should refetch immediately (the create mutation also
+  // invalidates, but this keeps the guest→login path covered).
+  React.useEffect(() => {
+    const onCreated = () => myOrders.refetch();
+    window.addEventListener('sr_order_created', onCreated);
+    return () => window.removeEventListener('sr_order_created', onCreated);
+  }, [myOrders]);
 
   const openCart = useCallback(() => setCartOpen(true), []);
   const closeCart = useCallback(() => setCartOpen(false), []);
@@ -133,13 +142,13 @@ function MainApp() {
         onSearchOpen={() => setSearchOpen(true)}
         onAuthOpen={() => setAuthOpen(true)}
         onMyOrdersOpen={() => {
-        const seen = JSON.parse(localStorage.getItem('sr_ready_seen') || '[]');
-        localStorage.setItem('sr_ready_seen', JSON.stringify([...new Set([...seen, ...readyIds])].slice(-50)));
-        setReadyCount(0);
-       setReadyIds([]);
-       setMyOrdersOpen(true);
-      }}
-        
+          let seen: string[] = [];
+          try { seen = JSON.parse(localStorage.getItem('sr_ready_seen') || '[]'); } catch {}
+          localStorage.setItem('sr_ready_seen', JSON.stringify([...new Set([...seen, ...readyIds])].slice(-50)));
+          setReadyCount(0);
+          setReadyIds([]);
+          setMyOrdersOpen(true);
+        }}
         readyOrdersCount={readyCount}
       />
 

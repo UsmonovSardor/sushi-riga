@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ordersApi, reviewsApi } from '../services/api';
+import { useMyOrders, useMyPending, useAddReview } from '../hooks/queries';
 import { useLanguage } from '../context/LanguageContext';
 
 const STATUS_INFO = {
@@ -46,6 +46,7 @@ function Stars({ value, onChange, size = 24 }) {
 
 function ReviewModal({ item, onClose, onDone }) {
   const { lang } = useLanguage();
+  const addReview = useAddReview();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [loading, setLoad] = useState(false);
@@ -80,7 +81,7 @@ function ReviewModal({ item, onClose, onDone }) {
     setErr('');
 
     try {
-      await reviewsApi.add({
+      await addReview.mutateAsync({
         menuId: item.menuId,
         orderId: item.orderId,
         rating,
@@ -228,11 +229,22 @@ function ReviewModal({ item, onClose, onDone }) {
 export default function MyOrdersPage({ isOpen, onClose }) {
   const { lang } = useLanguage();
 
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [pending, setPending] = useState([]);
+  // Data comes from TanStack Query's cache; it fetches when the panel opens and
+  // stays fresh via the shared client (order-create + review-add invalidate it).
+  const ordersQ = useMyOrders({ enabled: isOpen });
+  const pendingQ = useMyPending(isOpen);
+  const orders = ordersQ.data ?? [];
+  const loading = ordersQ.isPending && ordersQ.isFetching;
   const [reviewItem, setReviewItem] = useState(null);
   const [reviewed, setReviewed] = useState(new Set());
+
+  // Hide items reviewed in this session immediately (optimistic), on top of the
+  // server-driven pending list.
+  const pending = (pendingQ.data ?? []).filter(
+    x => !reviewed.has(String(x.menuId) + '_' + String(x.orderId))
+  );
+
+  const reload = () => { ordersQ.refetch(); pendingQ.refetch(); };
 
   const L = {
     title: { lv: 'Mani pasūtījumi', ru: 'Мои заказы', en: 'My Orders' },
@@ -260,37 +272,14 @@ export default function MyOrdersPage({ isOpen, onClose }) {
 
   const t = key => L[key]?.[lang] || L[key]?.ru || L[key]?.en;
 
-  const loadAll = async () => {
-    setLoading(true);
-
-    try {
-      const [data, pend] = await Promise.all([
-        ordersApi.getMine(),
-        reviewsApi.getMyPending().catch(() => []),
-      ]);
-
-      setOrders(Array.isArray(data) ? data : []);
-      setPending(Array.isArray(pend) ? pend : []);
-    } catch {
-      setOrders([]);
-      setPending([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     if (!isOpen) return;
 
     const old = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    loadAll();
-    window.addEventListener('sr_order_created', loadAll);
-
     return () => {
       document.body.style.overflow = old;
-      window.removeEventListener('sr_order_created', loadAll);
     };
   }, [isOpen]);
 
@@ -303,20 +292,11 @@ export default function MyOrdersPage({ isOpen, onClose }) {
           item={reviewItem}
           onClose={() => setReviewItem(null)}
           onDone={() => {
+            // Optimistically hide the just-reviewed item; the useAddReview
+            // mutation also invalidates the pending query so it reconciles.
             setReviewed(
-              s => new Set([...s, reviewItem.menuId + '_' + reviewItem.orderId])
+              s => new Set([...s, String(reviewItem.menuId) + '_' + String(reviewItem.orderId)])
             );
-
-            setPending(p =>
-              p.filter(
-                x =>
-                  !(
-                    String(x.menuId) === String(reviewItem.menuId) &&
-                    String(x.orderId) === String(reviewItem.orderId)
-                  )
-              )
-            );
-
             setReviewItem(null);
           }}
         />
@@ -334,7 +314,7 @@ export default function MyOrdersPage({ isOpen, onClose }) {
           <div className="orders-head">
             <h2>📦 {t('title')}</h2>
 
-            <button onClick={loadAll} className="orders-refresh">
+            <button onClick={reload} className="orders-refresh">
               ↻
             </button>
 

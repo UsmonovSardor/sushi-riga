@@ -4,9 +4,17 @@ import { useMenu } from '../../context/MenuContext';
 import { useLanguage } from '../../context/LanguageContext';
 import T from '../../i18n/translations';
 
-export default function MenuSection({ sectionId, emoji, titleKey, cats = [], category }) {
+interface MenuSectionProps {
+  sectionId: string;
+  emoji: string;
+  titleKey: string;
+  cats?: string[];
+  category?: string;
+}
+
+export default function MenuSection({ sectionId, emoji, titleKey, cats = [], category }: MenuSectionProps) {
   const { lang } = useLanguage();
-  const t = T[lang];
+  const t = T[lang] as Record<string, string>;
   const { items: all, summary, loading } = useMenu();
 
   const sectionCats = useMemo(() => {

@@ -1,13 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-import { promosApi } from '../../services/api';
+import { usePromos } from '../../hooks/queries';
 import T from '../../i18n/translations';
+import type { Localized } from '../../types';
 
 const GRAD = 'linear-gradient(100deg, rgba(14,10,12,.72) 0%, rgba(14,10,12,.44) 34%, rgba(0,0,0,0) 60%)';
 
+interface Slide {
+  video: string;
+  img: string;
+  title: Localized;
+  sub: Localized;
+  badge: Localized;
+  cta: Localized;
+  target: string;
+}
+
 // Offline fallback — used only if the slides API is unreachable. Mirrors the
 // slides the backend seeds on first run (which the admin then manages).
-const FALLBACK = [
+const FALLBACK: Slide[] = [
   { video: '/hero/cherry-sushi-1.mp4', img: '', target: 'cold',
     badge: { lv: '🍣 Populārākais', ru: '🍣 Популярное', en: '🍣 Popular' },
     title: { lv: 'Svaigi rolli\nkatru dienu', ru: 'Свежие роллы\nкаждый день', en: 'Fresh rolls\nevery day' },
@@ -22,33 +33,32 @@ const FALLBACK = [
     sub: { lv: 'Pieredzējušu šefpavāru receptes', ru: 'Рецепты опытных поваров', en: 'Expert chef recipes' }, cta: {} },
 ];
 
-export default function HeroSlider({ onOrderNow }) {
+export default function HeroSlider({ onOrderNow }: { onOrderNow?: () => void }) {
   const { lang } = useLanguage();
   const t = T[lang];
-  const [slides, setSlides] = useState(FALLBACK);
+  const { data: promos } = usePromos();
   const [idx, setIdx] = useState(0);
   const [animKey, setAnimKey] = useState(0);
-  const videoRefs = useRef([]);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
-  // Load admin-managed slides; keep the fallback if the API is empty/unreachable.
-  useEffect(() => {
-    let cancelled = false;
-    promosApi.getActive()
-      .then(list => {
-        if (cancelled || !Array.isArray(list) || !list.length) return;
-        setSlides(list.map(p => ({
-          video: p.video || '', img: p.img || '',
-          title: p.title || {}, sub: p.subtitle || {}, badge: p.badge || {}, cta: p.cta || {},
-          target: p.link || '',
-        })));
-        setIdx(0);
-      })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, []);
+  // Admin-managed slides when present; otherwise the offline fallback.
+  const slides: Slide[] = useMemo(() => {
+    if (Array.isArray(promos) && promos.length) {
+      return promos.map(p => ({
+        video: p.video || '', img: p.img || '',
+        title: p.title || {}, sub: p.subtitle || {}, badge: p.badge || {}, cta: p.cta || {},
+        target: p.link || '',
+      }));
+    }
+    return FALLBACK;
+  }, [promos]);
 
   const n = slides.length;
-  const goTo = i => { setIdx(((i % n) + n) % n); setAnimKey(k => k + 1); };
+
+  // Keep the active index in range when the slide set changes size.
+  useEffect(() => { setIdx(i => (i >= n ? 0 : i)); }, [n]);
+
+  const goTo = (i: number) => { setIdx(((i % n) + n) % n); setAnimKey(k => k + 1); };
 
   useEffect(() => {
     if (n < 2) return;
@@ -65,8 +75,8 @@ export default function HeroSlider({ onOrderNow }) {
     });
   }, [idx, slides]);
 
-  const L = obj => obj?.[lang] || obj?.lv || obj?.ru || obj?.en || '';
-  const s = slides[idx] || {};
+  const L = (obj?: Localized) => obj?.[lang] || obj?.lv || obj?.ru || obj?.en || '';
+  const s = slides[idx] || slides[0];
   const titleLines = L(s.title).split('\n');
   const ctaText = L(s.cta) || t.s_order;
 
@@ -83,7 +93,7 @@ export default function HeroSlider({ onOrderNow }) {
       {slides.map((sl, i) => (
         <div key={i} className={'hero-slide' + (i === idx ? ' on' : '')}>
           {sl.video
-            ? <video ref={el => (videoRefs.current[i] = el)} className="hero-video" src={sl.video} muted loop playsInline preload={i === idx ? 'auto' : 'none'} poster={sl.img} />
+            ? <video ref={el => { videoRefs.current[i] = el; }} className="hero-video" src={sl.video} muted loop playsInline preload={i === idx ? 'auto' : 'none'} poster={sl.img} />
             : <div className="hero-bg" style={sl.img ? { backgroundImage: `url(${sl.img})` } : { background: '#1a1416' }} />}
           <div className="hero-overlay" style={{ background: GRAD }} />
         </div>
